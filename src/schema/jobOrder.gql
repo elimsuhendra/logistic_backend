@@ -1,0 +1,188 @@
+type JobOrder {
+  id: String!
+  slug: String
+	title: String
+	description: String
+  shortDescription: String
+  hideJob: Boolean
+	workType: String
+	jobType: String
+  jobSource: String
+	industry: String
+  jobSlot: Int
+	skills: [String]
+	salaryMin: Float
+	salaryMax: Float
+	salaryCurrency: String
+	startDate: Date
+	status: JobOrderStatus
+	expectedCompletion: Date
+  consultantIds: [String]
+  interviewTemplateId: String
+  companyId: String
+  ownerId: String
+  workflowId: String
+  jobCloseReason: String
+  createdAt: Date
+  updatedAt: Date
+  lastActive: Date
+  ownerGroupId: String
+
+  # resolver
+  company: Company
+  consultants: [User]
+  owner: User
+  workflow: Workflow
+  documents: [Document]
+  notes: [Note]
+  activities: [Activity]
+  jobApplicants: [JobApplicant]
+}
+
+enum JobOrderOrder {
+  title_DESC
+  title_ASC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+enum JobOrderStatus {
+  COMPLETED
+  IN_PROGRESS
+  CLOSED
+}
+
+type CompanyContact {
+  id: String
+  fullName: String
+	designation: String
+	email: String
+	hpNo: String
+	gender: String
+	isMain: Boolean
+	notes: String
+	position: Int
+}
+
+input JobOrderFilter {
+  OR: [JobOrderFilter!]
+  AND: [JobOrderFilter!]
+  _id_in: [String]
+  _id_nin: [String]
+  workType: String
+  industry: String
+  companyId: String
+  title_regex: String
+  title_contains: String
+  status_in: [String]
+  status_nin: [String]
+  status: String
+  ownerId: String
+  ownerId_in: [String]
+  consultantIds_in: [String]
+  consultantIds_nin: [String]
+  search: String
+  candidateId: String
+  salaryMin_lte: Float
+  salaryMin_gte: Float
+  salaryMax_lte: Float
+  salaryMax_gte: Float
+  hideJob_in: [Boolean]
+  hideJob_nin: [Boolean]
+  createdAt_gte: Date
+  createdAt_lte: Date
+}
+
+type CreateJobOrderResponse {
+  success: Boolean!
+  message: String
+  jobOrder: JobOrder
+}
+
+type UpdateJobOrderResponse {
+  success: Boolean!
+  message: String
+  jobOrder: JobOrder
+}
+
+type DeleteJobOrderResponse {
+  success: Boolean!
+  message: String
+}
+
+
+type Query {
+  allJobOrders(filter: JobOrderFilter, ownerFilter: UserFilter, first: Int, skip: Int, orderBy: JobOrderOrder): [JobOrder]
+  _allJobOrdersMeta(filter: JobOrderFilter, ownerFilter: UserFilter): ObjectMeta
+  getJobOrder(id: String): JobOrder
+}
+
+type Mutation {
+  createJobOrder(
+    title: String
+    slug: String
+    description: String
+    shortDescription: String
+    hideJob: Boolean
+    workType: String
+    jobType: String
+    jobSource: String
+    industry: String
+    jobSlot: Int
+    skills: [String]
+    salaryMin: Float
+    salaryMax: Float
+    salaryCurrency: String
+    startDate: Date
+    status: String
+    expectedCompletion: Date
+    consultantIds: [String]
+    interviewTemplateId: String
+    companyId: String
+    ownerId: String
+    workflowId: String
+    jobCloseReason: String
+    ownerGroupId: String
+  ): CreateJobOrderResponse
+  updateJobOrder(
+    id: String!
+    slug: String
+    title: String
+    description: String
+    shortDescription: String
+    hideJob: Boolean
+    workType: String
+    jobType: String
+    jobSource: String
+    industry: String
+    jobSlot: Int
+    skills: [String]
+    salaryMin: Float
+    salaryMax: Float
+    salaryCurrency: String
+    startDate: Date
+    status: String
+    expectedCompletion: Date
+    consultantIds: [String]
+    interviewTemplateId: String
+    companyId: String
+    ownerId: String
+    workflowId: String
+    jobCloseReason: String
+    ownerGroupId: String
+  ): UpdateJobOrderResponse
+  deleteJobOrder(id: String!): DeleteJobOrderResponse
+  deleteJobOrders(ids: [String!]!): DeleteJobOrderResponse
+  createJobOrderIndexes: CommonResponse
+  generateJobSlug: CommonResponse
+}
+
+type JobOrderSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: JobOrder
+  previousValues: JobOrder
+}
+
+type Subscription {
+  JobOrder(filter: SubscriptionFilter, dataFilter: JobOrderFilter): JobOrderSubscriptionPayload
+}

@@ -1,0 +1,74 @@
+type Skill {
+  id: String!
+  type: SkillType
+  name: String
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date
+}
+
+enum SkillType {
+  COMPUTER
+  LANGUAGE
+}
+
+enum SkillOrder {
+  name_DESC
+  name_ASC
+  createdAt_DESC
+  createdAt_ASC
+  updatedAt_DESC
+  updatedAt_ASC
+}
+
+input SkillFilter {
+  OR: [SkillFilter!]
+  AND: [SkillFilter!]
+  _id: String
+  _id_in: [String]
+  _id_nin: [String]
+  type: SkillType
+  description_regex: String
+}
+
+input SkillInput {
+  id: String
+  type: SkillType
+  name: String
+}
+
+type Query {
+  getSkill(id: String): Skill
+  allSkills(keyword: String, filter: SkillFilter, first: Int, skip: Int, orderBy: [SkillOrder]): [Skill!]!
+  _allSkillsMeta(keyword: String, filter: SkillFilter, first: Int, skip: Int): ObjectMeta
+}
+
+type UpdateSkillResponse {
+  success: Boolean!
+  skills: [Skill]
+  message: String
+  errors: [Error!]
+}
+
+type CreateSkillResponse {
+  success: Boolean!
+  message: String
+  skills: [Skill]
+  errors: [Error!]
+}
+
+type Mutation {
+  # updateSkill( skills: [SkillInput]): UpdateSkillResponse
+  createSkill( skills: [SkillInput] ): CreateSkillResponse
+  createSkillIndex: CommonResponse
+}
+
+type SkillSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Skill
+  previousValues: Skill
+}
+
+type Subscription {
+  Skill(filter: SubscriptionFilter, dataFilter: SkillFilter): SkillSubscriptionPayload
+}

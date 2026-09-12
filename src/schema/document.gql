@@ -1,0 +1,117 @@
+type Document {
+  id: String!
+  objectType: String
+  objectId: String
+  sourceType: String
+  sourceId: String
+  documentUrl: String
+  documentName: String
+  documentDescription: String
+  documentType: String
+  documentSize: Float
+  contentType: String
+  creatorId: String
+  position: Int
+  deletedAt: Date
+  createdAt: Date
+  creator: User
+}
+
+enum DocumentOrder {
+  objectType_DESC
+  objectType_ASC
+  position_ASC
+  position_DESC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input DocumentObject {
+  objectType: String
+  objectId: String
+  sourceType: String
+  sourceId: String
+  documentUrl: String!
+  documentName: String
+  documentDescription: String
+  documentType: String
+  contentType: String
+  documentSize: Float
+  creatorId: String
+  position: Int
+}
+
+input DocumentFilter {
+  OR: [DocumentFilter!]
+  AND: [DocumentFilter!]
+  description: String
+  objectId: String
+  objectId_in: [String]
+  objectType: String
+  documentName_regex: String
+  documentDescription_regex: String
+}
+
+type Query {
+  getDocument(id: String): Document
+  allDocuments(filter: DocumentFilter, first: Int, skip: Int, orderBy: DocumentOrder): [Document!]!
+  _allDocumentsMeta(filter: DocumentFilter): ObjectMeta
+}
+
+type DeleteDocumentResponse {
+  success: Boolean!
+  errorIds: [String!]
+}
+
+type ResumeParserResponse {
+  success: Boolean!
+  message: String
+  data: JSON
+}
+
+type Mutation {
+  createDocument(
+    objectType: String
+    objectId: String
+    sourceType: String
+    sourceId: String
+    documentUrl: String!
+    documentName: String
+    documentDescription: String
+    documentType: String
+    contentType: String
+    documentSize: Float
+    creatorId: String
+    position: Int
+  ): Document
+  updateDocument(
+    id: String!
+    objectType: String
+    objectId: String
+    sourceType: String
+    sourceId: String
+    documentUrl: String
+    documentName: String
+    documentDescription: String
+    documentType: String
+    contentType: String
+    documentSize: Float
+    creatorId: String
+    position: Int
+  ): Document
+  deleteDocument(id: String!): DeleteDocumentResponse
+  deleteDocuments(ids: [String!]!): DeleteDocumentResponse
+  createDocuments(documents: [DocumentObject!]!): [Document!]!
+  updateDocumentPosition(documents: [PositionObject!]!): [Document!]
+  resumeParser(resumeUrls: [String!]!): ResumeParserResponse
+}
+
+type DocumentSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Document
+  previousValues: Document
+}
+
+type Subscription {
+  Document(filter: SubscriptionFilter, dataFilter: DocumentFilter): DocumentSubscriptionPayload
+}

@@ -1,0 +1,88 @@
+type ExternalSale {
+  id: String!
+  typeOfFee: String
+  candidate: String
+  amount: Float
+  ownerId: String
+  owner: User
+  month: Date
+  createdAt: Date
+  ownerGroupId: String
+}
+
+enum ExternalSaleOrder {
+  typeOfFee_DESC
+  typeOfFee_ASC
+  month_DESC
+  month_ASC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input ExternalSaleFilter {
+  OR: [ExternalSaleFilter!]
+  AND: [ExternalSaleFilter!]
+  typeOfFee_regex: String
+  candidate_regex: String
+  ownerId: String
+  ownerId_in: [String]
+  month_gte: Date
+  month_lte: Date
+  createdAt_gte: Date
+  createdAt_lte: Date
+}
+
+type CreateExternalSaleResponse {
+  success: Boolean!
+  message: String
+  externalSale: ExternalSale
+}
+
+type UpdateExternalSaleResponse {
+  success: Boolean!
+  message: String
+  externalSale: ExternalSale
+}
+
+type DeleteExternalSaleResponse {
+  success: Boolean!
+  message: String
+}
+
+
+type Query {
+  allExternalSales(filter: ExternalSaleFilter, first: Int, skip: Int, orderBy: ExternalSaleOrder): [ExternalSale]
+  _allExternalSalesMeta(filter: ExternalSaleFilter): ObjectMeta
+  getExternalSale(id: String): ExternalSale
+}
+
+type Mutation {
+  createExternalSale(
+    typeOfFee: String
+    candidate: String
+    amount: Float
+    ownerId: String
+    month: Date
+    ownerGroupId: String
+  ): CreateExternalSaleResponse
+  updateExternalSale(
+    id: String!
+    typeOfFee: String
+    candidate: String
+    amount: Float
+    ownerId: String
+    month: Date
+    ownerGroupId: String
+  ): UpdateExternalSaleResponse
+  deleteExternalSale(id: String!): DeleteExternalSaleResponse
+}
+
+type ExternalSaleSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: ExternalSale
+  previousValues: ExternalSale
+}
+
+type Subscription {
+  ExternalSale(filter: SubscriptionFilter, dataFilter: ExternalSaleFilter): ExternalSaleSubscriptionPayload
+}

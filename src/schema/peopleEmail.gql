@@ -1,0 +1,94 @@
+type PeopleEmail {
+  id: String!
+  personId: String
+	ccIds: [String]
+	bccIds: [String]
+	subject: String
+	content: String
+	attachments: [Document]
+  createdAt: Date
+}
+
+enum PeopleEmailOrder {
+  subject_ASC
+  subject_DESC
+  content_ASC
+  content_DESC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input PeopleEmailFilter {
+  OR: [PeopleEmailFilter!]
+  AND: [PeopleEmailFilter!]
+  subject_regex: String
+  content_regex: String
+}
+
+input AttachmentInput {
+  objectType: String
+  objectId: String
+  sourceType: String
+  sourceId: String
+  documentUrl: String!
+  documentName: String
+  documentDescription: String
+  documentType: String
+  contentType: String
+  documentSize: Float
+  creatorId: String
+}
+
+type CreatePeopleEmailResponse {
+  success: Boolean!
+  message: String
+  peopleEmail: PeopleEmail
+}
+
+type UpdatePeopleEmailResponse {
+  success: Boolean!
+  message: String
+  peopleEmail: PeopleEmail
+}
+
+type Query {
+  getPeopleEmail(id: String): PeopleEmail
+  allPeopleEmails(filter: PeopleEmailFilter, first: Int, skip: Int, orderBy: PeopleEmailOrder): [PeopleEmail!]!
+  _allPeopleEmailsMeta(filter: PeopleEmailFilter): ObjectMeta
+}
+
+type DeletePeopleEmailResponse {
+  success: Boolean!
+  errorIds: [String!]
+}
+
+type Mutation {
+  createPeopleEmail(
+    personId: String
+    ccIds: [String]
+    bccIds: [String]
+    subject: String
+    content: String
+    attachments: [AttachmentInput]
+  ): CreatePeopleEmailResponse
+  updatePeopleEmail(
+    id: String!
+    personId: String
+    ccIds: [String]
+    bccIds: [String]
+    subject: String
+    content: String
+  ): UpdatePeopleEmailResponse
+  deletePeopleEmail(id: String!): DeletePeopleEmailResponse
+}
+
+type PeopleEmailSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: PeopleEmail
+  previousValues: PeopleEmail
+}
+
+type Subscription {
+  PeopleEmail(filter: SubscriptionFilter, dataFilter: PeopleEmailFilter): PeopleEmailSubscriptionPayload
+}
+

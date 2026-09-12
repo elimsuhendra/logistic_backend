@@ -1,0 +1,68 @@
+type Library {
+  id: String!
+  imageUrl: String!
+  imageWidth: Float
+  imageHeight: Float
+  position: Int
+}
+
+enum LibraryOrder {
+  position_ASC
+  position_DESC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input LibraryObject {
+  imageUrl: String!
+  imageWidth: Float
+  imageHeight: Float
+  position: Int
+}
+
+input LibraryFilter {
+  OR: [LibraryFilter!]
+  AND: [LibraryFilter!]
+}
+
+type Query {
+  allLibraries(filter: LibraryFilter, first: Int, skip: Int, orderBy: LibraryOrder): [Library!]!
+  getLibrary(id: String): Library
+  _allLibrariesMeta(filter: LibraryFilter): ObjectMeta
+}
+
+type DeleteLibraryResponse {
+  success: Boolean!
+  errorIds: [String!]
+}
+
+type Mutation {
+  createLibrary(
+    imageUrl: String!
+    imageWidth: Float
+    imageHeight: Float
+    position: Int
+  ): Library
+  updateLibrary(
+    id: String!, 
+    imageUrl: String!
+    imageWidth: Float
+    imageHeight: Float
+    position: Int
+  ): Library
+  deleteLibrary(id: String!): DeleteLibraryResponse
+  deleteLibraries(ids: [String!]!): DeleteLibraryResponse
+  createLibraries(libraries: [LibraryObject!]!): [Library!]!
+  updateLibraryPosition(libraries: [PositionObject!]!): [Library!]
+}
+
+type LibrarySubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Library
+  previousValues: Library
+}
+
+type Subscription {
+  Library(filter: SubscriptionFilter, dataFilter: LibraryFilter): LibrarySubscriptionPayload
+}
+

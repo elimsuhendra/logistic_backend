@@ -1,0 +1,42 @@
+type ForecastGroup {
+  id: String!
+  year: String
+  teams: [ForecastGroupTeam]
+  createdAt: Date
+  updatedAt: Date
+}
+
+type ForecastGroupTeam {
+  id: String
+  name: String
+  members: [ForecastGroupTeamMember]
+}
+
+type ForecastGroupTeamMember {
+  id: String!
+  type: String # null / forecast-rc
+
+  # resolver
+  name: String
+  user: User
+}
+
+input ForecastGroupTeamInput {
+  id: String
+  name: String
+  members: [ForecastGroupTeamMemberInput]
+}
+
+input ForecastGroupTeamMemberInput {
+  id: String!
+  name: String
+  type: String
+}
+
+type Query {
+  getForecastGroupByYear(year: String!): ForecastGroup
+}
+
+type Mutation {
+  saveForecastGroup(year: String!, teams: [ForecastGroupTeamInput]): CommonResponse
+}

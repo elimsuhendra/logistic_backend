@@ -1,0 +1,104 @@
+type ParameterType {
+  id: String!
+  label: String
+  code: String
+  parameterValues: [ParameterValue]
+  deletedAt: Date
+}
+
+type ParameterValue {
+  id: String!
+  label: String
+  code: String
+  position: Int
+  deletedAt: Date
+}
+
+enum ParameterTypeOrder {
+  label_DESC
+  label_ASC
+  code_DESC
+  code_ASC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input ParameterTypeFilter {
+  OR: [ParameterTypeFilter!]
+  AND: [ParameterTypeFilter!]
+  code_regex: String
+  value_regex: String
+}
+
+input ParameterValuePositionInput {
+  id: String!
+  position: Int!
+}
+
+type Query {
+  allParameterTypes(filter: ParameterTypeFilter, first: Int, skip: Int, orderBy: ParameterTypeOrder): [ParameterType!]!
+  getParameterType(id: String): ParameterType
+  getParameterValuesByType(code: String): [ParameterValue]
+  _allParameterTypesMeta(filter: ParameterTypeFilter): ObjectMeta
+}
+
+type CreateParameterTypeResponse {
+  success: Boolean!
+  message: String
+  errors: [Error]
+  parameterType: ParameterType
+}
+
+type UpdateParameterTypeResponse {
+  success: Boolean!
+  message: String
+  errors: [Error]
+  parameterType: ParameterType
+}
+
+type CreateParameterValueResponse {
+  success: Boolean!
+  message: String
+  errors: [Error]
+  parameterValue: ParameterValue
+}
+
+type UpdateParameterValueResponse {
+  success: Boolean!
+  message: String
+  errors: [Error]
+  parameterValue: ParameterValue
+}
+
+type UpdateParameterValuePositionResponse {
+  success: Boolean!
+  message: String
+  errors: [Error]
+  parameterValues: [ParameterValue]
+}
+
+type CommonResponse {
+  success: Boolean!
+  message: String
+  errors: [Error]
+}
+
+type Mutation {
+  createParameterType(label: String!, code: String!): CreateParameterTypeResponse
+  updateParameterType(id: String!, label: String, code: String): UpdateParameterTypeResponse
+  deleteParameterType(id: String!): CommonResponse
+  createParameterValue(parameterTypeId: String!, label: String!, chineseLabel: String, code: String!): CreateParameterValueResponse
+  updateParameterValue(parameterTypeId: String!, id: String!, label: String, chineseLabel: String, code: String, position: Int): UpdateParameterValueResponse
+  deleteParameterValue(parameterTypeId: String!, id: String!): CommonResponse
+  updateParameterValuePosition(parameterTypeId: String!, parameterValues: [ParameterValuePositionInput!]): UpdateParameterValuePositionResponse
+}
+
+type ParameterTypeSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: ParameterType
+  previousValues: ParameterType
+}
+
+type Subscription {
+  ParameterType(filter: SubscriptionFilter, dataFilter: ParameterTypeFilter): ParameterTypeSubscriptionPayload
+}

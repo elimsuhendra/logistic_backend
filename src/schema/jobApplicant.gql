@@ -1,0 +1,438 @@
+type JobApplicant {
+  id: String!
+  jobId: String
+	candidateId: String
+	workflowId: String
+	phase: String
+  position: Int
+  rejection: JobRejection
+  offer: JobOffer
+  notSelected: JobNotSelected
+  unsuccessfulSales: JobUnsuccessfulSales
+  createdAt: Date
+  interviewDate: Date
+  interviewTime: String
+  interviewRemarks: String
+  caseClose: String
+  submittedDate: Date
+  invoiceNo: String
+  invoiceAmount: Float
+  contractInvoices: [ContractInvoice]
+  inheritFromConsultant: String
+  inheritFromUserId: String
+  inheritSalary: Float
+  inheritMTCMarketing: Boolean
+  totalFee: Float
+
+  # resolvers
+  jobOrder: JobOrder
+  candidate: People
+  workflow: Workflow
+  documents: [Document]
+  notes: [Note]
+  activities: [Activity]
+  inheritFromUser: User
+}
+
+enum JobApplicantOrder {
+  createdAt_DESC
+  createdAt_ASC
+}
+
+type ContractInvoice {
+  month: Date
+  invoiceNo: String
+  invoiceAmount: Float
+}
+
+type JobUnsuccessfulSales {
+  reason: String
+	remarks: String
+}
+
+type JobNotSelected {
+  remarks: String
+}
+
+type JobRejection {
+  reason: String
+	remarks: String
+}
+
+type ContractMonthSalary {
+  month: Date
+  salary: Float
+  fee: Float
+}
+
+type JobOffer {
+  workType: String
+	salary: Float
+	consultantId: String
+	referred: String
+  period: String
+  contractPeriod: String
+  coBrokeConsultantId: String
+  replacementCandidateId: String
+  startDate: Date
+  endDate: Date
+  replacementCandidateStartDate: Date
+  isReplacedFallout: Boolean
+  isBillDiffMonth: Boolean
+  payrollCycleStartDate: Date
+  payrollCycleEndDate: Date
+  allowanceFee: Float
+  adjustmentFee: Float
+  oneTimeFee: Float
+  contractFee: String
+  fee: Float
+  isAWS: Boolean
+  awsNumber: Float
+  guaranteePeriod: Int
+  remarks: String
+  coBrokeRemarks: String
+  placementRate: Float
+  customerBillingPercentage: Float
+  coBrokeCustomerBillingPercentage: Float
+  contractMonthSalaries: [ContractMonthSalary]
+  chargeDifference: Boolean
+  isClone: Boolean
+  replacementType: String
+  replacementJobId: String
+  replacementReferred: String
+  replacementCoBrokeConsultantId: String
+  isCoBrokeConsultant: Boolean
+  consultantGroupId: String
+  coBrokeConsultantGroupId: String
+
+  # resolver
+  consultant: User
+  coBrokeConsultant: User
+  replacementCandidate: People
+  replacementJob: JobOrder
+  replacementCoBrokeConsultant: User
+}
+
+input JobApplicantFilter {
+  OR: [JobApplicantFilter!]
+  AND: [JobApplicantFilter!]
+  phase_regex: String
+  phase_contains: String
+  phase_nin: [String]
+  phase_in: [String]
+  jobId: String
+  jobId_in: [String]
+  candidateId: String
+  candidateId_in: [String]
+  candidateStatus: String
+  mainConsultantIds: [String]
+  consultantId: String
+  coBrokeConsultantIds: [String]
+  startDate_gte: Date
+  startDate_lte: Date
+  startDate_between: [Date]
+  search: String
+  caseClose: String
+  caseClose_ne: String
+  inheritMTCMarketing_ne: Boolean
+  offer_workType: String
+}
+
+input JobApplicantObjInput {
+  id: String
+  position: Int
+}
+
+input JobApplicantDraggingInput {
+  jobApplicants: [JobApplicantObjInput]
+  phase: String
+}
+
+input JobNotSelectedInput {
+  remarks: String
+}
+
+input JobRejectionInput {
+  reason: String
+	remarks: String
+}
+
+input ContractInvoiceInput {
+  month: Date
+  invoiceNo: String
+  invoiceAmount: Float
+}
+
+input JobUnsuccessfulSalesInput {
+  reason: String
+	remarks: String
+}
+
+input ContractMonthSalaryInput {
+  month: Date
+  salary: Float
+  fee: Float
+}
+
+input JobOfferInput {
+  workType: String
+  period: String
+  contractPeriod: String
+	salary: Float
+	consultantId: String
+	referred: String
+  coBrokeConsultantId: String
+  replacementCandidateId: String
+  replacementCandidateStartDate: Date
+  isReplacedFallout: Boolean
+  isBillDiffMonth: Boolean
+  payrollCycleStartDate: Date
+  payrollCycleEndDate: Date
+  startDate: Date
+  endDate: Date
+  guaranteePeriod: Int
+  allowanceFee: Float
+  adjustmentFee: Float
+  oneTimeFee: Float
+  contractFee: String
+  fee: Float
+  isAWS: Boolean
+  awsNumber: Float
+  remarks: String
+  coBrokeRemarks: String
+  placementRate: Float
+  customerBillingPercentage: Float
+  coBrokeCustomerBillingPercentage: Float
+  contractMonthSalaries: [ContractMonthSalaryInput]
+  chargeDifference: Boolean
+  isClone: Boolean
+  replacementType: String
+  replacementJobId: String
+  replacementReferred: String
+  replacementCoBrokeConsultantId: String
+  consultantGroupId: String
+  coBrokeConsultantGroupId: String
+}
+
+type CreateJobApplicantResponse {
+  success: Boolean!
+  message: String
+}
+
+type UpdateJobApplicantResponse {
+  success: Boolean!
+  message: String
+}
+
+type DeleteJobApplicantResponse {
+  success: Boolean!
+  message: String
+}
+
+type ExportExcelResponse {
+  success: Boolean!
+  message: String
+  url: String
+}
+
+type JobApplicantSaleSummary {
+  totalSale: Float
+  falloutSale: Float
+  target3x: Float
+  forecast3x: Float
+  adjustedForecast3x: Float
+  target3xAchieved: Float
+  forecast3xAchieved: Float
+  adjustedForecast3xAchieved: Float
+}
+
+type JobOrderSales {
+  value: Float
+  list: [JobApplicant]
+}
+
+type AnalyticsChart {
+  date: String
+  value: Float
+}
+
+type AnalyticsChartByType {
+  userId: String
+  userFullName: String
+  userAvatar: String
+  salary: Float
+  salary3xYear: Float
+  target3xYearAchieved: Float
+  value: Float
+
+  # resolver
+  user: User
+}
+
+type AnalyticsClient {
+  id: String
+  name: String
+  value: Float
+}
+
+type CalendarInterview {
+  date: Date,
+  interviewCount: Int
+  listing: [JobApplicant]
+}
+
+type TeamReportResponseData {
+  month: Date
+  totalSale: Float
+  falloutSale: Float
+  target3x: Float
+  forecast3x: Float
+  adjustedForecast3x: Float
+  target3xAchieved: Float
+  forecast3xAchieved: Float
+  adjustedForecast3xAchieved: Float
+}
+
+type TeamReportResponse {
+  id: String
+  name: String
+  data: [TeamReportResponseData]
+}
+
+type IndividualReportResponse {
+  id: String
+  name: String
+  group: String
+  data: [TeamReportResponseData]
+}
+
+type ActualSales {
+  # id: String!
+  groupId: String
+  userId: String
+  editable: Boolean
+  year: Date
+  january: Float
+  february: Float
+  march: Float
+  april: Float
+  may: Float
+  june: Float
+  july: Float
+  august: Float
+  september: Float
+  october: Float
+  november: Float
+  december: Float
+  jan: Float
+  feb: Float
+  mar: Float
+  apr: Float
+  jun: Float
+  jul: Float
+  aug: Float
+  sep: Float
+  oct: Float
+  nov: Float
+  dec: Float
+  type: String
+  createdAt: Date
+  updatedAt: Date
+
+  # resolver
+  groupName: String
+  userName: String
+  name: String
+  position: Int
+  total: Float
+  q1: Float
+  q2: Float
+  q3: Float
+  q4: Float
+
+  # user: User
+  # group: Group
+}
+
+input ActualSalesFilter {
+  startDate: Date
+  endDate: Date
+  groupIds: [String]
+}
+
+type Query {
+  allJobApplicants(filter: JobApplicantFilter, first: Int, skip: Int, orderBy: JobApplicantOrder): [JobApplicant]
+  _allJobApplicantsMeta(filter: JobApplicantFilter): ObjectMeta
+  getJobApplicant(id: String): JobApplicant
+  getCalendarInterview(startDate: Date!, endDate: Date!, userIds: [String]): [CalendarInterview]
+  getJobOrderSales(date: Date, userIds: [String], phase_in: [String]): JobOrderSales
+  getAnalyticsChart(startDate: Date, endDate: Date, userIds: [String]): [AnalyticsChart]
+  getAnalyticsByType(startDate: Date, endDate: Date, userIds: [String]): [AnalyticsChartByType]
+  getAnalyticsClient(startDate: Date, endDate: Date, userIds: [String]): [AnalyticsClient]
+  getSalesSummaryByYear(userIds: [String]): JobApplicantSaleSummary
+  getSalesSummaryByTime(startDate: Date, endDate: Date, userIds: [String]): JobApplicantSaleSummary
+  getTeamReport(year: Date): [TeamReportResponse]
+  getIndividualReport(year: Date): [IndividualReportResponse]
+  getActualSales(filter: ActualSalesFilter): [ActualSales!]!
+}
+
+type Mutation {
+  createJobApplicant(
+    jobId: String!
+    candidateIds: [String!]!
+  ): CreateJobApplicantResponse
+  updateJobApplicantDragging(
+    jobApplicantsInput: [JobApplicantDraggingInput!]!
+  ): UpdateJobApplicantResponse
+  updateJobApplicant(
+    id: String!
+    jobId: String
+    candidateId: String
+    workflowId: String
+    phase: String
+    interviewDate: Date
+    interviewTime: String
+    interviewRemarks: String
+    caseClose: String
+    invoiceNo: String
+    invoiceAmount: Float
+    submittedDate: Date
+    position: Int
+    rejection: JobRejectionInput
+    offer: JobOfferInput
+    notSelected: JobNotSelectedInput
+    unsuccessfulSales: JobUnsuccessfulSalesInput
+    contractInvoices: ContractInvoiceInput
+    inheritFromConsultant: String
+    inheritFromUserId: String
+    inheritSalary: Float
+    candidate: PeopleInput
+  ): UpdateJobApplicantResponse
+  updateJobApplicantContractInvoice(
+    id: String!, 
+    month: Date, 
+    invoiceNo: String, 
+    invoiceAmount: Float
+  ): CommonResponse
+  cloneJobApplicant(jobApplicantId: String, jobId: String): DeleteJobApplicantResponse
+  deleteJobApplicant(id: String!): DeleteJobApplicantResponse
+  exportExcel(
+    startDate: Date, endDate: Date, userIds: [String], label: String, status: String
+  ): ExportExcelResponse
+  exportClientExcel(
+    startDate: Date, endDate: Date, userIds: [String], label: String
+  ): ExportExcelResponse
+  generateAutoFillInvoice: CommonResponse
+  createJobApplicantIndexes: CommonResponse
+  modifyJobApplicantGroup: CommonResponse
+}
+
+type JobApplicantSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: JobApplicant
+  previousValues: JobApplicant
+}
+
+type Subscription {
+  JobApplicant(filter: SubscriptionFilter, dataFilter: JobApplicantFilter): JobApplicantSubscriptionPayload
+}

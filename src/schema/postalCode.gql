@@ -1,0 +1,75 @@
+type PostalCode {
+  id: String!
+  code: String
+  address: String
+	latitude: Float
+	longitude: Float
+  createdAt: Date
+}
+
+enum PostalCodeOrder {
+  title_DESC
+  title_ASC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input PostalCodeFilter {
+  OR: [PostalCodeFilter!]
+  AND: [PostalCodeFilter!]
+  code: String
+  _id_nin: [String]
+  _id_in: [String]
+}
+
+type CreatePostalCodeResponse {
+  success: Boolean!
+  message: String
+  postalCode: PostalCode
+}
+
+type UpdatePostalCodeResponse {
+  success: Boolean!
+  message: String
+  postalCode: PostalCode
+}
+
+type DeletePostalCodeResponse {
+  success: Boolean!
+  message: String
+}
+
+
+type Query {
+  allPostalCodes(filter: PostalCodeFilter, first: Int, skip: Int, orderBy: PostalCodeOrder): [PostalCode]
+  _allPostalCodesMeta(filter: PostalCodeFilter): ObjectMeta
+  getPostalCode(id: String): PostalCode
+  getPostalCodeBySlug(slug: String): PostalCode
+}
+
+type Mutation {
+  createPostalCode(
+    code: String
+    address: String
+    latitude: Float
+    longitude: Float
+  ): CreatePostalCodeResponse
+  updatePostalCode(
+    id: String!
+    code: String
+    address: String
+    latitude: Float
+    longitude: Float
+  ): UpdatePostalCodeResponse
+  deletePostalCode(id: String!): DeletePostalCodeResponse
+}
+
+type PostalCodeSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: PostalCode
+  previousValues: PostalCode
+}
+
+type Subscription {
+  PostalCode(filter: SubscriptionFilter, dataFilter: PostalCodeFilter): PostalCodeSubscriptionPayload
+}

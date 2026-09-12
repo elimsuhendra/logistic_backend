@@ -1,0 +1,32 @@
+{
+  "presets": [
+    [
+      "env",
+      {
+        "targets": {
+          "node": "8.4.0"
+        }
+      }
+    ]
+  ],
+  "plugins": [
+    [
+      "transform-object-rest-spread"
+    ],
+    [
+      "module-resolver",
+      {
+        "root": [
+          "."
+        ],
+        "alias": {
+          "root": "./src",
+          "jobs": "./src/jobs",
+          "utils": "./src/utils",
+          "helpers": "./src/helpers"
+        },
+        "cwd": "babelrc"
+      }
+    ]
+  ]
+}

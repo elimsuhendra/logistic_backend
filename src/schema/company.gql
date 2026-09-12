@@ -1,0 +1,187 @@
+type Company {
+  id: String!
+  name: String
+  industry: String
+  logo: Photo
+  url: String
+  status: CompanyStatus
+  addresses: [Address]
+  contacts: [CompanyContact]
+	placementFees: [PlacementFee]
+  mainConsultantId: String
+  mainConsultant: User
+	numberOfJobs: Int # Only active job orders
+  subsidiaryCompanyIds: [String]
+  subsidiaryCompanies: [Company]
+  termsAndConditions: [Document]
+  documents: [Document]
+  notes: [Note]
+  activities: [Activity]
+  jobOrders: [JobOrder]
+  lastActive: Date
+  createdAt: Date
+  updatedAt: Date
+}
+
+enum CompanyOrder {
+  name_DESC
+  name_ASC
+  industry_DESC
+  industry_ASC
+  numberOfJobs_DESC
+  numberOfJobs_ASC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input CompanyFilter {
+  OR: [CompanyFilter!]
+  AND: [CompanyFilter!]
+  name_regex: String
+  industry: String
+  industry_regex: String
+  status: CompanyStatus
+  mainConsultantId: String
+  subsidiaryCompanyIds_in: [String]
+  _id_nin: [String]
+  _id_in: [String]
+  _id: String
+  search: String
+}
+
+enum CompanyStatus {
+  ACTIVE
+	INACTIVE
+}
+
+type Address {
+  country: String
+  address: String
+	postal: String
+  blockNo: String
+	position: Int
+}
+
+type CompanyContact {
+  id: String
+  fullName: String
+	designation: String
+	email: String
+	hpNo: String
+	gender: String
+	isMain: Boolean
+	notes: String
+	position: Int
+}
+
+type PlacementFee {
+  minSalary: Float
+	maxSalary: Float
+	placementRate: Float
+	billingTerm: String
+  guaranteePeriod: Int
+	position: Int
+}
+
+input AddressInput {
+  country: String
+  address: String
+	postal: String
+  blockNo: String
+	position: Int
+}
+
+input CompanyContactInput {
+  id: String
+  fullName: String
+	designation: String
+	email: String
+	hpNo: String
+	gender: String
+	isMain: Boolean
+	notes: String
+	position: Int
+}
+
+input PlacementFeeInput {
+  minSalary: Float
+	maxSalary: Float
+	placementRate: Float
+	billingTerm: String
+  guaranteePeriod: Int
+	position: Int
+}
+
+type CreateCompanyResponse {
+  success: Boolean!
+  message: String
+  company: Company
+}
+
+type UpdateCompanyResponse {
+  success: Boolean!
+  message: String
+  company: Company
+}
+
+type DeleteCompanyResponse {
+  success: Boolean!
+  message: String
+}
+
+type Query {
+  allCompanies(keyword: String, filter: CompanyFilter, jobOrderFilter: JobOrderFilter, first: Int, skip: Int, orderBy: [CompanyOrder]): [Company]
+  _allCompaniesMeta(keyword: String, filter: CompanyFilter, jobOrderFilter: JobOrderFilter, first: Int, skip: Int): ObjectMeta
+  getCompany(id: String): Company
+}
+
+type ReportResponse {
+  success: Boolean
+  message: String
+  downloadUrl: String
+}
+
+type CheckNameResponse {
+  existed: Boolean!
+}
+
+type Mutation {
+  createCompany(
+    name: String!
+    url: String
+    industry: String
+    addresses: [AddressInput]
+    contacts: [CompanyContactInput]
+    placementFees: [PlacementFeeInput]
+    mainConsultantId: String
+    subsidiaryCompanyIds: [String]
+    numberOfJobs: Int
+  ): CreateCompanyResponse
+  updateCompany(
+    id: String!
+    name: String
+    url: String
+    industry: String
+    addresses: [AddressInput]
+    contacts: [CompanyContactInput]
+    placementFees: [PlacementFeeInput]
+    mainConsultantId: String
+    subsidiaryCompanyIds: [String]
+    numberOfJobs: Int
+  ): UpdateCompanyResponse
+  deleteCompany(id: String!): DeleteCompanyResponse
+  deleteCompanies(ids: [String!]!): DeleteCompanyResponse
+  makeCompanyReport(ids: [String!]!): ReportResponse
+  checkCompanyNameExist(name: String!, ignoreId: String): CheckNameResponse
+  createCompanyIndexes: CommonResponse
+}
+
+type CompanySubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Company
+  previousValues: Company
+}
+
+type Subscription {
+  Company(filter: SubscriptionFilter, dataFilter: CompanyFilter): CompanySubscriptionPayload
+}

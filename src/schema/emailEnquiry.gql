@@ -1,0 +1,66 @@
+type EmailEnquiry {
+  id: String!
+  name: String
+	company: String
+	email: String
+	number: String
+	category: String
+  message: String
+  createdAt: Date
+}
+
+enum EmailEnquiryOrder {
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input EmailEnquiryFilter {
+  OR: [EmailEnquiryFilter!]
+  AND: [EmailEnquiryFilter!]
+  name_regex: String
+  company_regex: String
+  email_regex: String
+  number_regex: String
+  category_regex: String
+  message_regex: String
+}
+
+type CreateEmailEnquiryResponse {
+  success: Boolean!
+  message: String
+  emailEnquiry: EmailEnquiry
+}
+
+type DeleteEmailEnquiryResponse {
+  success: Boolean!
+  message: String
+}
+
+
+type Query {
+  allEmailEnquiries(filter: EmailEnquiryFilter, first: Int, skip: Int, orderBy: EmailEnquiryOrder): [EmailEnquiry]
+  _allEmailEnquiriesMeta(filter: EmailEnquiryFilter): ObjectMeta
+  getEmailEnquiry(id: String): EmailEnquiry
+}
+
+type Mutation {
+  createEmailEnquiry(
+    name: String
+    company: String
+    email: String
+    number: String
+    category: String
+    message: String
+  ): CreateEmailEnquiryResponse
+  deleteEmailEnquiry(id: String!): DeleteEmailEnquiryResponse
+}
+
+type EmailEnquirySubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: EmailEnquiry
+  previousValues: EmailEnquiry
+}
+
+type Subscription {
+  EmailEnquiry(filter: SubscriptionFilter, dataFilter: EmailEnquiryFilter): EmailEnquirySubscriptionPayload
+}

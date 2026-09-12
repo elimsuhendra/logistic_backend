@@ -1,0 +1,132 @@
+type Forecast {
+  id: String!
+  groupId: String
+  userId: String
+  editable: Boolean
+  year: Date
+  january: Float
+  february: Float
+  march: Float
+  april: Float
+  may: Float
+  june: Float
+  july: Float
+  august: Float
+  september: Float
+  october: Float
+  november: Float
+  december: Float
+
+  adjusted: Boolean
+  originalId: String
+
+  # resolver
+  type: String
+  groupName: String
+  userName: String
+  position: Int
+  total: Float
+  q1: Float
+  q2: Float
+  q3: Float
+  q4: Float
+
+  user: User
+  group: Group
+  createdAt: Date
+  updatedAt: Date
+}
+
+enum ForecastOrder {
+  createdAt_DESC
+  createdAt_ASC
+  updatedAt_DESC
+  updatedAt_ASC
+}
+
+input ForecastFilter {
+  OR: [ForecastFilter!]
+  AND: [ForecastFilter!]
+  userId: String
+  year_gte: Date
+  year_lte: Date
+  year_between: [Date]
+  adjusted: Boolean
+  adjusted_nin: [Boolean]
+  adjusted_in: [Boolean]
+}
+
+input ForecastInput {
+  id: String
+  year: Date
+  groupId: String
+  userId: String
+  january: Float
+  february: Float
+  march: Float
+  april: Float
+  may: Float
+  june: Float
+  july: Float
+  august: Float
+  september: Float
+  october: Float
+  november: Float
+  december: Float
+  adjusted: Boolean
+  type: String
+  groupName: String
+  userName: String
+  position: Int
+}
+
+type Query {
+  allForecasts(filter: ForecastFilter, first: Int, skip: Int, orderBy: ForecastOrder): [Forecast!]!
+  getForecast(id: String): Forecast
+  _allForecastsMeta(filter: ForecastFilter): ObjectMeta
+}
+
+type CommonResponse {
+  success: Boolean!
+  message: String
+  errors: [Error]
+}
+
+type Mutation {
+  saveForecast(
+    id: String
+    year: Date
+    groupId: String
+    userId: String
+    january: Float
+    february: Float
+    march: Float
+    april: Float
+    may: Float
+    june: Float
+    july: Float
+    august: Float
+    september: Float
+    october: Float
+    november: Float
+    december: Float
+    adjusted: Boolean
+    type: String
+    groupName: String
+    userName: String
+    position: Int
+  ): CommonResponse
+  deleteForecast(id: String!): CommonResponse
+
+  saveForecasts(forecasts: [ForecastInput]): CommonResponse
+}
+
+type ForecastSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Forecast
+  previousValues: Forecast
+}
+
+type Subscription {
+  Forecast(filter: SubscriptionFilter, dataFilter: ForecastFilter): ForecastSubscriptionPayload
+}

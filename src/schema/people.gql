@@ -1,0 +1,305 @@
+type People {
+  id: String!
+  status: PeopleStatus
+  photo: Photo
+	fullName: String
+	nationality: String
+	birthday: Date
+	gender: String
+	race: String
+	mobileNumber: String
+	mobileCode: String
+  mobileNumber2: String
+	mobileCode2: String
+  source: String
+	email: String
+	about: String
+  industries: [String]
+	addresses: [Address]
+  lastEmployment: LastEmployment
+  idealEmployments: [IdealEmployment]
+  company: Company
+  importedFromUrl: String
+  importedFromFile: String
+  availability: Date
+  expectedMinSalary: Float
+  expectedMaxSalary: Float
+  count: Int
+  jobOrderId: String
+  # candidateExperiences: [CandidateExperience]
+  isPermanent: Boolean
+  isTemporary: Boolean
+
+
+  computerSkillIds: [String]
+  languageSkillIds: [String]
+  # workExperiences: [Experience]
+  # educationExperiences: [Experience]
+
+  # resolvers
+  resumes: [Document]
+  documents: [Document]
+  notes: [Note]
+  activities: [Activity]
+  jobOrders: [JobOrder]
+  applications: [JobApplicant]
+  experiences: [Experience]
+  skills: [Skill]
+  jobOrder: [JobOrder]
+}
+
+
+# type CandidateExperience {
+#   institutionId
+#   title: String
+#   lastDrawnSalary: Int
+#   description: String
+#   startAt: Date
+#   endAt: Date
+
+#   # resolver
+#   experience: Experience
+# }
+
+enum PeopleOrder {
+  fullName_DESC
+  fullName_ASC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input PeopleFilter {
+  OR: [PeopleFilter!]
+  AND: [PeopleFilter!]
+  fullName_regex: String
+  about_regex: String
+  email_regex: String
+  gender: String
+  gender_regex: String
+  race: String
+  race_regex: String
+  nationality: String
+  nationality_regex: String
+  industries_in: [String]
+  industries_regex: String
+  _id_nin: [String]
+  _id_in: [String]
+  status: PeopleStatus
+  status_nin: [String]
+  status_in: [String]
+  search: String
+  salary_lte: Float
+  salary_gte: Float
+  birthday_lte: Date
+  birthday_gte: Date
+  birthday_between: [Date]
+  companyId: String
+  showAttachment: Boolean
+  payrollCycleEndDate_gte: Date
+  payrollCycleEndDate_lte: Date
+}
+
+enum PeopleStatus {
+  DRAFT
+  ACTIVE
+	INTERVIEW
+	CLOSED
+}
+
+type Address {
+  country: String
+	postal: String
+	street: String
+	blockNo: String
+	position: Int
+  primary: Boolean
+}
+
+type LastEmployment {
+  company: String
+  jobTitle: String
+  year: String
+  month: String
+  lastDrawnSalary: Float
+}
+
+type IdealEmployment {
+  jobTitle: String
+  workType: String
+  period: String
+  minSalary: Float
+  maxSalary: Float
+}
+
+# type Experience {
+#   id: String!
+#   type: ExperienceType
+#   institutionId: String
+#   institutionName: String
+#   title: String
+#   lastDrawnSalary: Int
+#   description: String
+#   description2: String
+#   startAt: Date
+#   endAt: Date
+#   position: Int
+# }
+
+input AddressInput {
+  country: String
+	postal: String
+	street: String
+	blockNo: String
+	position: Int
+  primary: Boolean
+}
+
+input LastEmploymentInput {
+  company: String
+  jobTitle: String
+  year: String
+  month: String
+  lastDrawnSalary: Float
+}
+
+input IdealEmploymentInput {
+  jobTitle: String
+  workType: String
+  period: String
+  minSalary: Float
+  maxSalary: Float
+}
+
+input CandidateInfoInput {
+  fullName: String
+  nationality: String
+  birthday: Date
+  gender: String
+  mobileNumber: String
+  mobileCode: String
+  email: String
+  about: String
+  addresses: [AddressInput]
+}
+
+input PeopleInput {
+  id: String!
+	source: String
+}
+
+# input ExperienceInput {
+#   id: String!
+#   type: ExperienceType
+#   institutionId: String
+#   institutionName: String
+#   title: String
+#   lastDrawnSalary: Int
+#   description: String
+#   description2: String
+#   startAt: Date
+#   endAt: Date
+#   position: Int
+# }
+
+type CreatePeopleResponse {
+  success: Boolean!
+  message: String
+  people: People
+}
+
+type UpdatePeopleResponse {
+  success: Boolean!
+  message: String
+  people: People
+}
+
+type DeletePeopleResponse {
+  success: Boolean!
+  message: String
+}
+
+type CheckNameResponse {
+  existed: Boolean!
+}
+
+type ApplyJobResponse {
+  success: Boolean!
+  message: String
+  people: People
+}
+
+type Query {
+  allPeople(filter: PeopleFilter, first: Int, skip: Int, orderBy: PeopleOrder): [People]
+  _allPeopleMeta(filter: PeopleFilter, first: Int, skip: Int): ObjectMeta
+  allFreelancePeople(keyword: String, filter: PeopleFilter, companyFilter: CompanyFilter, first: Int, skip: Int, orderBy: PeopleOrder): [People]
+  _allFreelancePeopleMeta(keyword: String, filter: PeopleFilter,companyFilter: CompanyFilter, first: Int, skip: Int): ObjectMeta
+  getPeople(id: String): People
+  countFreelanceEndContractLteThisMonth: People
+}
+
+type Mutation {
+  createPeople(
+    fullName: String
+    nationality: String
+    birthday: Date
+    gender: String
+    race: String
+    mobileNumber: String
+    mobileCode: String
+    mobileNumber2: String
+    mobileCode2: String
+    source: String
+    email: String
+    about: String
+    industries: [String]
+    addresses: [AddressInput]
+    idealEmployments: [IdealEmploymentInput]
+    lastEmployment: LastEmploymentInput
+    isDraft: Boolean
+    isPermanent: Boolean
+    isTemporary: Boolean
+  ): CreatePeopleResponse
+  updatePeople(
+    id: String!
+    fullName: String
+    nationality: String
+    birthday: Date
+    gender: String
+    race: String
+    mobileNumber: String
+    mobileCode: String
+    mobileNumber2: String
+    mobileCode2: String
+    source: String
+    email: String
+    about: String
+    industries: [String]
+    addresses: [AddressInput]
+    idealEmployments: [IdealEmploymentInput]
+    lastEmployment: LastEmploymentInput
+    isDraft: Boolean
+    availability: Date
+    computerSkillIds: [String]
+    languageSkillIds: [String]
+    expectedMinSalary: Float
+    expectedMaxSalary: Float
+    jobOrderId: String
+    isPermanent: Boolean
+    isTemporary: Boolean
+  ): UpdatePeopleResponse
+  deletePeople(id: String!): DeletePeopleResponse
+  deleteBatchPeople(ids: [String!]!): DeletePeopleResponse
+  checkCandidateNameExist(fullName: String!, ignoreId: String): CheckNameResponse
+  applyJob(jobId: String!, candidate: CandidateInfoInput): ApplyJobResponse
+  createCandidateIndexes: CommonResponse
+}
+
+type PeopleSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: People
+  previousValues: People
+}
+
+type Subscription {
+  People(filter: SubscriptionFilter, dataFilter: PeopleFilter): PeopleSubscriptionPayload
+}

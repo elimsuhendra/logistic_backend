@@ -1,0 +1,61 @@
+type EmailForwarder {
+  id: String!
+  email: String!
+  createdAt: Date
+}
+
+enum EmailForwarderOrder {
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input EmailForwarderFilter {
+  OR: [EmailForwarderFilter!]
+  AND: [EmailForwarderFilter!]
+  email_regex: String
+}
+
+type CreateEmailForwarderResponse {
+  success: Boolean!
+  message: String
+  emailForwarder: EmailForwarder
+}
+
+type UpdateEmailForwarderResponse {
+  success: Boolean!
+  message: String
+  emailForwarder: EmailForwarder
+}
+
+type DeleteEmailForwarderResponse {
+  success: Boolean!
+  message: String
+}
+
+
+type Query {
+  allEmailForwarders(filter: EmailForwarderFilter, first: Int, skip: Int, orderBy: EmailForwarderOrder): [EmailForwarder]
+  _allEmailForwardersMeta(filter: EmailForwarderFilter): ObjectMeta
+  getEmailForwarder(id: String): EmailForwarder
+}
+
+type Mutation {
+  createEmailForwarder(
+    email: String
+  ): CreateEmailForwarderResponse
+  updateEmailForwarder(
+    id: String!
+    email: String
+  ): UpdateEmailForwarderResponse
+  deleteEmailForwarder(id: String!): DeleteEmailForwarderResponse
+}
+
+type EmailForwarderSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: EmailForwarder
+  previousValues: EmailForwarder
+}
+
+type Subscription {
+  EmailForwarder(filter: SubscriptionFilter, dataFilter: EmailForwarderFilter): EmailForwarderSubscriptionPayload
+}

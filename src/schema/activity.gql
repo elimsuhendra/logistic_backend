@@ -1,0 +1,105 @@
+type Activity {
+  id: String!
+  actionDescription: String
+	action: String
+	objectId: String
+	objectType: String
+	creatorId: String
+	references: [ActivityReference]
+  createdAt: Date
+
+  # resolver
+  creator: User
+  jobApplicant: JobApplicant
+}
+
+enum ActivityOrder {
+  action_DESC
+  action_ASC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input ActivityFilter {
+  OR: [ActivityFilter!]
+  AND: [ActivityFilter!]
+  action_regex: String
+  actionDescription_regex: String
+  objectType: String
+  createdAt_between: [Date]
+}
+
+type ActivityReference {
+  objectId: String
+	objectType: String
+}
+
+type CreateActivityResponse {
+  success: Boolean!
+  message: String
+  activity: Activity
+}
+
+type UpdateActivityResponse {
+  success: Boolean!
+  message: String
+  activity: Activity
+}
+
+type DeleteActivityResponse {
+  success: Boolean!
+  message: String
+}
+
+input ActivityReferenceInput {
+  objectId: String
+	objectType: String
+}
+
+input ActivityObject {
+  actionDescription: String
+  action: String
+  objectId: String
+  objectType: String
+  creatorId: String
+  references: [ActivityReferenceInput]
+}
+
+type Query {
+  allActivities(filter: ActivityFilter, first: Int, skip: Int, orderBy: ActivityOrder): [Activity]
+  _allActivitiesMeta(filter: ActivityFilter, first: Int, skip: Int): ObjectMeta
+  allJobApplicantActivities(filter: ActivityFilter, jobApplicantFilter: JobApplicantFilter, first: Int, skip: Int, orderBy: ActivityOrder): [Activity]
+  getActivity(id: String): Activity
+}
+
+type Mutation {
+  createActivity(
+    actionDescription: String
+    action: String
+    objectId: String
+    objectType: String
+    creatorId: String
+    references: [ActivityReferenceInput]
+  ): CreateActivityResponse
+  createActivities(activities: [ActivityObject!]!): [Activity!]!
+  updateActivity(
+    id: String!
+    actionDescription: String
+    action: String
+    objectId: String
+    objectType: String
+    creatorId: String
+    references: [ActivityReferenceInput]
+  ): UpdateActivityResponse
+  deleteActivity(id: String!): DeleteActivityResponse
+}
+
+type ActivitySubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Activity
+  previousValues: Activity
+}
+
+type Subscription {
+  Activity(filter: SubscriptionFilter, dataFilter: ActivityFilter): ActivitySubscriptionPayload
+}

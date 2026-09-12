@@ -1,0 +1,81 @@
+type Team {
+  id: String!
+  fullName: String
+  smallImageUrl: String
+  largeImageUrl: String
+  linkedinUrl: String
+  jobTitle: String
+  isInitial: Boolean
+  position: Int
+}
+
+enum TeamOrder {
+  fullName_DESC
+  fullName_ASC
+  position_DESC
+  position_ASC
+}
+
+input TeamFilter {
+  OR: [TeamFilter!]
+  AND: [TeamFilter!]
+  name_regex: String
+}
+
+type CreateTeamResponse {
+  success: Boolean!
+  message: String
+  team: Team
+}
+
+type UpdateTeamResponse {
+  success: Boolean!
+  message: String
+  team: Team
+}
+
+type DeleteTeamResponse {
+  success: Boolean!
+  message: String
+}
+
+
+type Query {
+  allTeams(filter: TeamFilter, first: Int, skip: Int, orderBy: TeamOrder): [Team]
+  _allTeamsMeta(filter: TeamFilter): ObjectMeta
+  getTeam(id: String): Team
+}
+
+type Mutation {
+  createTeam(
+    fullName: String!
+    smallImageUrl: String
+    largeImageUrl: String
+    linkedinUrl: String
+    jobTitle: String
+    isInitial: Boolean
+    position: Int
+  ): CreateTeamResponse
+  updateTeam(
+    id: String!
+    fullName: String!
+    smallImageUrl: String
+    largeImageUrl: String
+    jobTitle: String
+    linkedinUrl: String
+    isInitial: Boolean
+  ): UpdateTeamResponse
+  updateTeamPosition(teams: [PositionObject!]!): [Team!]
+  deleteTeam(id: String!): DeleteTeamResponse
+  deleteTeams(ids: [String!]!): DeleteTeamResponse
+}
+
+type TeamSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Team
+  previousValues: Team
+}
+
+type Subscription {
+  Team(filter: SubscriptionFilter, dataFilter: TeamFilter): TeamSubscriptionPayload
+}

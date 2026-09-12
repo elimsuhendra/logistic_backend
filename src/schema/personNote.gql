@@ -1,0 +1,70 @@
+type PersonNote {
+  id: String!
+	userId: String
+	content: String
+  user: User
+  createdAt: Date
+}
+
+enum PersonNoteOrder {
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input PersonNoteFilter {
+  OR: [PersonNoteFilter!]
+  AND: [PersonNoteFilter!]
+  userId: String
+  content_regex: String
+  createdAt_gte: Date
+  createdAt_lte: Date
+}
+
+type CreatePersonNoteResponse {
+  success: Boolean!
+  message: String
+  personNote: PersonNote
+}
+
+type UpdatePersonNoteResponse {
+  success: Boolean!
+  message: String
+  personNote: PersonNote
+}
+
+type DeletePersonNoteResponse {
+  success: Boolean!
+  message: String
+}
+
+
+type Query {
+  allPersonNotes(filter: PersonNoteFilter, first: Int, skip: Int, orderBy: PersonNoteOrder): [PersonNote]
+  _allPersonNotesMeta(filter: PersonNoteFilter): ObjectMeta
+  getPersonNote(id: String): PersonNote
+}
+
+type Mutation {
+  createPersonNote(
+    userId: String
+    content: String
+    createdAt: Date
+  ): CreatePersonNoteResponse
+  updatePersonNote(
+    id: String!
+    userId: String
+    content: String
+    createdAt: Date
+  ): UpdatePersonNoteResponse
+  deletePersonNote(id: String!): DeletePersonNoteResponse
+}
+
+type PersonNoteSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: PersonNote
+  previousValues: PersonNote
+}
+
+type Subscription {
+  PersonNote(filter: SubscriptionFilter, dataFilter: PersonNoteFilter): PersonNoteSubscriptionPayload
+}

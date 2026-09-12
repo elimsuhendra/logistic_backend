@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta name="viewport" content="width=device-width" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>Sample Email</title>
+  <link rel="stylesheet" href="style.css" data-inline="data-inline">
+</head>
+
+<body itemscope itemtype="http://schema.org/EmailMessage">
+
+  <table class="body-wrap">
+    <tr>
+      <td class="container" width="600">
+        <div class="content">
+          <table class="main" width="100%" cellpadding="0" cellspacing="0" itemprop="action" itemscope itemtype="http://schema.org/ConfirmAction">
+            <% include ../header.ejs %>
+            <tr>
+              <td class="content-wrap">
+                <meta itemprop="name" content="Confirm Email" />
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td class="content-block">
+                      Hello,
+                      <br /><br />
+                      This is sample email for username:
+                      <%= username %>
+                      with session:
+                      <%= sessionToken %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="content-block">
+                      Lorem ipsum dolor sit amet consectetur adipisicing elit. Hic beatae sequi, facilis, iure esse
+                      quis exercitationem nisi ducimus
+                      eveniet molestiae odio atque ipsam! Reiciendis sit maiores commodi reprehenderit voluptatum
+                      nulla. <a href="<%= process.env.FRONTEND_URL %>" itemprop="url">Visit
+                        <%= process.env.DOMAIN_NAME %></a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="content-block" itemprop="handler" itemscope itemtype="http://schema.org/HttpActionHandler">
+                      <a href="<%= process.env.FRONTEND_URL %>" class="btn-primary" itemprop="url">Visit Now</a>
+                    </td>
+                  </tr>
+                  <% include ../info.ejs %>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <% include ../footer.ejs %>
+        </div>
+      </td>
+      <td></td>
+    </tr>
+  </table>
+
+</body>
+
+</html>

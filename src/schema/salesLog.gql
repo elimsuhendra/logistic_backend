@@ -1,0 +1,94 @@
+type SalesLog {
+    id: String!
+    amountBefore: Float
+    amountInOut: Float
+    amount: Float
+    action: String
+    actionDescription: String
+    creatorId: String
+    createdAt: Date
+    consultantId: String
+    inheritFromConsultantId: String
+    candidateId: String
+    replacementJobApplicantId:String
+    coBrokeConsultantId: String
+    jobApplicantId: String
+    jobId: String
+    invoiceAt: Date
+    order: Int
+    workType: String
+    reffered: String
+
+    # resolver
+    creator: User
+    consultant: User
+    jobApplicant: JobApplicant
+}
+
+enum SalesLogOrder {
+  action_DESC
+  action_ASC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input SalesLogFilter {
+  OR: [SalesLogFilter!]
+  AND: [SalesLogFilter!]
+  action_regex: String
+  candidateId_regex: String
+  consultantId_in: [String]
+  createdAt_between: [Date]
+  invoiceAt_between: [Date]
+  action_in: [String]
+  action_nin: [String]
+}
+
+type CreateSalesLogResponse {
+  success: Boolean!
+  message: String
+  salesLog: SalesLog
+}
+
+type UpdateSalesLogResponse {
+  success: Boolean!
+  message: String
+  salesLog: SalesLog
+}
+
+type DeleteSalesLogResponse {
+  success: Boolean!
+  message: String
+}
+
+type Query {
+  allSalesLogs(filter: SalesLogFilter, first: Int, skip: Int, orderBy: SalesLogOrder): [SalesLog]
+  _allSalesLogsMeta(filter: SalesLogFilter, first: Int, skip: Int): ObjectMeta
+  getSalesLog(id: String): SalesLog
+}
+
+type Mutation {
+  createSalesLog(
+    jobApplicantId: String!
+  ): CreateSalesLogResponse
+  updateSalesLog(
+    id: String!
+    actionDescription: String
+    action: String
+    objectId: String
+    objectType: String
+    creatorId: String
+    # references: [SalesLogReferenceInput]
+  ): UpdateSalesLogResponse
+  deleteSalesLog(id: String!): DeleteSalesLogResponse
+}
+
+type ActivitySubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Activity
+  previousValues: Activity
+}
+
+type Subscription {
+  Activity(filter: SubscriptionFilter, dataFilter: SalesLogFilter): ActivitySubscriptionPayload
+}

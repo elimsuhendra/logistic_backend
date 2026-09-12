@@ -1,0 +1,88 @@
+type Report {
+  id: String!
+  description: String
+  downloadUrl: String
+  status: ReportStatus
+  generatedAt: Date
+  createdAt: Date
+  reportType: ReportType
+  reportReferences: [ReportReference]
+}
+
+type ReportReference {
+  objectId: String
+  objectType: String
+  objectIds: [String]
+}
+
+input ReportReferenceInput {
+  objectId: String
+  objectType: String
+  objectIds: [String]
+}
+
+enum ReportType {
+  COMPANY_REPORT
+  CANDIDATES_REPORT
+}
+
+enum ReportOrder {
+  description_DESC
+  description_ASC
+  generatedAt_DESC
+  generatedAt_ASC
+  createdAt_DESC
+  createdAt_ASC
+  reportType_DESC
+  reportType_ASC
+}
+
+input ReportFilter {
+  OR: [ReportFilter!]
+  AND: [ReportFilter!]
+  description_regex: String
+  generatedAt_gte: Date
+  generatedAt_lte: Date
+  createdAt_gte: Date
+  createdAt_lte: Date
+  status: ReportStatus
+  reportType: ReportType
+}
+
+enum ReportStatus {
+  PENDING
+  PROCESSING
+  READY
+  ERROR
+}
+
+type ReportResponse {
+  success: Boolean!
+  message: String
+  report: Report
+}
+
+type Query {
+  allReports(filter: ReportFilter, first: Int, skip: Int, orderBy: [ReportOrder]): [Report]
+  _allReportsMeta(filter: ReportFilter): ObjectMeta
+  getReport(id: String): Report
+}
+
+type Mutation {
+  createReport(
+    description: String
+    reportType: ReportType
+    reportReferences: [ReportReferenceInput]
+  ): ReportResponse
+  deleteReport(id: String!): CommonResponse
+}
+
+type ReportSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Report
+  previousValues: Report
+}
+
+type Subscription {
+  Report(filter: SubscriptionFilter, dataFilter: ReportFilter): ReportSubscriptionPayload
+}

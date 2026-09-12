@@ -1,0 +1,101 @@
+type Article {
+  id: String!
+  title: String
+  slug: String
+	summary: String
+	content: String
+	imageUrl: String
+  published: Boolean
+  publishedDate: Date
+  publishedTime: String
+  meta: Meta
+  relatedArticleIds: [String]
+  authorId: String
+  createdAt: Date
+
+  relatedArticles: [Article]
+  author: User
+}
+
+enum ArticleOrder {
+  title_DESC
+  title_ASC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input ArticleFilter {
+  OR: [ArticleFilter!]
+  AND: [ArticleFilter!]
+  title_regex: String
+  summary_regex: String
+  published: Boolean
+  _id_nin: [String]
+  _id_in: [String]
+}
+
+type CreateArticleResponse {
+  success: Boolean!
+  message: String
+  article: Article
+}
+
+type UpdateArticleResponse {
+  success: Boolean!
+  message: String
+  article: Article
+}
+
+type DeleteArticleResponse {
+  success: Boolean!
+  message: String
+}
+
+
+type Query {
+  allArticles(filter: ArticleFilter, first: Int, skip: Int, orderBy: ArticleOrder): [Article]
+  _allArticlesMeta(filter: ArticleFilter): ObjectMeta
+  getArticle(id: String): Article
+  getArticleBySlug(slug: String): Article
+}
+
+type Mutation {
+  createArticle(
+    title: String
+    slug: String
+    summary: String
+    content: String
+    imageUrl: String
+    published: Boolean
+    publishedDate: Date
+    publishedTime: String
+    relatedArticleIds: [String]
+    authorId: String
+    meta: MetaInput
+  ): CreateArticleResponse
+  updateArticle(
+    id: String!
+    title: String
+    slug: String
+    summary: String
+    content: String
+    imageUrl: String
+    published: Boolean
+    publishedDate: Date
+    publishedTime: String
+    relatedArticleIds: [String]
+    authorId: String
+    meta: MetaInput
+  ): UpdateArticleResponse
+  deleteArticle(id: String!): DeleteArticleResponse
+}
+
+type ArticleSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Article
+  previousValues: Article
+}
+
+type Subscription {
+  Article(filter: SubscriptionFilter, dataFilter: ArticleFilter): ArticleSubscriptionPayload
+}

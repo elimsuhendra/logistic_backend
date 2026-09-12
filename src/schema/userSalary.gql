@@ -1,0 +1,69 @@
+type UserSalary {
+  id: String!
+  year: Int
+  january: Float
+  february: Float
+  march: Float
+  april: Float
+  may: Float
+  june: Float
+  july: Float
+  august: Float
+  september: Float
+  october: Float
+  november: Float
+  december: Float
+  userId: String
+  user: User
+}
+
+enum UserSalaryOrder {
+  year_DESC
+  year_ASC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input UserSalaryFilter {
+  OR: [UserSalaryFilter!]
+  AND: [UserSalaryFilter!]
+  year: Int
+  _id_nin: [String]
+  _id_in: [String]
+}
+
+type Query {
+  allUserSalaries(filter: UserSalaryFilter, first: Int, skip: Int, orderBy: UserSalaryOrder): [UserSalary]
+  _allUserSalariesMeta(filter: UserSalaryFilter): ObjectMeta
+  getUserSalaryByUser(year: Int, userId: String): UserSalary
+}
+
+type Mutation {
+  saveUserSalary(
+    id: String
+    year: Int
+    january: Float
+    february: Float
+    march: Float
+    april: Float
+    may: Float
+    june: Float
+    july: Float
+    august: Float
+    september: Float
+    october: Float
+    november: Float
+    december: Float
+    userId: String
+  ): CommonResponse
+}
+
+type UserSalarySubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: UserSalary
+  previousValues: UserSalary
+}
+
+type Subscription {
+  UserSalary(filter: SubscriptionFilter, dataFilter: UserSalaryFilter): UserSalarySubscriptionPayload
+}

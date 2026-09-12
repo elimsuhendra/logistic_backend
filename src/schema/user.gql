@@ -1,0 +1,173 @@
+type User {
+  id: String!
+  username: String
+  fullName: String
+  role: RoleType
+  inactive: Boolean
+  excludeIndividualReport: Boolean
+  createdAt: Date
+  updatedAt: Date
+  lastLoggedInAt: Date
+  dateJoin: Date
+  deletedAt: Date
+  avatar: Photo
+  #pilot web
+  email: String
+  lastName: String
+  firstName: String
+  mobileNumber: String
+  mobileCode: String
+  postalCode: String
+  country: String
+  city: String
+  address: String
+  state: String
+  approved: Boolean
+  resetToken: String
+
+  groups: [Group]
+  lastGroup: Group
+  lastGroup2: [Group]
+  salary: UserSalary
+}
+
+enum RoleType {
+  SuperAdmin
+  Finance
+  Admin
+  Manager
+  TeamLeader
+  Staff
+}
+
+enum UserOrder {
+  fullName_DESC
+  fullName_ASC
+  role_DESC
+  role_ASC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input UserFilter {
+  OR: [UserFilter!]
+  AND: [UserFilter!]
+  fullName_in: [String]
+  fullName_contains: String
+  fullName_regex: String
+  username_regex: String
+  name_regex: String
+  fullName: String
+  role: RoleType
+  role_in: [RoleType]
+  role_nin: [RoleType]
+  createdAt_gte: Date
+  createdAt_lte: Date
+  inactive: Boolean
+  inactive_ne: Boolean
+  _id_nin: [String]
+  _id_in: [String]
+  approved: Boolean
+}
+
+type Query {
+  me: User
+  allUsers(allowAdmin: Boolean, filter: UserFilter, first: Int, skip: Int, orderBy: UserOrder): [User]
+  _allUsersMeta(allowAdmin: Boolean, filter: UserFilter): ObjectMeta
+  getUser(id: String): User
+  getUserByUsername(username: String!): User
+}
+
+type LoginResponse {
+  success: Boolean!
+  message: String
+  token: String
+  refreshToken: String
+  user: User
+  errors: [Error!]
+}
+
+type UserIdentityResponse {
+  user: User
+  success: Boolean!
+}
+
+type RegisterResponse {
+  success: Boolean!
+  message: String
+  user: User
+  errors: [Error!]
+}
+
+type ForgetPasswordResponse {
+  success: Boolean!
+  message: String
+}
+
+type ResetPasswordResponse {
+  success: Boolean!
+  message: String
+}
+
+type Mutation {
+  login(username: String, password: String): LoginResponse!
+  createUser(
+    username: String
+    email: String
+    fullName: String
+    password: String
+    role: RoleType
+    inactive: Boolean
+    excludeIndividualReport: Boolean
+    approved: Boolean
+    mobileCode: String
+    mobileNumber: String
+    dateJoin: Date
+  ): RegisterResponse
+  updateUser(
+    id: String!
+    username: String
+    fullName: String
+    inactive: Boolean
+    excludeIndividualReport: Boolean
+    approved: Boolean
+    role: String
+    mobileCode: String
+    mobileNumber: String
+    dateJoin: Date
+  ): RegisterResponse
+  updateProfile(
+    fullName: String
+    currentPassword: String
+    newPassword: String
+    firstName: String
+    lastName: String
+    mobileCode: String
+    mobileNumber: String
+  ): RegisterResponse
+  deleteUser(id: String!): CommonResponse
+  registerAs(
+    username: String!
+    email: String!
+    password: String!
+    mobileCode: String
+    mobileNumber: String
+    firstName: String
+    lastName: String
+    address: String
+    city: String
+    country: String
+  ): RegisterResponse 
+  forgetPassword(email: String!): ForgetPasswordResponse
+  resetPassword(email: String!, token: String!, password: String!): ResetPasswordResponse
+}
+
+type UserSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: User
+  previousValues: User
+}
+
+type Subscription {
+  User(filter: SubscriptionFilter, dataFilter: UserFilter): UserSubscriptionPayload
+}

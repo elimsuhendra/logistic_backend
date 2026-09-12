@@ -1,0 +1,35 @@
+type AppSetting {
+  appName: String
+  appVersion: String
+  displayAnnouncement: Boolean
+  announcementMessage: String
+}
+
+type Query {
+  getAppSetting: AppSetting
+}
+
+type UpdateAppSettingResponse {
+  success: Boolean!
+  message: String
+  errors: [Error]
+  appSetting: AppSetting
+}
+
+type Mutation {
+  updateAppSetting(
+    appName: String
+    appVersion: String
+    displayAnnouncement: Boolean
+    announcementMessage: String
+  ): UpdateAppSettingResponse
+}
+type AppSettingSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: AppSetting
+  previousValues: AppSetting
+}
+
+type Subscription {
+  AppSetting(filter: SubscriptionFilter): AppSettingSubscriptionPayload
+}

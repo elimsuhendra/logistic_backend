@@ -1,0 +1,82 @@
+type Photo {
+  id: String!
+  objectType: String
+  objectId: String
+  imageUrl: String!
+  imageDescription: String
+  imageWidth: Float
+  imageHeight: Float
+  tagIds: [String]
+  position: Int
+  deletedAt: Date
+
+  sourceType: String
+  sourceId: String
+}
+
+enum PhotoOrder {
+  objectType_DESC
+  objectType_ASC
+  position_ASC
+  position_DESC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input PhotoObject {
+  objectType: String
+  objectId: String
+  imageUrl: String!
+  imageDescription: String
+  imageWidth: Float
+  imageHeight: Float
+  position: Int
+  tagIds: [String]
+  sourceType: String
+  sourceId: String
+}
+
+input PhotoFilter {
+  OR: [PhotoFilter!]
+  AND: [PhotoFilter!]
+  description: String
+  objectId: String
+  objectId_in: [String]
+  objectType: String
+  imageDescription_in: [String]
+  imageDescription_contains: String
+  tagIds_in: [String]
+}
+
+type Query {
+  getPhoto(id: String): Photo
+  getPhotos(objectId: String, secondaryObjectId: String, orderBy: PhotoOrder): [Photo!]!
+  allPhotos(filter: PhotoFilter, first: Int, skip: Int, orderBy: PhotoOrder): [Photo!]!
+  _getPhotosMeta(objectId: String!, secondaryObjectId: String, orderBy: PhotoOrder): ObjectMeta
+  _allPhotosMeta(filter: PhotoFilter): ObjectMeta
+}
+
+type DeletePhotoResponse {
+  success: Boolean!
+  errorIds: [String!]
+}
+
+type Mutation {
+  createPhoto(sourceType: String, sourceId: String, objectType: String, objectId: String, imageUrl: String!, imageDescription: String, imageWidth: Float, imageHeight: Float, position: Int, tagIds: [String]): Photo
+  updatePhoto(id: String!, imageUrl: String, imageDescription: String, imageWidth: Float, imageHeight: Float, position: Int, tagIds: [String]): Photo
+  deletePhoto(id: String!): DeletePhotoResponse
+  deletePhotos(ids: [String!]!): DeletePhotoResponse
+  createPhotos(photos: [PhotoObject!]!): [Photo!]!
+  updatePhotoPosition(photos: [PositionObject!]!): [Photo!]
+}
+
+type PhotoSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Photo
+  previousValues: Photo
+}
+
+type Subscription {
+  Photo(filter: SubscriptionFilter, dataFilter: PhotoFilter): PhotoSubscriptionPayload
+}
+

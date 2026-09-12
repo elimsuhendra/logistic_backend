@@ -1,0 +1,102 @@
+type Workflow {
+  id: String!
+  name: String
+  workflowPhases: [WorkflowPhase]
+  numberOfJobs: Int
+  isDefault: Boolean
+}
+
+type WorkflowPhase {
+  id: String
+  name: String
+  color: String
+  position: Int
+  isDefault: Boolean
+  isVoid: Boolean
+}
+
+enum WorkflowOrder {
+  name_DESC
+  name_ASC
+  numberOfJobs_DESC
+  numberOfJobs_ASC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input WorkflowFilter {
+  OR: [WorkflowFilter!]
+  AND: [WorkflowFilter!]
+  name_regex: String
+  _id_in: [String]
+}
+
+type CreateWorkflowResponse {
+  success: Boolean!
+  message: String
+  workflow: Workflow
+}
+
+type UpdateWorkflowResponse {
+  success: Boolean!
+  message: String
+  workflow: Workflow
+}
+
+type DeleteWorkflowResponse {
+  success: Boolean!
+  message: String
+}
+
+type updateWorkflowDefaultResponse {
+  success: Boolean!
+  message: String
+}
+
+type Query {
+  allWorkflows(filter: WorkflowFilter, first: Int, skip: Int, orderBy: WorkflowOrder): [Workflow]
+  _allWorkflowsMeta(filter: WorkflowFilter): ObjectMeta
+  getWorkflow(id: String): Workflow
+}
+
+input WorkflowPhaseInput {
+  id: String
+  name: String
+  position: Int
+  color: String
+  isDefault: Boolean
+  isVoid: Boolean
+}
+
+input WorkflowInputDefault {
+  id: String
+  isDefault: Boolean
+}
+
+type Mutation {
+  createWorkflow(
+    name: String!
+    workflowPhases: [WorkflowPhaseInput!]!
+    isDefault: Boolean
+  ): CreateWorkflowResponse
+  updateWorkflow(
+    id: String!
+    name: String!
+    workflowPhases: [WorkflowPhaseInput]
+    isDefault: Boolean
+  ): UpdateWorkflowResponse
+  updateWorkflowDefault(
+    workflows: [WorkflowInputDefault]
+  ): updateWorkflowDefaultResponse
+  deleteWorkflow(id: String!): DeleteWorkflowResponse
+}
+
+type WorkflowSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Workflow
+  previousValues: Workflow
+}
+
+type Subscription {
+  Workflow(filter: SubscriptionFilter, dataFilter: WorkflowFilter): WorkflowSubscriptionPayload
+}

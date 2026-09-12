@@ -1,0 +1,77 @@
+type ForecastRequest {
+  id: String!
+  userId: String
+  status: ForecastRequestStatus
+  editable: Boolean
+  requestReason: String
+  responseRemark: String
+  respondedAt: Date
+  createdAt: Date
+  user: User
+  year: Int
+}
+
+enum ForecastRequestStatus {
+  PENDING
+  APPROVED
+  DECLINED
+  CANCELLED
+  SUBMITTED
+}
+
+enum ForecastRequestOrder {
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input ForecastRequestFilter {
+  OR: [ForecastRequestFilter!]
+  AND: [ForecastRequestFilter!]
+  status: String
+  userId: String
+  userId_nin: [String]
+  userId_in: [String]
+}
+
+type Query {
+  allForecastRequests(filter: ForecastRequestFilter, first: Int, skip: Int, orderBy: ForecastRequestOrder): [ForecastRequest!]!
+  getForecastRequest(id: String): ForecastRequest
+  _allForecastRequestsMeta(filter: ForecastRequestFilter): ObjectMeta
+  checkForecastEditable(year: String!): ForecastEditableResponse
+}
+
+type CommonResponse {
+  success: Boolean!
+  message: String
+  errors: [Error]
+}
+
+type ForecastEditableResponse {
+  editable: Boolean
+  status: String
+}
+
+type Mutation {
+  submitForecast(year: String!): CommonResponse
+  createForecastRequest(
+    userId: String
+    requestReason: String
+    year: String!
+  ): CommonResponse
+  updateForecastRequest(
+    id: String!
+    status: ForecastRequestStatus
+    responseRemark: String
+    respondedAt: Date
+  ): CommonResponse
+}
+
+type ForecastRequestSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: ForecastRequest
+  previousValues: ForecastRequest
+}
+
+type Subscription {
+  ForecastRequest(filter: SubscriptionFilter, dataFilter: ForecastRequestFilter): ForecastRequestSubscriptionPayload
+}

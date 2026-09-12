@@ -1,0 +1,93 @@
+type Group {
+  id: String!
+  name: String
+  managerId: String
+  teamLeaderId: String
+  staffIds: [String]
+  forecastIds: [String]
+  active: Boolean
+  manager: User
+  teamLeader: User
+  staffs: [User]
+  forecasts: [User]
+  createdAt: Date
+}
+
+enum GroupOrder {
+  name_DESC
+  name_ASC
+  createdAt_DESC
+  createdAt_ASC
+  updatedAt_DESC
+  updatedAt_ASC
+}
+
+input GroupFilter {
+  OR: [GroupFilter!]
+  AND: [GroupFilter!]
+  name_regex: String
+  managerId: String
+  teamLeaderId: String
+  active: Boolean,
+  staffIds_in: [String]
+}
+
+type CreateGroupResponse {
+  success: Boolean!
+  message: String
+  group: Group
+}
+
+type UpdateGroupResponse {
+  success: Boolean!
+  message: String
+  group: Group
+}
+
+type DeleteGroupResponse {
+  success: Boolean!
+  message: String
+}
+
+
+type Query {
+  allGroups(filter: GroupFilter, first: Int, skip: Int, orderBy: GroupOrder): [Group]
+  _allGroupsMeta(filter: GroupFilter): ObjectMeta
+  getGroup(id: String): Group
+}
+
+type Mutation {
+  createGroup(
+    name: String!
+    managerId: String!
+    teamLeaderId: String!
+    staffIds: [String]
+    forecastIds: [String]
+    active: Boolean
+  ): CreateGroupResponse
+  updateGroup(
+    id: String!
+    name: String!
+    managerId: String!
+    teamLeaderId: String!
+    staffIds: [String]
+    forecastIds: [String]
+    active: Boolean
+  ): UpdateGroupResponse
+  addMembersToGroup(
+    id: String!
+    userIds: [String]
+  ): CommonResponse
+  deleteGroup(id: String!): DeleteGroupResponse
+  deleteGroups(ids: [String!]!): DeleteGroupResponse
+}
+
+type GroupSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Group
+  previousValues: Group
+}
+
+type Subscription {
+  Group(filter: SubscriptionFilter, dataFilter: GroupFilter): GroupSubscriptionPayload
+}

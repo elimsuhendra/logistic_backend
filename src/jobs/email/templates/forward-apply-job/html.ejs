@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta name="viewport" content="width=device-width" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>People Send Email</title>
+  <link rel="stylesheet" href="style.css" data-inline="data-inline">
+</head>
+
+<body itemscope itemtype="http://schema.org/EmailMessage">
+
+  <table class="body-wrap">
+    <tr>
+      <td class="container" width="600">
+        <div class="content">
+          <table class="main" width="100%" cellpadding="0" cellspacing="0" itemprop="action" itemscope itemtype="http://schema.org/ConfirmAction">
+            <%- include("../header.ejs") %>
+            <tr>
+              <td class="content-wrap">
+                <meta itemprop="name" content="Reset Password" />
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td class="content-block">
+                      <h3 class="default-color">Hello, MTC Staff</h3>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="content-block">
+                      <div>You have received a job application from MTC website.</div>
+                      <div>Details as below:</div>
+                      <br/>
+                      <div style="display: flex">
+                        <div style="width: 100px">Name:</div>
+                        <div><%= candidateName %></div>
+                      </div>
+                      <div style="display: flex">
+                        <div style="width: 100px">Company:</div>
+                        <div><%= companyName %></div>
+                      </div>
+                      <div style="display: flex">
+                        <div style="width: 100px">Position:</div>
+                        <div><%= jobTitle %></div>
+                      </div>
+                      <br/>
+                      <div>Click <a href="<%= process.env.DASHBOARD_URL %>/job-orders?jobOrderId=<%= jobId %>&fromPage=Dashboard">HERE</a> to see full application details.</div>
+                      <br/>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="content-block">
+                      <p>This is an auto-generated Email. Do not reply.</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <%- include("../footer.ejs") %>
+        </div>
+      </td>
+      <td></td>
+    </tr>
+  </table>
+
+</body>
+
+</html>

@@ -1,0 +1,75 @@
+type Note {
+  id: String!
+  objectType: String
+	objectId: String
+	creatorId: String
+	createdAt: Date
+	content: String
+  creator: User
+}
+
+enum NoteOrder {
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input NoteFilter {
+  OR: [NoteFilter!]
+  AND: [NoteFilter!]
+  content_regex: String
+  objectType: String
+  objectId: String
+}
+
+type CreateNoteResponse {
+  success: Boolean!
+  message: String
+  note: Note
+}
+
+type UpdateNoteResponse {
+  success: Boolean!
+  message: String
+  note: Note
+}
+
+type DeleteNoteResponse {
+  success: Boolean!
+  message: String
+}
+
+
+type Query {
+  allNotes(filter: NoteFilter, first: Int, skip: Int, orderBy: NoteOrder): [Note]
+  _allNotesMeta(filter: NoteFilter): ObjectMeta
+  getNote(id: String): Note
+}
+
+type Mutation {
+  createNote(
+    objectType: String
+    objectId: String
+    creatorId: String
+    createdAt: Date
+    content: String
+  ): CreateNoteResponse
+  updateNote(
+    id: String!
+    objectType: String
+    objectId: String
+    creatorId: String
+    createdAt: Date
+    content: String
+  ): UpdateNoteResponse
+  deleteNote(id: String!): DeleteNoteResponse
+}
+
+type NoteSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Note
+  previousValues: Note
+}
+
+type Subscription {
+  Note(filter: SubscriptionFilter, dataFilter: NoteFilter): NoteSubscriptionPayload
+}

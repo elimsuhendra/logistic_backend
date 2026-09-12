@@ -1,0 +1,95 @@
+type Experience {
+  id: String!
+  type: ExperienceType
+  candidateId: String!
+  institutionId: String
+  institutionName: String
+  title: String
+  lastDrawnSalary: Int
+  description: String
+  description2: String
+  startAt: Date
+  endAt: Date
+  position: Int
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date
+}
+
+enum ExperienceType {
+  WORK
+  PROJECT
+  EDUCATION
+}
+
+enum ExperienceOrder {
+  candidateId_DESC
+  candidateId_ASC
+  institutionId_DESC
+  institutionId_ASC
+  startAt_DESC
+  startAt_ASC
+  endAt_DESC
+  endAt_ASC
+  createdAt_DESC
+  createdAt_ASC
+  updatedAt_DESC
+  updatedAt_ASC
+}
+
+input ExperienceFilter {
+  OR: [ExperienceFilter!]
+  AND: [ExperienceFilter!]
+  _id: String
+  _id_in: [String]
+  _id_nin: [String]
+  candidateId: String
+  institutionId: String
+  type: ExperienceType
+  description_regex: String
+  startAt_between: Date
+  endAt_between: Date
+}
+
+input ExperienceInput {
+  id: String
+  title: String
+  description: String
+  description2: String
+  startAt: Date
+  endAt: Date
+  position: Int
+  institutionName: String
+  institutionId: String
+  lastDrawnSalary: Int
+  candidateId: String
+  type: ExperienceType
+}
+
+type Query {
+  getExperience(id: String, candidateId: String): Experience
+  allExperiences(candidateId: String!, filter: ExperienceFilter, first: Int, skip: Int, orderBy: ExperienceOrder): [Experience!]!
+  _allExperiencesMeta(candidateId: String!, filter: ExperienceFilter, first: Int, skip: Int): ObjectMeta
+}
+
+type UpdateExperienceResponse {
+  success: Boolean!
+  experiences: [Experience]
+  message: String
+  errors: [Error!]
+}
+
+type Mutation {
+  updateExperience(candidateId: String, experiences: [ExperienceInput]): UpdateExperienceResponse
+  createExperienceIndex: CommonResponse
+}
+
+type ExperienceSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Experience
+  previousValues: Experience
+}
+
+type Subscription {
+  Experience(filter: SubscriptionFilter, dataFilter: ExperienceFilter): ExperienceSubscriptionPayload
+}

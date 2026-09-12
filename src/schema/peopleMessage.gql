@@ -1,0 +1,69 @@
+type PeopleMessage {
+  id: String!
+  personId: String
+	content: String
+	sentAt: Date
+  createdAt: Date
+}
+
+enum PeopleMessageOrder {
+  content_ASC
+  content_DESC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input PeopleMessageFilter {
+  OR: [PeopleMessageFilter!]
+  AND: [PeopleMessageFilter!]
+  content_regex: String
+}
+
+type CreatePeopleMessageResponse {
+  success: Boolean!
+  message: String
+  peopleMessage: PeopleMessage
+}
+
+type UpdatePeopleMessageResponse {
+  success: Boolean!
+  message: String
+  peopleMessage: PeopleMessage
+}
+
+type Query {
+  getPeopleMessage(id: String): PeopleMessage
+  allPeopleMessages(filter: PeopleMessageFilter, first: Int, skip: Int, orderBy: PeopleMessageOrder): [PeopleMessage!]!
+  _allPeopleMessagesMeta(filter: PeopleMessageFilter): ObjectMeta
+}
+
+type DeletePeopleMessageResponse {
+  success: Boolean!
+  errorIds: [String!]
+}
+
+type Mutation {
+  createPeopleMessage(
+    personId: String
+    content: String
+    sentAt: Date
+  ): CreatePeopleMessageResponse
+  updatePeopleMessage(
+    id: String!
+    personId: String
+    content: String
+    sentAt: Date
+  ): UpdatePeopleMessageResponse
+  deletePeopleMessage(id: String!): DeletePeopleMessageResponse
+}
+
+type PeopleMessageSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: PeopleMessage
+  previousValues: PeopleMessage
+}
+
+type Subscription {
+  PeopleMessage(filter: SubscriptionFilter, dataFilter: PeopleMessageFilter): PeopleMessageSubscriptionPayload
+}
+

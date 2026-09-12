@@ -1,0 +1,38 @@
+
+
+type ExecuteBackgroundJobResponse {
+  success: Boolean!
+  message: String
+  jobId: String
+}
+
+type BackgroundJobStatusResponse {
+  status: BackgroundJobStatus
+  progress: Int
+  jobId: String
+}
+
+enum BackgroundJobStatus {
+  PROCESSING
+  IDLE
+}
+
+input RawCandidateFilter {
+  OR: [RawCandidateFilter!]
+  AND: [RawCandidateFilter!]
+  updatedAt_lte: Date
+  updatedAt_gte: Date
+}
+
+type Query {
+  getConvertCandidatesStatus: BackgroundJobStatusResponse
+}
+
+type Mutation {
+  importRawCandidatesFromPstFiles: ExecuteBackgroundJobResponse
+  convertRawCandidates(filter: RawCandidateFilter): ExecuteBackgroundJobResponse
+}
+
+type Subscription {
+  BackgroundJob(jobId: String): BackgroundJobStatusResponse
+}

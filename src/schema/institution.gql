@@ -1,0 +1,84 @@
+type Institution {
+  id: String!
+  type: InstitutionType
+  name: String
+  description: String
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date
+  status: String
+}
+
+enum InstitutionType {
+  COMPANY
+  EDUCATION
+}
+
+enum InstitutionOrder {
+  name_DESC
+  name_ASC
+  createdAt_DESC
+  createdAt_ASC
+  updatedAt_DESC
+  updatedAt_ASC
+}
+
+input InstitutionFilter {
+  OR: [InstitutionFilter!]
+  AND: [InstitutionFilter!]
+  _id: String
+  _id_in: [String]
+  _id_nin: [String]
+  name: String
+  type: InstitutionType
+  description_regex: String
+}
+
+input InstitutionInput {
+  id: String
+  title: String
+  description: String
+  name: String
+  lastDrawnSalary: Int
+  institutionId: String
+  institutionName: String
+}
+
+type Query {
+  getInstitution( id: String ): Institution
+  allInstitutions(keyword: String, filter: InstitutionFilter, first: Int, skip: Int, orderBy: [InstitutionOrder]): [Institution!]!
+  _allInstitutionsMeta(keyword: String, filter: InstitutionFilter, first: Int, skip: Int): ObjectMeta
+}
+
+type UpdateInstitutionResponse {
+  success: Boolean!
+  Institution: [Institution]
+  message: String
+  errors: [Error!]
+}
+
+type CreateInstitutionResponse {
+  success: Boolean!
+  Institution: [Institution]
+  message: String
+  errors: [Error!]
+}
+
+type Mutation {
+  updateInstitutions( type: InstitutionType, Institutions: [InstitutionInput!]!): UpdateInstitutionResponse
+  createInstitution(
+    type: InstitutionType
+    name: String
+    description: String
+  ): CreateInstitutionResponse
+}
+
+type InstitutionSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Institution
+  previousValues: Institution
+}
+
+type Subscription {
+  Institution(filter: SubscriptionFilter, dataFilter: InstitutionFilter): InstitutionSubscriptionPayload
+}

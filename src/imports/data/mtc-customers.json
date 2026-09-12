@@ -1,0 +1,2266 @@
+[
+  {
+    "No": 1,
+    "Customer": "3Bay Pte Ltd",
+    "Full Name": "Ms. Senna",
+    "Address": "19 Burn Road, #01-03 Advance Building",
+    "Country": "Singapore",
+    "Postal Code": 369974
+  },
+  {
+    "No": 2,
+    "Customer": "40-30 South East Asia Pte. Ltd.",
+    "Full Name": "Ms. Sherry Lee",
+    "Address": "211 Woodlands Ave 9, #05-89 Woodlands Spectrum II",
+    "Country": "Singapore",
+    "Postal Code": 738960
+  },
+  {
+    "No": 3,
+    "Customer": "996 Metal Scrap Pte Ltd",
+    "Full Name": "Rogini",
+    "Address": "42 Toh Guan Road East, #01-73 Enterprise Hub",
+    "Country": "Singapore",
+    "Postal Code": 608583
+  },
+  {
+    "No": 4,
+    "Customer": "AAP Marketing Pte Ltd",
+    "Full Name": "Ms. Annie",
+    "Address": "32 Jalan Selaseh",
+    "Country": "Singapore",
+    "Postal Code": 808448
+  },
+  {
+    "No": 5,
+    "Customer": "Acumed Holdings Pte Ltd",
+    "Full Name": "Ms. Annie",
+    "Address": "10 Toh Guan Road, #09-02",
+    "Country": "Singapore",
+    "Postal Code": 608838
+  },
+  {
+    "No": 6,
+    "Customer": "AEM Singapore Pte Ltd",
+    "Full Name": "Ms. Yu Wen",
+    "Address": "52 Serangoon North Avenue 4",
+    "Country": "Singapore",
+    "Postal Code": 555852
+  },
+  {
+    "No": 7,
+    "Customer": "AGI Freight Singapore Pte Ltd",
+    "Full Name": "AGI Freight Singapore Pte Ltd",
+    "Address": "101 Alps Avenue, #01-01",
+    "Country": "Singapore",
+    "Postal Code": 498793
+  },
+  {
+    "No": 8,
+    "Customer": "Agility International Logistics Pte Ltd",
+    "Full Name": "Agility International Logistics Pte Ltd",
+    "Address": "1 Changi North Way",
+    "Country": "Singapore",
+    "Postal Code": 498802
+  },
+  {
+    "No": 9,
+    "Customer": "Agility Project Logistics Pte Ltd",
+    "Full Name": "Agility Project Logistics Pte Ltd",
+    "Address": "1 Changi North Way",
+    "Country": "Singapore",
+    "Postal Code": 498802
+  },
+  {
+    "No": 10,
+    "Customer": "Air Market Logistics (S) Pte Ltd",
+    "Full Name": "Ms. Angeline",
+    "Address": "22 Loyang Lane",
+    "Country": "Singapore",
+    "Postal Code": 508931
+  },
+  {
+    "No": 11,
+    "Customer": "Air Planners (S) Pte Ltd",
+    "Full Name": "Ms Carrine",
+    "Address": "115 Airport Cargo Road, #07-02 Cargo Agents Building C",
+    "Country": "Singapore",
+    "Postal Code": 819466
+  },
+  {
+    "No": 12,
+    "Customer": "Alliantz Flexible Packaging Pte Ltd",
+    "Full Name": "Ms. Yvonne",
+    "Address": "9 Tuas Avenue 4",
+    "Country": "Singapore",
+    "Postal Code": 639365
+  },
+  {
+    "No": 13,
+    "Customer": "Allport Cargo Services Logistics Pte Ltd",
+    "Full Name": "Allport Cargo Services Logistics Pte Ltd",
+    "Address": "11 Sims Drive SCN Centre, #02-01",
+    "Country": "Singapore",
+    "Postal Code": 387385
+  },
+  {
+    "No": 14,
+    "Customer": "Alternative Selection Pte Ltd",
+    "Full Name": "Ms. Julia",
+    "Address": "100g Pasir Panjang Road, #04-22",
+    "Country": "Singapore",
+    "Postal Code": 118498
+  },
+  {
+    "No": 15,
+    "Customer": "Amcor Flexibles Singapore Pte Ltd",
+    "Full Name": "Ms. Moon Kee",
+    "Address": "4 Tuas Avenue 20",
+    "Country": "Singapore",
+    "Postal Code": 638819
+  },
+  {
+    "No": 16,
+    "Customer": "Ampotech Pte Ltd",
+    "Full Name": "Mr William",
+    "Address": "81 Ayer Rajah Crescent, #01-43",
+    "Country": "Singapore",
+    "Postal Code": 139967
+  },
+  {
+    "No": 17,
+    "Customer": "Angliss Singapore Pte Ltd",
+    "Full Name": "Ms. Jacqueline Yee",
+    "Address": "232 Pandan Loop",
+    "Country": "Singapore",
+    "Postal Code": 128420
+  },
+  {
+    "No": 18,
+    "Customer": "Aqua-Chemicals (Singapore) Pte Ltd",
+    "Full Name": "Ms. Junlan",
+    "Address": "87 Pandan Loop",
+    "Country": "Singapore",
+    "Postal Code": 128298
+  },
+  {
+    "No": 19,
+    "Customer": "Aras Development Pte Ltd",
+    "Full Name": "Aras Development Pte Ltd",
+    "Address": "Kaki Bukit Ave 1, #07-01 2",
+    "Country": "Singapore",
+    "Postal Code": 417938
+  },
+  {
+    "No": 20,
+    "Customer": "Archer Marketing & Development (S) Pte Ltd",
+    "Full Name": "Archer Marketing & Development (S) Pte Ltd",
+    "Address": "4 Penjuru Place, Penjuru Tech Hub",
+    "Country": "Singapore",
+    "Postal Code": 608782
+  },
+  {
+    "No": 21,
+    "Customer": "arQana Technologies Pte Ltd",
+    "Full Name": "Ms. Chang Mui Fong",
+    "Address": "5012 Ang Mo Kio Avenue 5, #04-01",
+    "Country": "Singapore",
+    "Postal Code": 569876
+  },
+  {
+    "No": 22,
+    "Customer": "AsiaMedic Astique The Aesthetic Clinic Pte Ltd",
+    "Full Name": "AsiaMedic Astique The Aesthetic Clinic Pte Ltd",
+    "Address": "350 Orchard Rd,, #08-00 Shaw House",
+    "Country": "Singapore",
+    "Postal Code": 238868
+  },
+  {
+    "No": 23,
+    "Customer": "ASM Front-End Manufacturing (S) Pte Ltd",
+    "Full Name": "ASM Front-End Manufacturing (S) Pte Ltd",
+    "Address": "4 Woodlands Height",
+    "Country": "Singapore",
+    "Postal Code": 737860
+  },
+  {
+    "No": 24,
+    "Customer": "Assa Abloy Entrance Systems Singapore Pte Ltd",
+    "Full Name": "Assa Abloy Entrance Systems Singapore Pte Ltd",
+    "Address": "33 Ubi Ave 3, #03-52 Vertex",
+    "Country": "Singapore",
+    "Postal Code": 408868
+  },
+  {
+    "No": 25,
+    "Customer": "Atlas Ventures Group Pte Ltd",
+    "Full Name": "Atlas Ventures Group Pte Ltd",
+    "Address": "No. 2, Venture Drive, #08-10/11 Vision Exchange",
+    "Country": "Singapore",
+    "Postal Code": 608526
+  },
+  {
+    "No": 26,
+    "Customer": "Ausko Pte Ltd",
+    "Full Name": "Ms. Jenny Sia",
+    "Address": "41 Tuas View Place",
+    "Country": "Singapore",
+    "Postal Code": 637885
+  },
+  {
+    "No": 27,
+    "Customer": "AYATT",
+    "Full Name": "AYATT",
+    "Address": "117 Dunlop Street",
+    "Country": "Singapore",
+    "Postal Code": 209436
+  },
+  {
+    "No": 28,
+    "Customer": "Battery Power International Pte Ltd",
+    "Full Name": "Battery Power International Pte Ltd",
+    "Address": "85 Tuas Avenue 1",
+    "Country": "Singapore",
+    "Postal Code": 639518
+  },
+  {
+    "No": 29,
+    "Customer": "Becom International Pte Ltd",
+    "Full Name": "Mr Peter",
+    "Address": "50 Bukit Batok Street 23, #03-10 Midview Building",
+    "Country": "Singapore",
+    "Postal Code": 659578
+  },
+  {
+    "No": 30,
+    "Customer": "Beijing 101 Hair Consultants Pte Ltd",
+    "Full Name": "Ms. Nian Xin",
+    "Address": "1 Coleman Street #05-07/08, The Adelphi",
+    "Country": "Singapore",
+    "Postal Code": 179803
+  },
+  {
+    "No": 31,
+    "Customer": "Benelux Flowers & Food Pte Ltd",
+    "Full Name": "Benelux Flowers & Food Pte Ltd",
+    "Address": "245 Pandan Loop",
+    "Country": "Singapore",
+    "Postal Code": 128428
+  },
+  {
+    "No": 32,
+    "Customer": "Besley & Pike (S) Pte Ltd",
+    "Full Name": "Ms. Jessica",
+    "Address": "3 Wan Lee Road",
+    "Country": "Singapore",
+    "Postal Code": 627935
+  },
+  {
+    "No": 33,
+    "Customer": "Bhavna Pte Ltd",
+    "Full Name": "Bhavna Pte Ltd",
+    "Address": "5 Pereira Road, #04-03 Asiawide Industrial Building",
+    "Country": "Singapore",
+    "Postal Code": 368025
+  },
+  {
+    "No": 34,
+    "Customer": "Bilcare Research Singapore Pte Ltd",
+    "Full Name": "Ms. May Khong",
+    "Address": "52 Changi South Street 1",
+    "Country": "Singapore",
+    "Postal Code": 486161
+  },
+  {
+    "No": 35,
+    "Customer": "Bion Advance Pte Ltd",
+    "Full Name": "Ms. Tan Hui Ni",
+    "Address": "35 Pioneer Road North, #02-03",
+    "Country": "Singapore",
+    "Postal Code": 628475
+  },
+  {
+    "No": 36,
+    "Customer": "Blossom Creative Centre LLP",
+    "Full Name": "Ms May Ng",
+    "Address": "8 Jalan Limau Purut",
+    "Country": "Singapore",
+    "Postal Code": 468182
+  },
+  {
+    "No": 37,
+    "Customer": "Blue Aqua International Pte. Ltd",
+    "Full Name": "Blue Aqua International Pte. Ltd",
+    "Address": "31 Harrison Road, #04-02 Food Empire Building",
+    "Country": "Singapore",
+    "Postal Code": 369649
+  },
+  {
+    "No": 38,
+    "Customer": "BlueSG Pte Ltd",
+    "Full Name": "BlueSG Pte Ltd",
+    "Address": "16 Science Park Drive, #04-01 DNV GL Technology Centre",
+    "Country": "Singapore",
+    "Postal Code": 118227
+  },
+  {
+    "No": 39,
+    "Customer": "Bollore Logistics Singapore Pte Ltd",
+    "Full Name": "Bollore Logistics Singapore Pte Ltd",
+    "Address": "101 Alps Avenue, #03-01",
+    "Country": "Singapore",
+    "Postal Code": 498793
+  },
+  {
+    "No": 40,
+    "Customer": "Bottomslim New York Pte Ltd",
+    "Full Name": "Bottomslim New York Pte Ltd",
+    "Address": "243 Alexandra Road, #06-01 BS Centre",
+    "Country": "Singapore",
+    "Postal Code": 159932
+  },
+  {
+    "No": 41,
+    "Customer": "Brady Corporation Asia Pte Ltd",
+    "Full Name": "Brady Corporation Asia Pte Ltd",
+    "Address": "1 Kaki Bukit Crescent",
+    "Country": "Singapore",
+    "Postal Code": 416236
+  },
+  {
+    "No": 42,
+    "Customer": "Car Creed Pte Ltd",
+    "Full Name": "Mr. Jason Tan",
+    "Address": "13 Kaki Bukit Road 4, #03-22/23 Bartley Biz Centre",
+    "Country": "Singapore",
+    "Postal Code": 417807
+  },
+  {
+    "No": 43,
+    "Customer": "Casa And Maison Pte Ltd",
+    "Full Name": "Mr. Cayman Phua",
+    "Address": "62 Ubi Road 1, #07-15",
+    "Country": "Singapore",
+    "Postal Code": 408726
+  },
+  {
+    "No": 44,
+    "Customer": "Caterpillar Asia Pte Ltd",
+    "Full Name": "Caterpillar Asia Pte Ltd",
+    "Address": "14 Tractor Road,",
+    "Country": "Singapore",
+    "Postal Code": 627973
+  },
+  {
+    "No": 45,
+    "Customer": "CatSmart Supply & Distribution Pte Ltd",
+    "Full Name": "CatSmart Supply & Distribution Pte Ltd",
+    "Address": "23 Tagore Lane, #03-01",
+    "Country": "Singapore",
+    "Postal Code": 787601
+  },
+  {
+    "No": 46,
+    "Customer": "CEVA Logistics Singapore Pte Ltd",
+    "Full Name": "CEVA Logistics Singapore Pte Ltd",
+    "Address": "80 Alps Ave",
+    "Country": "Singapore",
+    "Postal Code": 498792
+  },
+  {
+    "No": 47,
+    "Customer": "Chemstation International Pte Ltd",
+    "Full Name": "Mr. Calvin Tan",
+    "Address": "19 Tanjong Penjuru",
+    "Country": "Singapore",
+    "Postal Code": 609021
+  },
+  {
+    "No": 48,
+    "Customer": "Cherry Technology Solution Pte Ltd",
+    "Full Name": "Ms.Yan Ling/Mr.Edmond Neo",
+    "Address": "9 Raffles Place, #18-04 Republic Plaza",
+    "Country": "Singapore",
+    "Postal Code": 48619
+  },
+  {
+    "No": 49,
+    "Customer": "Cit Cosmeceutical Pte Ltd",
+    "Full Name": "Cit Cosmeceutical Pte Ltd",
+    "Address": "2 Ang Mo Kio Street 65",
+    "Country": "Singapore",
+    "Postal Code": 569058
+  },
+  {
+    "No": 50,
+    "Customer": "CJ Logistics Asia Pte Ltd",
+    "Full Name": "CJ Logistics Asia Pte Ltd",
+    "Address": "20 Toh Guan Road, #08-00 CJ Logistics Building",
+    "Country": "Singapore",
+    "Postal Code": 608839
+  },
+  {
+    "No": 51,
+    "Customer": "Cloud Network Technology Singapore Pte Ltd",
+    "Full Name": "Cloud Network Technology Singapore Pte Ltd",
+    "Address": "54 Genting Lane, #03-05 Ruby Lane Complex Blk 2",
+    "Country": "Singapore",
+    "Postal Code": 349562
+  },
+  {
+    "No": 52,
+    "Customer": "CMB Tech Pte Ltd",
+    "Full Name": "Ms. Helen Lim",
+    "Address": "41 Tuas View Close",
+    "Country": "Singapore",
+    "Postal Code": 637478
+  },
+  {
+    "No": 53,
+    "Customer": "Commonwealth Concepts Pte Ltd",
+    "Full Name": "Commonwealth Concepts Pte Ltd",
+    "Address": "7 Buroh Lane, #06-01 Commonwealth Capital Building",
+    "Country": "Singapore",
+    "Postal Code": 618291
+  },
+  {
+    "No": 54,
+    "Customer": "Compitek Corp. Pte. Ltd.",
+    "Full Name": "Compitek Corp. Pte. Ltd.",
+    "Address": "1 Woodlands Industrial Park E1, #05-01 Northland Industrial Building 1",
+    "Country": "Singapore",
+    "Postal Code": 757724
+  },
+  {
+    "No": 55,
+    "Customer": "Continuumm Technologies Pte Ltd",
+    "Full Name": "Mun Yee",
+    "Address": "5012 Ang Mo Kio Avenue 5, #04-01",
+    "Country": "Singapore",
+    "Postal Code": 569876
+  },
+  {
+    "No": 56,
+    "Customer": "CPG Facilities Management Pte Ltd",
+    "Full Name": "Ms. Chermaine Yap",
+    "Address": "2 Ubi View, #05-01",
+    "Country": "Singapore",
+    "Postal Code": 408556
+  },
+  {
+    "No": 57,
+    "Customer": "Craffee Studio Pte Ltd",
+    "Full Name": "Craffee Studio Pte Ltd",
+    "Address": "2 Venture Drive, #06-08",
+    "Country": "Singapore",
+    "Postal Code": 608526
+  },
+  {
+    "No": 58,
+    "Customer": "CTI Logistics Pte Ltd",
+    "Full Name": "Ms. Eva Lim",
+    "Address": "Changi Airfreight Centre, #01-10 Cargo Agents Building E, PO Box 588",
+    "Country": "Singapore",
+    "Postal Code": 819834
+  },
+  {
+    "No": 59,
+    "Customer": "CWT Integrated Pte Ltd",
+    "Full Name": "Ms. Jocelyn Leong",
+    "Address": "38 Tanjong Penjuru, CWT Logistics Hub 1",
+    "Country": "Singapore",
+    "Postal Code": 609039
+  },
+  {
+    "No": 60,
+    "Customer": "D-Logic Refrigeration Pte Ltd",
+    "Full Name": "Ms. Eugenie Tan",
+    "Address": "10 Buroh Street, #03-10 West Connect Building,",
+    "Country": "Singapore",
+    "Postal Code": 627564
+  },
+  {
+    "No": 61,
+    "Customer": "Dabo Corporation Pte Ltd",
+    "Full Name": "Ms. Christine",
+    "Address": "150 kampong Ampat, KA Centre, #01-04",
+    "Country": "Singapore",
+    "Postal Code": 368324
+  },
+  {
+    "No": 62,
+    "Customer": "Daily Fresh Products Pte. Ltd.",
+    "Full Name": "Ms Angie",
+    "Address": "24 Wholesale Centre, #01-185 Pasir Panjang Wholesale Centre",
+    "Country": "Singapore",
+    "Postal Code": 110024
+  },
+  {
+    "No": 63,
+    "Customer": "Dawn Plastic Industries Pte Ltd",
+    "Full Name": "Ms Loo",
+    "Address": "2020 Bukit Batok Street 23, #02-236 Bukit Batok Industrial Park A",
+    "Country": "Singapore",
+    "Postal Code": 659525
+  },
+  {
+    "No": 64,
+    "Customer": "Dead Sea Premier Singapore Pte Ltd",
+    "Full Name": "Ms. Emilia",
+    "Address": "114 Lavender Street, CT Hub 2 #09-70/71",
+    "Country": "Singapore",
+    "Postal Code": 338729
+  },
+  {
+    "No": 65,
+    "Customer": "Denka Advantech Pte Ltd",
+    "Full Name": "Denka Advantech Pte Ltd",
+    "Address": "11A Tuas Avenue 20",
+    "Country": "Singapore",
+    "Postal Code": 638823
+  },
+  {
+    "No": 66,
+    "Customer": "Dojo Fulfilment Pte Ltd",
+    "Full Name": "Ms. Wendy Chong",
+    "Address": "M-Cube 18 Pioneer Crescent",
+    "Country": "Singapore",
+    "Postal Code": 628567
+  },
+  {
+    "No": 67,
+    "Customer": "Dore Aesthetics Pte Ltd",
+    "Full Name": "Mr Nicholas Ho",
+    "Address": "9 Temasek Boulevard, #13-01/02/03",
+    "Country": "Singapore",
+    "Postal Code": 38989
+  },
+  {
+    "No": 68,
+    "Customer": "Dovechem Packaging Pte Ltd",
+    "Full Name": "Ms Janice",
+    "Address": "19A Tanjong Penjuru",
+    "Country": "Singapore",
+    "Postal Code": 609041
+  },
+  {
+    "No": 69,
+    "Customer": "Dyna-Mac Engineering Services Pte Ltd",
+    "Full Name": "Ms. Sau Kin",
+    "Address": "45 Gul Road",
+    "Country": "Singapore",
+    "Postal Code": 629350
+  },
+  {
+    "No": 70,
+    "Customer": "Dynacast (Singapore) Pte Ltd",
+    "Full Name": "Ms. Juriah",
+    "Address": "6 Second Chin Bee Road",
+    "Country": "Singapore",
+    "Postal Code": 618773
+  },
+  {
+    "No": 71,
+    "Customer": "dōTERRA Enterprises Singapore Pte Ltd",
+    "Full Name": "dōTERRA Enterprises Singapore Pte Ltd",
+    "Address": "111 Somerset Road, #12-28 TripleOne Somerset",
+    "Country": "Singapore",
+    "Postal Code": 238164
+  },
+  {
+    "No": 72,
+    "Customer": "Eaton Industries Pte Ltd",
+    "Full Name": "Ms Patricia Lie",
+    "Address": "45 Tuas View Circuit",
+    "Country": "Singapore",
+    "Postal Code": 637660
+  },
+  {
+    "No": 73,
+    "Customer": "ECU-Worldwide (Singapore) Pte Ltd",
+    "Full Name": "Ms. Yuen Nee",
+    "Address": "237 Pandan Loop, #06-09",
+    "Country": "Singapore",
+    "Postal Code": 128424
+  },
+  {
+    "No": 74,
+    "Customer": "EN Sakaba @ CT Pte Ltd",
+    "Full Name": "Mr. Kent Lin",
+    "Address": "160 Robinson Road, #21-06 SBF Centre",
+    "Country": "Singapore",
+    "Postal Code": 68914
+  },
+  {
+    "No": 75,
+    "Customer": "Energy Pipeline Services Pte Ltd",
+    "Full Name": "Ms. Michelle Leong",
+    "Address": "37 Joo Koon Road",
+    "Country": "Singapore",
+    "Postal Code": 628989
+  },
+  {
+    "No": 76,
+    "Customer": "ESCO Pte Ltd",
+    "Full Name": "ESCO Pte Ltd",
+    "Address": "6 Harper Road, #06-08, Leong Huat Building",
+    "Country": "Singapore",
+    "Postal Code": 369674
+  },
+  {
+    "No": 77,
+    "Customer": "Eu Yan Sang (S) Private Limited",
+    "Full Name": "Eu Yan Sang (S) Private Limited",
+    "Address": "21 Tai Seng Drive",
+    "Country": "Singapore",
+    "Postal Code": 535223
+  },
+  {
+    "No": 78,
+    "Customer": "Excelitas Technologies Singapore Pte. Ltd",
+    "Full Name": "Ms. Evangeline Yip",
+    "Address": "8 Tractor Road",
+    "Country": "Singapore",
+    "Postal Code": 627969
+  },
+  {
+    "No": 79,
+    "Customer": "Fagerdala Singapore Pte Ltd",
+    "Full Name": "Ms Irene",
+    "Address": "6 Penjuru Lane",
+    "Country": "Singapore",
+    "Postal Code": 609187
+  },
+  {
+    "No": 80,
+    "Customer": "Fitch Ratings Singapore Pte Ltd",
+    "Full Name": "Fitch Ratings Singapore Pte Ltd",
+    "Address": "One Raffles Quay South Tower #22-11",
+    "Country": "Singapore",
+    "Postal Code": 48583
+  },
+  {
+    "No": 81,
+    "Customer": "Fonda Global Engineering Pte Ltd",
+    "Full Name": "Ms. Tracy Hoe",
+    "Address": "2 Tuas View Square",
+    "Country": "Singapore",
+    "Postal Code": 637576
+  },
+  {
+    "No": 82,
+    "Customer": "Fong’s Engineering & Manufacturing Pte Ltd",
+    "Full Name": "Ms. Evelina",
+    "Address": "79 Loyang Way",
+    "Country": "Singapore",
+    "Postal Code": 508766
+  },
+  {
+    "No": 83,
+    "Customer": "Fort Canning Lodge (YWCA)",
+    "Full Name": "Mr. Les Tan",
+    "Address": "254 Outram Road",
+    "Country": "Singapore",
+    "Postal Code": 169051
+  },
+  {
+    "No": 84,
+    "Customer": "Foster Electric (S) Pte Ltd",
+    "Full Name": "Ms. Chee Ming Hui",
+    "Address": "159 Kampong Ampat",
+    "Country": "Singapore",
+    "Postal Code": 368328
+  },
+  {
+    "No": 85,
+    "Customer": "Four Leaves Four Leaves Pte Ltdte Ltd",
+    "Full Name": "Four Leaves Pte Ltd",
+    "Address": "37 Chin Bee Crescent",
+    "Country": "Singapore",
+    "Postal Code": 619903
+  },
+  {
+    "No": 86,
+    "Customer": "Foxconn Singapore Pte Ltd",
+    "Full Name": "Foxconn Singapore Pte Ltd",
+    "Address": "54 Genting Lane, #03-05 Ruby Lane Complex Blk 2",
+    "Country": "Singapore",
+    "Postal Code": 349562
+  },
+  {
+    "No": 87,
+    "Customer": "Freight Systems Logistics Pte Ltd",
+    "Full Name": "Freight Systems Logistics Pte Ltd",
+    "Address": "1 Maritime Square, #10-52 (Lobby C) Harbourfront Centre",
+    "Country": "Singapore",
+    "Postal Code": 99253
+  },
+  {
+    "No": 88,
+    "Customer": "Fresh Gourmet Pte Ltd",
+    "Full Name": "Bee Yong",
+    "Address": "206 Pandan Loop, Block B Level 2",
+    "Country": "Singapore",
+    "Postal Code": 128397
+  },
+  {
+    "No": 89,
+    "Customer": "GE Aviation Engine Services Singapore Pte Ltd",
+    "Full Name": "Ye Ningyu",
+    "Address": "23 Loyang Way",
+    "Country": "Singapore",
+    "Postal Code": 508726
+  },
+  {
+    "No": 90,
+    "Customer": "GL Engineering & Construction Pte Ltd",
+    "Full Name": "GL Engineering & Construction Pte Ltd",
+    "Address": "53 Ubi Avenue 1, #06-05 Paya Ubi Industrial Park",
+    "Country": "Singapore",
+    "Postal Code": 408934
+  },
+  {
+    "No": 91,
+    "Customer": "Glife Technologies Pte Ltd",
+    "Full Name": "Glife Technologies Pte Ltd",
+    "Address": "1 Buroh Lane, #3M-04",
+    "Country": "Singapore",
+    "Postal Code": 618292
+  },
+  {
+    "No": 92,
+    "Customer": "Glocom Marketing Pte Ltd",
+    "Full Name": "Ms. Tricia Ang",
+    "Address": "67 Ayer Rajah Crescent, #04-09 Ayer Rajah Industrial Estate",
+    "Country": "Singapore",
+    "Postal Code": 139950
+  },
+  {
+    "No": 93,
+    "Customer": "Gourmet Partner (S) Pte Ltd",
+    "Full Name": "Gourmet Partner (S) Pte Ltd",
+    "Address": "232 Pandan Loop",
+    "Country": "Singaopre",
+    "Postal Code": 128420
+  },
+  {
+    "No": 94,
+    "Customer": "Grocery Logistics Singapore Pte Ltd",
+    "Full Name": "Grocery Logistics Singapore Pte Ltd",
+    "Address": "37 Joo Koon Circle",
+    "Country": "Singapore",
+    "Postal Code": 629062
+  },
+  {
+    "No": 95,
+    "Customer": "Growthwell Singapore Pte Ltd",
+    "Full Name": "Growthwell Singapore Pte Ltd",
+    "Address": "1002 Tai Seng Avenue, #01-2540",
+    "Country": "Singapore",
+    "Postal Code": 534409
+  },
+  {
+    "No": 96,
+    "Customer": "HAKUTO Singapore Pte Ltd",
+    "Full Name": "Ms Catherine Wong",
+    "Address": "151 Lorong Chuan, #06-07A Lobby G, New Tech Park",
+    "Country": "Singapore",
+    "Postal Code": 556741
+  },
+  {
+    "No": 97,
+    "Customer": "Halley Medical Aesthetics",
+    "Full Name": "Ms. Kerlyn",
+    "Address": "277 Orchard Road, #03-15 Orchard Gateway",
+    "Country": "Singapore",
+    "Postal Code": 238858
+  },
+  {
+    "No": 98,
+    "Customer": "HCS Engineering Pte Ltd",
+    "Full Name": "Ms. Joyanne Au",
+    "Address": "11 Woodlands Walk",
+    "Country": "Singapore",
+    "Postal Code": 738265
+  },
+  {
+    "No": 99,
+    "Customer": "Heng Long Leather Co. Pte Ltd",
+    "Full Name": "Mr. Kelvin Chan",
+    "Address": "6 Kim Chuan Drive",
+    "Country": "Singapore",
+    "Postal Code": 537082
+  },
+  {
+    "No": 100,
+    "Customer": "Huhtamaki Singapore Pte Ltd",
+    "Full Name": "Ms. Agnes Lim",
+    "Address": "8 Admiralty Street, #07-16",
+    "Country": "Singapore",
+    "Postal Code": 757438
+  },
+  {
+    "No": 101,
+    "Customer": "HVNS Productions Pte Ltd",
+    "Full Name": "Ms. Charlene",
+    "Address": "221 Henderson Road, #07-10 Henderson Building",
+    "Country": "Singapore",
+    "Postal Code": 159557
+  },
+  {
+    "No": 102,
+    "Customer": "IDS Aesthetics Pte Ltd",
+    "Full Name": "MS. Charlene",
+    "Address": "221 Henderson Road, #07-10",
+    "Country": "Singapore",
+    "Postal Code": 159557
+  },
+  {
+    "No": 103,
+    "Customer": "IDV Concepts Asia Pte Ltd",
+    "Full Name": "Ms. Angela Chew",
+    "Address": "35 Marsiling Industrial Estate Road 3, #01-01/02",
+    "Country": "Singapore",
+    "Postal Code": 739257
+  },
+  {
+    "No": 104,
+    "Customer": "iFun Singapore Pte Ltd",
+    "Full Name": "iFun Singapore Pte Ltd",
+    "Address": "30 Pasir Panjang Road, #15-31A Mapletree Business City,",
+    "Country": "Singapore",
+    "Postal Code": 117440
+  },
+  {
+    "No": 105,
+    "Customer": "Illumina Singapore Pte Ltd",
+    "Full Name": "Ms. Evelyn Ng",
+    "Address": "29 Woodlands Industrial Park E1 North Tech, #02-13/18",
+    "Country": "Singapore",
+    "Postal Code": 757716
+  },
+  {
+    "No": 106,
+    "Customer": "Incapital Singapore Holdings Private Limited",
+    "Full Name": "Incapital Singapore Holdings Private Limited",
+    "Address": "37 Jalan Pemimpin, #03-14 Mapex",
+    "Country": "Singapore",
+    "Postal Code": 577177
+  },
+  {
+    "No": 107,
+    "Customer": "Ingrasys (Singapore) Pte Ltd",
+    "Full Name": "Ingrasys (Singapore) Pte Ltd",
+    "Address": "54 Genting Lane, #03-05 Ruby Land Complex",
+    "Country": "Singapore",
+    "Postal Code": 349562
+  },
+  {
+    "No": 108,
+    "Customer": "Innovix Distributions Pte Ltd",
+    "Full Name": "Ms. Lynne Goh",
+    "Address": "2 Serangoon North Avenue 5, #05-03",
+    "Country": "Singapore",
+    "Postal Code": 554911
+  },
+  {
+    "No": 109,
+    "Customer": "ITS Science & Medical Pte Ltd",
+    "Full Name": "Ms Kimberly Khoo",
+    "Address": "219 Henderson Road, #11-02 Henderson Industrial Park",
+    "Country": "Singapore",
+    "Postal Code": 159556
+  },
+  {
+    "No": 110,
+    "Customer": "Japan Automatic Machine Singapore Pte Ltd",
+    "Full Name": "Ms. Cannie",
+    "Address": "12 Tannery Road, #08-04 HB Centre",
+    "Country": "Singapore",
+    "Postal Code": 347722
+  },
+  {
+    "No": 111,
+    "Customer": "Japan Green Hospital Pte Ltd",
+    "Full Name": "Ms. Doris Tan",
+    "Address": "290 Orchard Road, #10-01 Paragon",
+    "Country": "Singapore",
+    "Postal Code": 238859
+  },
+  {
+    "No": 112,
+    "Customer": "JEP Precision Engineering Pte Ltd",
+    "Full Name": "Ms Judy",
+    "Address": "16 Seletar Aerospace Crescent",
+    "Country": "Singapura",
+    "Postal Code": 797567
+  },
+  {
+    "No": 113,
+    "Customer": "JR Pte Ltd",
+    "Full Name": "Ms. Georgina Tey",
+    "Address": "50 Ubi Avenue 3, #01-10",
+    "Country": "Singapore",
+    "Postal Code": 408866
+  },
+  {
+    "No": 114,
+    "Customer": "JV Tapas Pte Ltd",
+    "Full Name": "Mr. How Jun Wei",
+    "Address": "350 Orchard Road, #14-01 Shaw House",
+    "Country": "Singapore",
+    "Postal Code": 238868
+  },
+  {
+    "No": 115,
+    "Customer": "Kaimay Trading Pte Ltd",
+    "Full Name": "Ms. Ann",
+    "Address": "27 Penjuru Lane, Annex Block Level 6",
+    "Country": "Singapore",
+    "Postal Code": 609195
+  },
+  {
+    "No": 116,
+    "Customer": "Katoen Natie Singapore (Jurong) Pte Ltd",
+    "Full Name": "Katoen Natie Singapore (Jurong) Pte Ltd",
+    "Address": "1 Banyan Place, Jurong Island,",
+    "Country": "Singapore",
+    "Postal Code": 627841
+  },
+  {
+    "No": 117,
+    "Customer": "Kerry Logistics Centre (Tampines) Pte Ltd",
+    "Full Name": "Kerry Logistics Centre (Tampines) Pte Ltd",
+    "Address": "19 Greenwich Drive, #08-00",
+    "Country": "Singapore",
+    "Postal Code": 534021
+  },
+  {
+    "No": 118,
+    "Customer": "KH Roberts Pte Ltd",
+    "Full Name": "Ms. Connie Foung",
+    "Address": "7A Buroh Lane",
+    "Country": "Singapore",
+    "Postal Code": 618293
+  },
+  {
+    "No": 119,
+    "Customer": "King Wan Construction Pte Ltd",
+    "Full Name": "Ms. Yean Cheng",
+    "Address": "8 Sungei Kadut Loop",
+    "Country": "Singapore",
+    "Postal Code": 729455
+  },
+  {
+    "No": 120,
+    "Customer": "Klenco (Singapore) Pte Ltd",
+    "Full Name": "Klenco (Singapore) Pte Ltd",
+    "Address": "18 Gul Crescent",
+    "Country": "Singapore",
+    "Postal Code": 629527
+  },
+  {
+    "No": 121,
+    "Customer": "Koa Denko (S) Pte Ltd",
+    "Full Name": "Ms Shirley",
+    "Address": "72 Bendemeer Road, #06-28",
+    "Country": "Singapore",
+    "Postal Code": 339941
+  },
+  {
+    "No": 122,
+    "Customer": "Komico Technology Singapore Pte Ltd",
+    "Full Name": "Komico Technology Singapore Pte Ltd",
+    "Address": "2 Woodlands Sector 1, #03-20 Woodlands Spectrum",
+    "Country": "Singapore",
+    "Postal Code": 738068
+  },
+  {
+    "No": 123,
+    "Customer": "Kuehne + Nagel Pte Ltd",
+    "Full Name": "Kuehne + Nagel Pte Ltd",
+    "Address": "10 Pioneer Crescent, Singapore Logistics Hub",
+    "Country": "Singapore",
+    "Postal Code": 628566
+  },
+  {
+    "No": 124,
+    "Customer": "Lamitech (Singapore) Pte Ltd",
+    "Full Name": "Ms. Natalie Wong",
+    "Address": "1 Woodlands Industrial Park E1, #05-01",
+    "Country": "Singapore",
+    "Postal Code": 757724
+  },
+  {
+    "No": 125,
+    "Customer": "Leeden National Oxygen Ltd",
+    "Full Name": "Leeden National Oxygen Ltd",
+    "Address": "1 Shipyard Road",
+    "Country": "Singapore",
+    "Postal Code": 628128
+  },
+  {
+    "No": 126,
+    "Customer": "LexBuild Wheels & Rail Pte Ltd",
+    "Full Name": "Ms. Suzanne",
+    "Address": "2 Woodlands Sector 1, #05-12",
+    "Country": "Singapore",
+    "Postal Code": 738068
+  },
+  {
+    "No": 127,
+    "Customer": "Lih Ming Constructions Pte Ltd",
+    "Full Name": "Ms. Joyce Koh",
+    "Address": "71 Woodlands Avenue 10, #02-18 Woodlands Industrial Exchange",
+    "Country": "Singapore",
+    "Postal Code": 737743
+  },
+  {
+    "No": 128,
+    "Customer": "Lim Kim Hai Electric Co (S) Pte Ltd",
+    "Full Name": "Ms. Jocelyn Wang",
+    "Address": "53 Kallang Place",
+    "Country": "Singapore",
+    "Postal Code": 339177
+  },
+  {
+    "No": 129,
+    "Customer": "Liveo Research Singapore Pte Ltd",
+    "Full Name": "Mr. Zheshen",
+    "Address": "52 Changi South Street 1",
+    "Country": "Singapore",
+    "Postal Code": 486161
+  },
+  {
+    "No": 130,
+    "Customer": "Loh & Sons Paint Co (S) Pte Ltd",
+    "Full Name": "Loh & Sons Paint Co (S) Pte Ltd",
+    "Address": "123 Pioneer Road #01-00,",
+    "Country": "Singapore",
+    "Postal Code": 639596
+  },
+  {
+    "No": 131,
+    "Customer": "Lubritrade Distribution Pte Ltd",
+    "Full Name": "Lubritrade Distribution Pte Ltd",
+    "Address": "No.5 Kallang Way 2A, #05-01 Lubritrade Center",
+    "Country": "Singapore",
+    "Postal Code": 347494
+  },
+  {
+    "No": 132,
+    "Customer": "Marian Asia Pte Ltd",
+    "Full Name": "Ms. Thet",
+    "Address": "53 Serangoon Nth Ave 4, #01-03",
+    "Country": "Singapore",
+    "Postal Code": 555852
+  },
+  {
+    "No": 133,
+    "Customer": "Markono Logistics Pte Ltd",
+    "Full Name": "Ms Wendy Chong",
+    "Address": "M-Cube 18 Pioneer Crescent",
+    "Country": "Singapore",
+    "Postal Code": 628567
+  },
+  {
+    "No": 134,
+    "Customer": "Markono Print Media Pte Ltd",
+    "Full Name": "Ms Wendy Chong",
+    "Address": "M-Cube 18 Pioneer Crescent",
+    "Country": "Singapore",
+    "Postal Code": 628567
+  },
+  {
+    "No": 135,
+    "Customer": "MEDs Technologies Pte Ltd",
+    "Full Name": "Ms. Mun Yee",
+    "Address": "Techplace II #04-01 5012, 5012 Ang Mo Kio Avenue 5",
+    "Country": "Singapore",
+    "Postal Code": 569876
+  },
+  {
+    "No": 136,
+    "Customer": "Meiban Micro Pte Ltd",
+    "Full Name": "Ms. Rujun",
+    "Address": "26 Ang Mo Kio Industrial Park 2",
+    "Country": "Singapore",
+    "Postal Code": 569507
+  },
+  {
+    "No": 137,
+    "Customer": "Memory World Singapore Pte Ltd",
+    "Full Name": "Ms. Agnes",
+    "Address": "No. 1 Rochor Canal Road, #04-12 Sim Lim Square",
+    "Country": "Singapore",
+    "Postal Code": 188504
+  },
+  {
+    "No": 138,
+    "Customer": "Metech International Limited",
+    "Full Name": "Ms. Natasha Huang",
+    "Address": "65 Tech Park Crescent",
+    "Country": "Singapore",
+    "Postal Code": 637787
+  },
+  {
+    "No": 139,
+    "Customer": "Metech Recycling Pte Ltd",
+    "Full Name": "Ms. Natasha Huang",
+    "Address": "65 Tech Park Crescent",
+    "Country": "Singapore",
+    "Postal Code": 637787
+  },
+  {
+    "No": 140,
+    "Customer": "Midnight Yaki LLP",
+    "Full Name": "Mr Samual",
+    "Address": "6001 Beach Rd, #01-38 Golden Mile Tower",
+    "Country": "Singapore",
+    "Postal Code": 199589
+  },
+  {
+    "No": 141,
+    "Customer": "Mitsubishi Heavy Industries Asia Pacific Pte. Ltd.",
+    "Full Name": "Ms. Jolene Leong",
+    "Address": "150 Beach Road, #29-00 Gateway West",
+    "Country": "Singapore",
+    "Postal Code": 189720
+  },
+  {
+    "No": 142,
+    "Customer": "Mitsui & Co. Global Logistics Pte Ltd",
+    "Full Name": "Mitsui & Co. Global Logistics Pte Ltd",
+    "Address": "51 Bras Basah Road, #05-01 5OneCentral",
+    "Country": "Singapore",
+    "Postal Code": 189554
+  },
+  {
+    "No": 143,
+    "Customer": "Monopole Pte Ltd",
+    "Full Name": "Ms. Grace Ong",
+    "Address": "23 Tagore Lane",
+    "Country": "Singapore",
+    "Postal Code": 787601
+  },
+  {
+    "No": 144,
+    "Customer": "Ms. Chan Lai Na",
+    "Full Name": "",
+    "Address": "No.6 Taman Adda Heights 1/22",
+    "Country": "Malaysia",
+    "Postal Code": 81100
+  },
+  {
+    "No": 145,
+    "Customer": "MSIG Insurance (Singapore) Pte. Ltd",
+    "Full Name": "Ms Selena Teh",
+    "Address": "4 Shenton Way, #21-01 SGX Centre 2",
+    "Country": "Singapore",
+    "Postal Code": 68807
+  },
+  {
+    "No": 146,
+    "Customer": "Muhammad Farhan Bin Ahmad",
+    "Full Name": "S9003655F",
+    "Address": "BLK 451 Jurong West St 42 #02-190",
+    "Country": "Singapore",
+    "Postal Code": 640451
+  },
+  {
+    "No": 147,
+    "Customer": "N P Foods Singapore Pte Ltd",
+    "Full Name": "Ms. Annie Lee",
+    "Address": "1 Woodlands Link",
+    "Country": "Singapore",
+    "Postal Code": 738719
+  },
+  {
+    "No": 148,
+    "Customer": "Nagase Singapore Pte Ltd",
+    "Full Name": "Nagase Singapore Pte Ltd",
+    "Address": "600 North Bridge Road, #11-01Parkview Square",
+    "Country": "Singapore",
+    "Postal Code": 188778
+  },
+  {
+    "No": 149,
+    "Customer": "National Oilwell Pte Ltd",
+    "Full Name": "Ms. Tracy Tan",
+    "Address": "4 Gul Way",
+    "Country": "Singapore",
+    "Postal Code": 629192
+  },
+  {
+    "No": 150,
+    "Customer": "Neo Shipping Agencies Pte Ltd",
+    "Full Name": "Denise Tan",
+    "Address": "37 Keppel Road, Blk 1, #03-06 Tg Pagar Distripark",
+    "Country": "Singapore",
+    "Postal Code": 89064
+  },
+  {
+    "No": 151,
+    "Customer": "New Hope Singapore Premix Pte Ltd",
+    "Full Name": "Ms. Summer",
+    "Address": "15 Tuas South Street 6",
+    "Country": "Singapore",
+    "Postal Code": 636913
+  },
+  {
+    "No": 152,
+    "Customer": "Nippon Express (Singapore) Pte Ltd",
+    "Full Name": "Nippon Express (Singapore) Pte Ltd",
+    "Address": "5C Toh Guan Road East",
+    "Country": "Singapore",
+    "Postal Code": 608828
+  },
+  {
+    "No": 153,
+    "Customer": "NIPPON EXPRESS (SOUTH ASIA & OCEANIA) PTE LTD",
+    "Full Name": "MS. Ailic Tung",
+    "Address": "5C Toh Guan Road E",
+    "Country": "Singapore",
+    "Postal Code": 608826
+  },
+  {
+    "No": 154,
+    "Customer": "Nissin Transport (S) Pte Ltd",
+    "Full Name": "Nissin Transport (S) Pte Ltd",
+    "Address": "50 Tuas Avenue 9",
+    "Country": "Singapore",
+    "Postal Code": 639192
+  },
+  {
+    "No": 155,
+    "Customer": "NMB Singapore Limited",
+    "Full Name": "Ms. Pei Yu",
+    "Address": "1 Chai Chee Ave",
+    "Country": "Singapore",
+    "Postal Code": 469059
+  },
+  {
+    "No": 156,
+    "Customer": "NNR Global Logistics Pte Ltd",
+    "Full Name": "NNR Global Logistics Pte Ltd",
+    "Address": "10 Changi South Lane #02-01",
+    "Country": "Singapore",
+    "Postal Code": 486162
+  },
+  {
+    "No": 157,
+    "Customer": "NTL Naigai Trans Line (Singapore) Pte Ltd",
+    "Full Name": "NTL Naigai Trans Line (Singapore) Pte Ltd",
+    "Address": "80 Robinson Road #17-01/01A",
+    "Country": "Singapore",
+    "Postal Code": 68898
+  },
+  {
+    "No": 158,
+    "Customer": "NTUC Fairprice Co-operative Ltd",
+    "Full Name": "Mr. Spencer",
+    "Address": "1 Joo Koon Circle, #13-01 FairPrice Hub",
+    "Country": "Singapore",
+    "Postal Code": 629117
+  },
+  {
+    "No": 159,
+    "Customer": "Oiltanking Asia Pacific Pte Ltd",
+    "Full Name": "Ms Fiona Lee",
+    "Address": "1 Seraya Avenue",
+    "Country": "Singapore",
+    "Postal Code": 628208
+  },
+  {
+    "No": 160,
+    "Customer": "OJJ Foods Pte Ltd",
+    "Full Name": "Diana Goh",
+    "Address": "15 Wan Lee Road",
+    "Country": "Singapore",
+    "Postal Code": 627945
+  },
+  {
+    "No": 161,
+    "Customer": "One Plus International Pte Ltd",
+    "Full Name": "Mr. Jack Tay",
+    "Address": "22 Sin Ming Lane Mid View City, #06-76",
+    "Country": "Singapore",
+    "Postal Code": 573969
+  },
+  {
+    "No": 162,
+    "Customer": "ONI Global Pte Ltd",
+    "Full Name": "Ms Joey Loh",
+    "Address": "65 Ubi Avenue 1",
+    "Country": "Singapore",
+    "Postal Code": 408939
+  },
+  {
+    "No": 163,
+    "Customer": "Ootoya Asia Pacific Pte Ltd",
+    "Full Name": "Mr. David Wong",
+    "Address": "8 Ubi Road 2, Zervex, #06-02",
+    "Country": "Singapore",
+    "Postal Code": 408538
+  },
+  {
+    "No": 164,
+    "Customer": "Opto-Pharm Pte Ltd",
+    "Full Name": "Mr. Simon Tang",
+    "Address": "13 Tuas Avenue 12",
+    "Country": "Singapore",
+    "Postal Code": 639035
+  },
+  {
+    "No": 165,
+    "Customer": "Opus IT Services Pte Ltd",
+    "Full Name": "Shi Chi Lee",
+    "Address": "BLK 2 Kaki Bukit Avenue 1, #05-02/03",
+    "Country": "Singapore",
+    "Postal Code": 417938
+  },
+  {
+    "No": 166,
+    "Customer": "P D Door Pte Ltd",
+    "Full Name": "P D Door Pte Ltd",
+    "Address": "BLK 1075 Eunos Ave 6, #01-161",
+    "Country": "Singapore",
+    "Postal Code": 409631
+  },
+  {
+    "No": 167,
+    "Customer": "Pacific Central Teknik Pte Ltd",
+    "Full Name": "Ms. Denise",
+    "Address": "27 Benoi Place",
+    "Country": "Singapore",
+    "Postal Code": 629944
+  },
+  {
+    "No": 168,
+    "Customer": "PAL Container Line Pte Ltd",
+    "Full Name": "Ms. Sara Liu / Chery Tan",
+    "Address": "No.8 Ubi Road 2, #05-24 Zervex",
+    "Country": "Singapore",
+    "Postal Code": 408538
+  },
+  {
+    "No": 169,
+    "Customer": "Parkway Hospitals Singapore Pte Ltd",
+    "Full Name": "Parkway Hospitals Singapore Pte Ltd",
+    "Address": "HarbourFront Tower One, 1 HarbourFront Place, #03-02",
+    "Country": "Singapore",
+    "Postal Code": 98633
+  },
+  {
+    "No": 170,
+    "Customer": "Pas Auto Pte Ltd",
+    "Full Name": "Ms. Yee Hui",
+    "Address": "32 Sin Ming Dr, #01-325",
+    "Country": "Singapore",
+    "Postal Code": 575706
+  },
+  {
+    "No": 171,
+    "Customer": "Pattonair Asia Pte Ltd",
+    "Full Name": "Ms.Faith/Ms. Evelina",
+    "Address": "3 Changi North Street 2",
+    "Country": "Singapore",
+    "Postal Code": 498827
+  },
+  {
+    "No": 172,
+    "Customer": "PAXXUS Pte Ltd",
+    "Full Name": "PAXXUS Pte Ltd",
+    "Address": "9 Tuas Ave 4",
+    "Country": "Singapore",
+    "Postal Code": 639365
+  },
+  {
+    "No": 173,
+    "Customer": "People360 Services Pte Ltd",
+    "Full Name": "People360 Services Pte Ltd",
+    "Address": "73 Upper Paya Lebar Road, #06-01F Centro Bianco",
+    "Country": "Singapore",
+    "Postal Code": 534818
+  },
+  {
+    "No": 174,
+    "Customer": "Performance Motors Limited",
+    "Full Name": "Performance Motors Limited",
+    "Address": "303 Alexandra Road",
+    "Country": "Singapore",
+    "Postal Code": 159941
+  },
+  {
+    "No": 175,
+    "Customer": "Performance Premium Selection Limited (PPSL)",
+    "Full Name": "Performance Premium Selection Limited (PPSL)",
+    "Address": "280 Kampong Arang Road",
+    "Country": "Singapore",
+    "Postal Code": 438180
+  },
+  {
+    "No": 176,
+    "Customer": "Plusone Tech Pte Ltd",
+    "Full Name": "Ms Ya Quan",
+    "Address": "317A Yishun Ave 9, #02-110 Yishun Greenwalk",
+    "Country": "Singapore",
+    "Postal Code": 761317
+  },
+  {
+    "No": 177,
+    "Customer": "Pokka Logistics Singapore Pte Ltd",
+    "Full Name": "Ms Pearlyn Sin",
+    "Address": "21 Benoi Sector, #01-01",
+    "Country": "Singapore",
+    "Postal Code": 629853
+  },
+  {
+    "No": 178,
+    "Customer": "Pokka Pte Ltd",
+    "Full Name": "Pokka Pte Ltd",
+    "Address": "39 Quality Rd,",
+    "Country": "Singapore",
+    "Postal Code": 618810
+  },
+  {
+    "No": 179,
+    "Customer": "Pollisum Engineering Pte Ltd",
+    "Full Name": "Ms Hue Wern",
+    "Address": "19 Senoko Loop, #03-01",
+    "Country": "Singapore",
+    "Postal Code": 758169
+  },
+  {
+    "No": 180,
+    "Customer": "Possehl Electronics (S) Pte Ltd",
+    "Full Name": "Ms Maple Wong",
+    "Address": "No. 11, Tuas Avenue 4",
+    "Country": "Singapore",
+    "Postal Code": 639366
+  },
+  {
+    "No": 181,
+    "Customer": "Premium Automobiles Pte Ltd",
+    "Full Name": "Premium Automobiles Pte Ltd",
+    "Address": "55 Ubi Road 1 Road",
+    "Country": "Singapore",
+    "Postal Code": 408699
+  },
+  {
+    "No": 182,
+    "Customer": "Presidium Instruments Pte Ltd",
+    "Full Name": "Ms Jessica Tan",
+    "Address": "207 Henderson Rd, Unit 7",
+    "Country": "Singapore",
+    "Postal Code": 159550
+  },
+  {
+    "No": 183,
+    "Customer": "Ps Fasteners Pte Ltd",
+    "Full Name": "Ms. Eugenia",
+    "Address": "9 Tampines Industrial Drive, #01-03",
+    "Country": "Singapore",
+    "Postal Code": 528543
+  },
+  {
+    "No": 184,
+    "Customer": "Pulau Sambu Singapore Pte Ltd",
+    "Full Name": "Pulau Sambu Singapore Pte Ltd",
+    "Address": "19 Tanglin Road, #11-01/02",
+    "Country": "Singapore",
+    "Postal Code": 247909
+  },
+  {
+    "No": 185,
+    "Customer": "Qool Enviro Pte Ltd",
+    "Full Name": "Ms. Ming Jung",
+    "Address": "41 Tuas View Place",
+    "Country": "Singapore",
+    "Postal Code": 637885
+  },
+  {
+    "No": 186,
+    "Customer": "QT Instruments (S) Pte Ltd",
+    "Full Name": "Ms. Avery Ang",
+    "Address": "192 Pandan Loop, #06-20 Pantech Business Hub",
+    "Country": "Singapore",
+    "Postal Code": 128381
+  },
+  {
+    "No": 187,
+    "Customer": "Quantum Automation Pte Ltd",
+    "Full Name": "Ms. Rachal Cheng",
+    "Address": "9 Senoko Drive",
+    "Country": "Singapore",
+    "Postal Code": 758197
+  },
+  {
+    "No": 188,
+    "Customer": "QuantumClean Singapore",
+    "Full Name": "QuantumClean Singapore",
+    "Address": "4 Woodlands Height,",
+    "Country": "Singapore",
+    "Postal Code": 737860
+  },
+  {
+    "No": 189,
+    "Customer": "R-Logic International Pte Ltd",
+    "Full Name": "R-Logic International Pte Ltd",
+    "Address": "3014A Ubi Rd 1, #04-01",
+    "Country": "Singapore",
+    "Postal Code": 408703
+  },
+  {
+    "No": 190,
+    "Customer": "Reefertec Pte Ltd",
+    "Full Name": "Ms. Yirene Chan",
+    "Address": "13 Tuas Avenue 11",
+    "Country": "Singapore",
+    "Postal Code": 639079
+  },
+  {
+    "No": 191,
+    "Customer": "Reins International (S) Pte Ltd",
+    "Full Name": "Mr. Victor",
+    "Address": "91 Bencoolen Street, #11-03",
+    "Country": "Singapore",
+    "Postal Code": 189652
+  },
+  {
+    "No": 192,
+    "Customer": "Resource Solutions Consulting Singapore Pte Ltd",
+    "Full Name": "Resource Solutions Consulting Singapore Pte Ltd",
+    "Address": "6 Battery Rd, 09-01",
+    "Country": "Singapore",
+    "Postal Code": 49909
+  },
+  {
+    "No": 193,
+    "Customer": "Richland Logistics Services Pte Ltd",
+    "Full Name": "Ms Yvonne",
+    "Address": "300 Tampines Avenue 5, #05-02",
+    "Country": "Singapore",
+    "Postal Code": 529653
+  },
+  {
+    "No": 194,
+    "Customer": "Ryder – Ascent Logistics Pte Ltd",
+    "Full Name": "Grace Ng",
+    "Address": "24 Penjuru Road",
+    "Country": "Singapore",
+    "Postal Code": 609128
+  },
+  {
+    "No": 195,
+    "Customer": "S.F. Express (Singapore) Pte Ltd",
+    "Full Name": "Mr. Jasper Soh",
+    "Address": "7 Changi South Street 2, #03-03 Xilin Districentre Building C",
+    "Country": "Singapore",
+    "Postal Code": 486415
+  },
+  {
+    "No": 196,
+    "Customer": "Sandvik South East Asia Pte Ltd",
+    "Full Name": "Ms. Jenny Teng",
+    "Address": "50 Alps Avenue",
+    "Country": "Singapore",
+    "Postal Code": 498782
+  },
+  {
+    "No": 197,
+    "Customer": "Sankyu Singapore Pte Ltd",
+    "Full Name": "Sankyu Singapore Pte Ltd",
+    "Address": "11 Clementi Loop",
+    "Country": "Singapore",
+    "Postal Code": 129813
+  },
+  {
+    "No": 198,
+    "Customer": "Sanwa-Intec (Asia) Pte Ltd",
+    "Full Name": "Sanwa-Intec (Asia) Pte Ltd",
+    "Address": "28 Woodlands Loop",
+    "Country": "Singapore",
+    "Postal Code": 738308
+  },
+  {
+    "No": 199,
+    "Customer": "Satsaco Express Transportation Pte Ltd",
+    "Full Name": "Mr Surriya",
+    "Address": "7 Airline Road, #01-01 Cargo AgenTS Building E",
+    "Country": "Singapore",
+    "Postal Code": 819834
+  },
+  {
+    "No": 200,
+    "Customer": "Saurer Components Pte Ltd",
+    "Full Name": "Ms. Annie Ng",
+    "Address": "151 Gul Circle",
+    "Country": "Singapore",
+    "Postal Code": 629608
+  },
+  {
+    "No": 201,
+    "Customer": "Schenker Singapore (Pte) Ltd",
+    "Full Name": "Schenker Singapore (Pte) Ltd",
+    "Address": "17 Changi South Street 2",
+    "Country": "Singapore",
+    "Postal Code": 486129
+  },
+  {
+    "No": 202,
+    "Customer": "Scommerce Private Limited",
+    "Full Name": "Scommerce Private Limited",
+    "Address": "1 Fusionopolis Place, #17-10 Galaxis",
+    "Country": "Singapore",
+    "Postal Code": 138522
+  },
+  {
+    "No": 203,
+    "Customer": "SDL Logistics Pte Ltd",
+    "Full Name": "Ms Susan Ee",
+    "Address": "81 Ubi Avenue 4, #05-30 UB. One",
+    "Country": "Singapore",
+    "Postal Code": 408830
+  },
+  {
+    "No": 204,
+    "Customer": "SDP Packaging (S) Pte Ltd",
+    "Full Name": "SDP Packaging (S) Pte Ltd",
+    "Address": "15 Tuas Link 2",
+    "Country": "Singapore",
+    "Postal Code": 638566
+  },
+  {
+    "No": 205,
+    "Customer": "SDV Logistics (S) Pte Ltd",
+    "Full Name": "Susan Yang",
+    "Address": "101 ALPS Avenue, #04-00",
+    "Country": "Singapore",
+    "Postal Code": 498793
+  },
+  {
+    "No": 206,
+    "Customer": "SEASTAR MARINE SUPPLY PTE LTD",
+    "Full Name": "Ms. Xin Yi",
+    "Address": "60 Benoi Road, F2 #02-11",
+    "Country": "Singapore",
+    "Postal Code": 629906
+  },
+  {
+    "No": 207,
+    "Customer": "Semi Singapore Pte Ltd",
+    "Full Name": "Ms. Carol Hsiao",
+    "Address": "Level 6 Lobby A Pico Creative Centre, 20 Kallang Avenue",
+    "Country": "Singapore",
+    "Postal Code": 339411
+  },
+  {
+    "No": 208,
+    "Customer": "Senko International Logistics Pte. Ltd",
+    "Full Name": "Senko International Logistics Pte. Ltd",
+    "Address": "20 Sakra Road, Jurong Island",
+    "Country": "Singapore",
+    "Postal Code": 627889
+  },
+  {
+    "No": 209,
+    "Customer": "ServLink Technology Resources Pte Ltd",
+    "Full Name": "MS. Lim Ai Ting",
+    "Address": "221 Henderson Road, #06-13",
+    "Country": "Singapore",
+    "Postal Code": 159557
+  },
+  {
+    "No": 210,
+    "Customer": "SG Sagawa Ameroid Pte Ltd",
+    "Full Name": "SG Sagawa Ameroid Pte Ltd",
+    "Address": "15 Pioneer Walk #02-01, Pioneer Hub Building",
+    "Country": "Singapore",
+    "Postal Code": 627753
+  },
+  {
+    "No": 211,
+    "Customer": "SH Cogent Logistics Pte Ltd",
+    "Full Name": "Ms. Truddy Han",
+    "Address": "1 Buroh Crescent, Cogent 1 Logistics Hub #6M-01",
+    "Country": "Singapore",
+    "Postal Code": 627545
+  },
+  {
+    "No": 212,
+    "Customer": "ShiDingXuan Pte Ltd",
+    "Full Name": "Mr Bryan Chen",
+    "Address": "2 Venture Drive, #02-30 Vision Exchange",
+    "Country": "Singapore",
+    "Postal Code": 608526
+  },
+  {
+    "No": 213,
+    "Customer": "Shipco Transport Pte Ltd",
+    "Full Name": "Shipco Transport Pte Ltd",
+    "Address": "10 Raeburn Park",
+    "Country": "Singapore",
+    "Postal Code": 88702
+  },
+  {
+    "No": 214,
+    "Customer": "Shopee Singapore Private Limited",
+    "Full Name": "Shopee Singapore Private Limited",
+    "Address": "5 Science Park Drive, Shopee Building",
+    "Country": "Singapore",
+    "Postal Code": "S118625"
+  },
+  {
+    "No": 215,
+    "Customer": "Sime Darby Singapore Limited",
+    "Full Name": "Sime Darby Singapore Limited",
+    "Address": "305 Alexandra Road",
+    "Country": "Singapore",
+    "Postal Code": 159942
+  },
+  {
+    "No": 216,
+    "Customer": "Singapore Kobe Pte Ltd",
+    "Full Name": "Singapore Kobe Pte Ltd",
+    "Address": "No. 3 Sixth Lok Yang Road",
+    "Country": "Singapore",
+    "Postal Code": 628101
+  },
+  {
+    "No": 217,
+    "Customer": "Singapore O&G PTE LTD",
+    "Full Name": "Ms Shellen Fun",
+    "Address": "229 Mountbatten Road, #02-02 Mountbatten Square",
+    "Country": "Singapore",
+    "Postal Code": 398007
+  },
+  {
+    "No": 218,
+    "Customer": "Sinotron United Pte Ltd",
+    "Full Name": "Ms. Jessie Ng",
+    "Address": "51 Jalan Pemimpin, #04-03 Mayfair Industrial Building",
+    "Country": "Singapore",
+    "Postal Code": 577206
+  },
+  {
+    "No": 219,
+    "Customer": "Skechers Singapore Pte Ltd",
+    "Full Name": "Skechers Singapore Pte Ltd",
+    "Address": "45 Ubi Road 1",
+    "Country": "Singapore",
+    "Postal Code": 408696
+  },
+  {
+    "No": 220,
+    "Customer": "SKK (S) Pte Ltd",
+    "Full Name": "Ms. Ricka",
+    "Address": "14 Pandan Road",
+    "Country": "Singapore",
+    "Postal Code": 609262
+  },
+  {
+    "No": 221,
+    "Customer": "SL Metals Pte Ltd",
+    "Full Name": "Ms. Elena Lim",
+    "Address": "6 Tuas Lane",
+    "Country": "Singapore",
+    "Postal Code": 638615
+  },
+  {
+    "No": 222,
+    "Customer": "Smartflex Technology Pte Ltd",
+    "Full Name": "Ms. Cheryl Wong",
+    "Address": "No. 27 Ubi Road 4, #04-01 MSL Building",
+    "Country": "Singapore",
+    "Postal Code": 408618
+  },
+  {
+    "No": 223,
+    "Customer": "SNL Logistics Pte Ltd",
+    "Full Name": "Ms. Fion",
+    "Address": "31 Gul Circle",
+    "Country": "Singapore",
+    "Postal Code": 629569
+  },
+  {
+    "No": 224,
+    "Customer": "SOG Dermatology (Gleneagles) Pte Ltd",
+    "Full Name": "Ms. April Tan",
+    "Address": "229 Mountbatten Road, Mountbatten Square #02-02",
+    "Country": "Singapore",
+    "Postal Code": 398007
+  },
+  {
+    "No": 225,
+    "Customer": "Solex Logistics (Singapore) Pte Ltd",
+    "Full Name": "Ms Catherine Tan",
+    "Address": "Pasir Panjang Road, #05-03",
+    "Country": "Singapore",
+    "Postal Code": 118518
+  },
+  {
+    "No": 226,
+    "Customer": "Sompo Insurance Singapore Pte. Ltd",
+    "Full Name": "Sompo Insurance Singapore Pte. Ltd",
+    "Address": "50 Raffles Place, #05-01/06 Singapore Land Tower",
+    "Country": "Singapore",
+    "Postal Code": 48623
+  },
+  {
+    "No": 227,
+    "Customer": "Song Chuan Singapore Pte Ltd",
+    "Full Name": "Song Chuan Singapore Pte Ltd",
+    "Address": "No. 21 Woodlands Close, #03-03 Primz Bizhub",
+    "Country": "Singapore",
+    "Postal Code": 737854
+  },
+  {
+    "No": 228,
+    "Customer": "SPD Scientific Pte Ltd",
+    "Full Name": "SPD Scientific Pte Ltd",
+    "Address": "192 Pandan Loop",
+    "Country": "Singapore",
+    "Postal Code": 128381
+  },
+  {
+    "No": 229,
+    "Customer": "Spirax Sarco Pte Ltd",
+    "Full Name": "Spirax Sarco Pte Ltd",
+    "Address": "21 Changi South Ave 2, #01-01",
+    "Country": "Singapore",
+    "Postal Code": 486630
+  },
+  {
+    "No": 230,
+    "Customer": "Stolt Container Terminal Pte Ltd",
+    "Full Name": "Ms. Stacy",
+    "Address": "460 Alexandra Road, #10‑01 PSA Building",
+    "Country": "Singapore",
+    "Postal Code": 119963
+  },
+  {
+    "No": 231,
+    "Customer": "Stolthaven Singapore Ptd Ltd",
+    "Full Name": "Ms. Kal",
+    "Address": "460 Alexandra Road, #10-01",
+    "Country": "Singapore",
+    "Postal Code": 119963
+  },
+  {
+    "No": 232,
+    "Customer": "Stolt‑Nielsen Singapore Pte Ltd",
+    "Full Name": "Ms Nerissa Goh",
+    "Address": "460 Alexandra Road, #10‑01 PSA Building",
+    "Country": "Singapore",
+    "Postal Code": 119963
+  },
+  {
+    "No": 233,
+    "Customer": "Sumifru Singapore Pte Ltd",
+    "Full Name": "Ms Jessie Lu",
+    "Address": "52 Jurong Gateway Road, #08-01 JEM",
+    "Country": "Singapore",
+    "Postal Code": 608550
+  },
+  {
+    "No": 234,
+    "Customer": "Sumitomo Warehouse (S) Pte Ltd",
+    "Full Name": "Sumitomo Warehouse (S) Pte Ltd",
+    "Address": "8 Tuas Avenue 5",
+    "Country": "Singapore",
+    "Postal Code": 639334
+  },
+  {
+    "No": 235,
+    "Customer": "Sun Ace Kakoh Pte Ltd",
+    "Full Name": "Mr. How Jun Wei",
+    "Address": "34 Tanjong Penjuru",
+    "Country": "Singapore",
+    "Postal Code": 609030
+  },
+  {
+    "No": 236,
+    "Customer": "Sun Express Logistics Pte Ltd",
+    "Full Name": "Ms. Vivian",
+    "Address": "119 Airport Cargo Road",
+    "Country": "Singapore",
+    "Postal Code": 819454
+  },
+  {
+    "No": 237,
+    "Customer": "Sunlink Engineering Pte Ltd",
+    "Full Name": "Ms. Lucia",
+    "Address": "6 Kian Teck Crescent",
+    "Country": "Singapore",
+    "Postal Code": 628873
+  },
+  {
+    "No": 238,
+    "Customer": "Sure Solution (Pte) Ltd",
+    "Full Name": "Ms. Fatin Amelia",
+    "Address": "110 Lorong 23 Geylang, #07-04 Victory Centre",
+    "Country": "Singapore",
+    "Postal Code": 388410
+  },
+  {
+    "No": 239,
+    "Customer": "Survitec Fire Solutions Singapore Pte Ltd",
+    "Full Name": "Survitec Fire Solutions Singapore Pte Ltd",
+    "Address": "25 Senoko South Road",
+    "Country": "Singapore",
+    "Postal Code": 758081
+  },
+  {
+    "No": 240,
+    "Customer": "Survitec Safety Solutions Singapore Pte Ltd",
+    "Full Name": "Survitec Safety Solutions Singapore Pte Ltd",
+    "Address": "25 Senoko South Road",
+    "Country": "Singapore",
+    "Postal Code": 758081
+  },
+  {
+    "No": 241,
+    "Customer": "Sushi Express Group Pte Ltd",
+    "Full Name": "Sushi Express Group Pte Ltd",
+    "Address": "20 Bendemeer Rd #05-01, BS Bendemeer Centre",
+    "Country": "Singapore",
+    "Postal Code": 339914
+  },
+  {
+    "No": 242,
+    "Customer": "Sustenir Agriculture (Singapore) Pte Ltd",
+    "Full Name": "Mr. Edwin",
+    "Address": "8 Admiralty Street, #04-04 Admirax",
+    "Country": "Singapore",
+    "Postal Code": 757438
+  },
+  {
+    "No": 243,
+    "Customer": "Syspex Technologies Pte Ltd",
+    "Full Name": "Ms Sally Ng",
+    "Address": "15 Joo Koon Road",
+    "Country": "Singapore",
+    "Postal Code": 628976
+  },
+  {
+    "No": 244,
+    "Customer": "Tech Engineering Pte Ltd",
+    "Full Name": "Ms. Betty Toh",
+    "Address": "130 Pandan Loop",
+    "Country": "Singapore",
+    "Postal Code": 128332
+  },
+  {
+    "No": 246,
+    "Customer": "Technihub IEA Solutions Pte Ltd",
+    "Full Name": "Mr Rogini",
+    "Address": "31 Toh Guan Road East, #07-09 LW TechnoCentre",
+    "Country": "Singapore",
+    "Postal Code": 608608
+  },
+  {
+    "No": 247,
+    "Customer": "Technoprobe Asia Pte Ltd",
+    "Full Name": "Ms. Cheryl Neo",
+    "Address": "4012 Ang Mo Kio Ave 10, #04-08/09 TechPlace I unit",
+    "Country": "Singapore",
+    "Postal Code": 569628
+  },
+  {
+    "No": 248,
+    "Customer": "Tee Hai Chem Pte Ltd",
+    "Full Name": "Ms. Serene/ Michelle",
+    "Address": "25 Greenwich Drive, TEEHAI @ Tampines LogisPark",
+    "Country": "Singapore",
+    "Postal Code": 533973
+  },
+  {
+    "No": 249,
+    "Customer": "Tele-centre Services Pte Ltd",
+    "Full Name": "Ms. Sharon Lai",
+    "Address": "2 Leng Kee Road, #04-08 Thye Hong Centre",
+    "Country": "Singapore",
+    "Postal Code": 159086
+  },
+  {
+    "No": 250,
+    "Customer": "The Care Svc Pte Ltd",
+    "Full Name": "The Care Svc Pte Ltd",
+    "Address": "13 Lorong Telok,",
+    "Country": "Singapore",
+    "Postal Code": 49026
+  },
+  {
+    "No": 251,
+    "Customer": "The Himalaya Drug Company Pte. Ltd",
+    "Full Name": "Ms Aashika",
+    "Address": "9 Temasek Boulevard, #24-01 Suntec Tower Two",
+    "Country": "Singapore",
+    "Postal Code": 38989
+  },
+  {
+    "No": 252,
+    "Customer": "The National Kidney Foundation",
+    "Full Name": "The National Kidney Foundation",
+    "Address": "81 Kim Keat Road,",
+    "Country": "Singapore",
+    "Postal Code": 328836
+  },
+  {
+    "No": 253,
+    "Customer": "The Oaks Cellars Pte Ltd",
+    "Full Name": "Ms. Linda Goh",
+    "Address": "Tan Boon Liat Building #12-09, 315 Outram Road",
+    "Country": "Singapore",
+    "Postal Code": 169074
+  },
+  {
+    "No": 254,
+    "Customer": "THKNH Home Care Services",
+    "Full Name": "THKNH Home Care Services",
+    "Address": "48 Hougang Avenue 8",
+    "Country": "Singapore",
+    "Postal Code": 538793
+  },
+  {
+    "No": 255,
+    "Customer": "Thomson Medical Centre",
+    "Full Name": "Thomson Medical Centre",
+    "Address": "290 Orchard Rd, #10-01 Paragon",
+    "Country": "Singapore",
+    "Postal Code": 238859
+  },
+  {
+    "No": 256,
+    "Customer": "Thomson Medical Private Limited",
+    "Full Name": "Ms Jane Tan",
+    "Address": "Block 1 Thomson Road, #03-342 Balestier Hill Shopping Centre",
+    "Country": "Singapore",
+    "Postal Code": 300001
+  },
+  {
+    "No": 257,
+    "Customer": "Tionale Pte.Ltd",
+    "Full Name": "Mr. Ash",
+    "Address": "38 Jalan Buroh, #09-01 HANKYU HANSHIN LOGISTICS CENTRE",
+    "Country": "Singapore",
+    "Postal Code": 619504
+  },
+  {
+    "No": 258,
+    "Customer": "Tiong Lian Food Pte Ltd",
+    "Full Name": "Ms. Jobina Loh",
+    "Address": "202 Pandan Loop",
+    "Country": "Singapore",
+    "Postal Code": 128390
+  },
+  {
+    "No": 259,
+    "Customer": "TJS Pte Ltd",
+    "Full Name": "TJS Pte Ltd",
+    "Address": "ChemStationAsia, 19 Tanjong Penjuru",
+    "Country": "Singapore",
+    "Postal Code": 609021
+  },
+  {
+    "No": 260,
+    "Customer": "TNS Ocean Lines (S) Pte Ltd",
+    "Full Name": "Mr Jason",
+    "Address": "30 Pioneer Road, #02-01",
+    "Country": "Singapore",
+    "Postal Code": 628502
+  },
+  {
+    "No": 261,
+    "Customer": "Tokuyama Electronic Chemicals Pte Ltd",
+    "Full Name": "Ms. Cynthia Chin",
+    "Address": "21 Gul Road",
+    "Country": "Singapore",
+    "Postal Code": 629355
+  },
+  {
+    "No": 262,
+    "Customer": "Total Swiss Biotechnology Pte Ltd",
+    "Full Name": "Ms. Christine Gan",
+    "Address": "2 Ang Mo Kio Street 65",
+    "Country": "Singapore",
+    "Postal Code": 569058
+  },
+  {
+    "No": 263,
+    "Customer": "Tractors Singapore Limited",
+    "Full Name": "Ms. Wong Hui Qi",
+    "Address": "26 Benoi Sector",
+    "Country": "Singapore",
+    "Postal Code": 629858
+  },
+  {
+    "No": 264,
+    "Customer": "Tru-Marine Pte Ltd",
+    "Full Name": "Tru-Marine Pte Ltd",
+    "Address": "35 Tuas Basic Link,",
+    "Country": "Singapore",
+    "Postal Code": 638769
+  },
+  {
+    "No": 265,
+    "Customer": "UMW Equipment And Engineering Pte Ltd",
+    "Full Name": "Ms. Hui Jun",
+    "Address": "108 International Road",
+    "Country": "Singapore",
+    "Postal Code": 629173
+  },
+  {
+    "No": 266,
+    "Customer": "Unicla International Pte Ltd",
+    "Full Name": "Mr Eddie Chua",
+    "Address": "23 Tannery Road",
+    "Country": "Singapore",
+    "Postal Code": 347735
+  },
+  {
+    "No": 267,
+    "Customer": "Vantage Automotive Ltd",
+    "Full Name": "Ms Min Li",
+    "Address": "305 Alexandra Road, #02-01 Vantage Automotive Centre",
+    "Country": "Singapore",
+    "Postal Code": 159942
+  },
+  {
+    "No": 268,
+    "Customer": "Vindes Engineering Pte Ltd",
+    "Full Name": "Ms Kelly",
+    "Address": "23 Tuas Avenue 4",
+    "Country": "Singapore",
+    "Postal Code": 639373
+  },
+  {
+    "No": 269,
+    "Customer": "Vivablue Pte. Ltd.",
+    "Full Name": "Vivablue Pte. Ltd.",
+    "Address": "31 Harrison Road, #04-02 Food Empire Building",
+    "Country": "Singapore",
+    "Postal Code": 369649
+  },
+  {
+    "No": 270,
+    "Customer": "W.H. Brennan & Co Pte Ltd",
+    "Full Name": "W.H. Brennan & Co Pte Ltd",
+    "Address": "25 Senoko South Road",
+    "Country": "Singapore",
+    "Postal Code": 758081
+  },
+  {
+    "No": 271,
+    "Customer": "Wan Tai & Co. (Pte) Ltd",
+    "Full Name": "Ms. Ivy Koh",
+    "Address": "25 Changi South Avenue 2",
+    "Country": "Singapore",
+    "Postal Code": 486594
+  },
+  {
+    "No": 272,
+    "Customer": "Watami Food Services Singapore Pte Ltd",
+    "Full Name": "Ms. Hui Min",
+    "Address": "116 Lavender Street, Pek Chuan Building",
+    "Country": "Singapore",
+    "Postal Code": 338730
+  },
+  {
+    "No": 273,
+    "Customer": "Wice Logistics (Singapore) Pte Ltd",
+    "Full Name": "Wice Logistics (Singapore) Pte Ltd",
+    "Address": "Unit 02-03/04 Changi Cargo Agents Megaplex 1, Box 698 Changi Airfreight Centre, 119 Airport Cargo Road",
+    "Country": "Singapore",
+    "Postal Code": 819454
+  },
+  {
+    "No": 274,
+    "Customer": "Wine Impression Singapore Pte Ltd",
+    "Full Name": "Ms. Khai Lin",
+    "Address": "28 Sin Ming Lane, #07-133/134 Midview City",
+    "Country": "Singapore",
+    "Postal Code": 573972
+  },
+  {
+    "No": 275,
+    "Customer": "WYN2000 Logistics Pte Ltd",
+    "Full Name": "Ms. Anni Wong",
+    "Address": "21 Tuas Avenue 9, WYN2000 Logistics Centre",
+    "Country": "Singapore",
+    "Postal Code": 639196
+  },
+  {
+    "No": 276,
+    "Customer": "Xndo Pte Ltd",
+    "Full Name": "Ms Marian Leung",
+    "Address": "65 Ubi Avenue 1, #06-00",
+    "Country": "Singapore",
+    "Postal Code": 408939
+  },
+  {
+    "No": 277,
+    "Customer": "Yakult (Singapore) Pte Ltd",
+    "Full Name": "Yakult (Singapore) Pte Ltd",
+    "Address": "7 Senoko Avenue",
+    "Country": "Singapore",
+    "Postal Code": 758300
+  },
+  {
+    "No": 278,
+    "Customer": "Yamazaki Mazak Singapore Pte Ltd",
+    "Full Name": "Ms. Trace",
+    "Address": "21 Joo Koon Circle",
+    "Country": "Singapore",
+    "Postal Code": 629053
+  },
+  {
+    "No": 279,
+    "Customer": "Yang Kee Logistics Pte Ltd",
+    "Full Name": "Ms. Jasmine Ooi",
+    "Address": "8 Jurong Pier Road",
+    "Country": "Singapore",
+    "Postal Code": 619160
+  },
+  {
+    "No": 280,
+    "Customer": "Yang Kee Logistics Singapore Pte Ltd",
+    "Full Name": "Ms. Jasmine Ooi",
+    "Address": "8 Jurong Pier Road",
+    "Country": "Singapore",
+    "Postal Code": 619160
+  },
+  {
+    "No": 281,
+    "Customer": "YS Logistics (S) Pte Ltd",
+    "Full Name": "Ms. Sandy",
+    "Address": "21 Pandan Avenue",
+    "Country": "Singapore",
+    "Postal Code": 609388
+  },
+  {
+    "No": 282,
+    "Customer": "Yu Fish Pte Ltd",
+    "Full Name": "Yu Fish Pte Ltd",
+    "Address": "9 Fishery Port Road, #02-01",
+    "Country": "Singapore",
+    "Postal Code": 619730
+  },
+  {
+    "No": 283,
+    "Customer": "YWCA of Singapore",
+    "Full Name": "Mr. Les Tan",
+    "Address": "YWCA Outram centre, 254 Outram Road",
+    "Country": "Singapore",
+    "Postal Code": 169051
+  },
+  {
+    "No": 284,
+    "Customer": "Zhenghe Logistics Pte Ltd",
+    "Full Name": "Zhenghe Logistics Pte Ltd",
+    "Address": "75 Bukit Timah Rd, #05-01 Boon Siew Building",
+    "Country": "Singapore",
+    "Postal Code": 229833
+  }
+]
