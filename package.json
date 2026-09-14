@@ -1,19 +1,19 @@
 {
-  "name": "glife-map-service",
-  "version": "1.0.0",
+  "name": "glx_expressindo_backend",
+  "version": "1.1.0",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
     "serve": "node dist/index.js",
-    "start": "node_modules/.bin/nodemon --exec babel-node src/index.js",
-    "build": "node_modules/.bin/babel src -d dist; babel src/jobs/email/templates --out-dir dist/jobs/email/templates --copy-files; babel src/schema --out-dir dist/schema --copy-files;",
-    "db:index": "node_modules/.bin/babel-node ./src/migrations/indexing/index.js",
-    "db:modification": "node_modules/.bin/babel-node ./src/migrations/modification/index.js",
-    "db:index:reset": "node_modules/.bin/babel-node ./src/migrations/indexing/reset.js",
-    "db:seed": "node_modules/.bin/babel-node ./src/seeder/index.js",
-    "import:company": "node_modules/.bin/babel-node ./src/imports/importCompanies.js",
-    "import:customer": "node_modules/.bin/babel-node ./src/imports/importMtcCustomers.js",
-    "import:postal": "node_modules/.bin/babel-node ./src/imports/importPostal.js"
+    "start": "nodemon --exec babel-node src/index.js",
+    "build": "babel src -d dist --copy-files",
+    "db:index": "babel-node ./src/migrations/indexing/index.js",
+    "db:modification": "babel-node ./src/migrations/modification/index.js",
+    "db:index:reset": "babel-node ./src/migrations/indexing/reset.js",
+    "db:seed": "babel-node ./src/seeder/index.js",
+    "import:company": "babel-node ./src/imports/importCompanies.js",
+    "import:customer": "babel-node ./src/imports/importMtcCustomers.js",
+    "import:postal": "babel-node ./src/imports/importPostal.js"
   },
   "dependencies": {
     "@googlemaps/google-maps-services-js": "^3.2.6",

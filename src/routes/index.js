@@ -1,6 +1,7 @@
 import express from 'express'
 import { excelRoute } from './excel'
 import { fileRoute } from './rawFiles'
+import { uploadRoute } from './upload'
 
 export const routes = (app, context) => {
   const { router } = context || {}
@@ -13,6 +14,7 @@ export const routes = (app, context) => {
 
   excelRoute(app, context)
   fileRoute(app, context)
-  
+  uploadRoute(app, context)
+
   app.use('/', router)
 }

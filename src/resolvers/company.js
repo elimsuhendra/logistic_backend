@@ -17,7 +17,7 @@ export default {
       return await dataloaders.get('companyPhotoByIdLoader').load(_id)
     },
     termsAndConditions: async ({ _id }, args, { dataloaders }) => {
-      return await dataloaders.get('documentsByObject').load({ objectId: _id.toString(), objectType: 'Company', documentType:  'terms-and-conditions'})
+      return await dataloaders.get('documentsByObject').load({ objectId: _id.toString(), objectType: 'Company', documentType: 'terms-and-conditions' })
     },
     documents: async ({ _id }, args, { dataloaders }) => {
       return await dataloaders.get('documentsByObject').load({ objectId: _id.toString(), objectType: 'Company', documentType: 'documents' })
@@ -52,7 +52,7 @@ export default {
     Company: {
       subscribe: requiresAuth.createResolver(
         withFilter(
-          () => pubsub.asyncIterator(process.env.APP_NAME + '-' + process.env.APP_ENV +'-Company'),
+          () => pubsub.asyncIterator(process.env.APP_NAME + '-' + process.env.APP_ENV + '-Company'),
           (payload, args) => {
             return compareObject(payload.Company.node, args.dataFilter)
           }
@@ -65,12 +65,12 @@ export default {
       async (parent, { id }, { mongo, user }) => {
         const currentCompany = id ? await mongo.Company.findOne({ _id: ObjectId(id), deletedAt: null }) : null
         return currentCompany
-    }),
+      }),
     allCompanies: requiresAuth.createResolver(
       async (parent, { keyword, filter, first, skip, orderBy, jobOrderFilter }, { mongo }) => {
         const limit = first || 10
         const offset = skip || 0
-        const sortBy = !!orderBy? buildMongoOrders(orderBy) : { createdAt: -1 }
+        const sortBy = !!orderBy ? buildMongoOrders(orderBy) : { createdAt: -1 }
 
         const { search, salary_lte, salary_gte, ...rest } = filter || {}
 
@@ -80,8 +80,8 @@ export default {
         let searchFilter = null
         if (!!search) {
           const users = await mongo.User.find({
-            fullName: {$regex: `${sanitizeRegex(search)}`, $options: 'i'},
-            deletedAt: null 
+            fullName: { $regex: `${sanitizeRegex(search)}`, $options: 'i' },
+            deletedAt: null
           }).project({ _id: 1 }).toArray()
           const userIds = users.map(user => ObjectId(user._id))
           if (userIds && userIds.length > 0) {
@@ -95,15 +95,15 @@ export default {
         const filterResponse = [filters, searchFilter].filter(i => !!i && Object.keys(i).length > 0)
         const filterResult = (filterResponse && filterResponse.length > 0) ? {
           $and: [
-            {deletedAt: null},
+            { deletedAt: null },
             Object.keys(filters || []).length && Object.keys(searchFilter || []).length ? {
               $or: [
-                filters || {}, 
+                filters || {},
                 searchFilter || {}
               ]
             } : {
               $and: [
-                filters || {}, 
+                filters || {},
                 searchFilter || {}
               ]
             },
@@ -118,11 +118,13 @@ export default {
             const str = phrase.trim().toLowerCase()
             const regexStr = `\(\^|\\W\)${str}`
             let matchCondition = {
-              $match: { $or: [
-                { name: { $regex: regexStr, $options: 'i' } },
-                { industry: { $regex: regexStr, $options: 'i' } },
-                { url: { $regex: regexStr, $options: 'i' } },
-              ] }
+              $match: {
+                $or: [
+                  { name: { $regex: regexStr, $options: 'i' } },
+                  { industry: { $regex: regexStr, $options: 'i' } },
+                  { url: { $regex: regexStr, $options: 'i' } },
+                ]
+              }
             }
 
             return matchCondition
@@ -131,17 +133,17 @@ export default {
           pipelines = pipelines.concat(addFilters)
         }
 
-        if(!!jobOrderFilter){
-            const jobOrderData = await mongo.JobOrder.find(jobOrderFilter).project({ companyId: 1, workType: 1 }).toArray()
-            
-            const companyIds = jobOrderData.map(jobOrder => ObjectId(jobOrder.companyId))
-             if (companyIds.length > 0) {
-              pipelines = pipelines.concat({
-                $match: {
-                  _id: { $in: companyIds }
-                }
-              })
-            }
+        if (!!jobOrderFilter) {
+          const jobOrderData = await mongo.JobOrder.find(jobOrderFilter).project({ companyId: 1, workType: 1 }).toArray()
+
+          const companyIds = jobOrderData.map(jobOrder => ObjectId(jobOrder.companyId))
+          if (companyIds.length > 0) {
+            pipelines = pipelines.concat({
+              $match: {
+                _id: { $in: companyIds }
+              }
+            })
+          }
         }
 
         pipelines = pipelines.concat([
@@ -167,9 +169,9 @@ export default {
 
         let searchFilter = null
         if (!!search) {
-          const users = await mongo.User.find({ 
-            fullName: {$regex: `${sanitizeRegex(search)}`, $options: 'i'},
-            deletedAt: null 
+          const users = await mongo.User.find({
+            fullName: { $regex: `${sanitizeRegex(search)}`, $options: 'i' },
+            deletedAt: null
           }).project({ _id: 1 }).toArray()
           const userIds = users.map(user => ObjectId(user._id))
           if (userIds && userIds.length > 0) {
@@ -183,20 +185,20 @@ export default {
         const filterResponse = [filters, searchFilter].filter(i => !!i && Object.keys(i).length > 0)
         const filterResult = (filterResponse && filterResponse.length > 0) ? {
           $and: [
-            {deletedAt: null},
+            { deletedAt: null },
             Object.keys(filters || []).length && Object.keys(searchFilter || []).length ? {
               $or: [
-                filters || {}, 
+                filters || {},
                 searchFilter || {}
               ]
             } : {
               $and: [
-                filters || {}, 
+                filters || {},
                 searchFilter || {}
               ]
             },
           ]
-        }: { deletedAt: null }
+        } : { deletedAt: null }
 
         let pipelines = []
 
@@ -206,11 +208,13 @@ export default {
             const str = phrase.trim().toLowerCase()
             const regexStr = `\(\^|\\W\)${str}`
             let matchCondition = {
-              $match: { $or: [
-                { name: { $regex: regexStr, $options: 'i' } },
-                { industry: { $regex: regexStr, $options: 'i' } },
-                { url: { $regex: regexStr, $options: 'i' } },
-              ] }
+              $match: {
+                $or: [
+                  { name: { $regex: regexStr, $options: 'i' } },
+                  { industry: { $regex: regexStr, $options: 'i' } },
+                  { url: { $regex: regexStr, $options: 'i' } },
+                ]
+              }
             }
 
             return matchCondition
@@ -329,7 +333,7 @@ export default {
       const { mongo, user } = context
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
       if (!!currentUser) {
-       // Build file here
+        // Build file here
         return {
           success: true,
           message: "Make Company Report successfully!",
@@ -343,45 +347,45 @@ export default {
     }),
     checkCompanyNameExist: requiresAuth.createResolver(
       async (parent, { name, ignoreId }, { mongo, user }) => {
-      const argName = name.trim()
-      if (ignoreId) {
-        const currentCompany = await mongo.Company.findOne({ _id: ObjectId(ignoreId), deletedAt: null })
-        if (currentCompany && currentCompany.name.toLowerCase() === argName.toLowerCase()) {
-          return { existed: false }
+        const argName = name.trim()
+        if (ignoreId) {
+          const currentCompany = await mongo.Company.findOne({ _id: ObjectId(ignoreId), deletedAt: null })
+          if (currentCompany && currentCompany.name.toLowerCase() === argName.toLowerCase()) {
+            return { existed: false }
+          }
         }
-      }
-      const currentCompany = await mongo.Company.findOne({ name: { "$regex" : argName , "$options" : "i"}, deletedAt: null })
-      return {
-        existed: !!currentCompany && currentCompany.name.toLowerCase() === argName.toLowerCase() ? true : false
-      } 
-    }),
+        const currentCompany = await mongo.Company.findOne({ name: { "$regex": argName, "$options": "i" }, deletedAt: null })
+        return {
+          existed: !!currentCompany && currentCompany.name.toLowerCase() === argName.toLowerCase() ? true : false
+        }
+      }),
     createCompanyIndexes: requiresAuth.createResolver(
-      async (parent, {}, { mongo, user }) => {
-      try {
-        await mongo.Company.dropIndexes()
-        await mongo.Company.createIndex(
-          { mainConsultantId: 1 },
-          { name: "company-mainConsultantId-unique" }
-        )
-        await mongo.Company.createIndex(
-          { subsidiaryCompanyIds: 1 },
-          { name: "company-subsidiaryCompanyIds-unique" }
-        )
-        await mongo.Company.createIndex(
-          { name: 1, url: 1, industry: 1 },
-          { name: "company-name-url-industry-index" }
-        )
+      async (parent, { }, { mongo, user }) => {
+        try {
+          await mongo.Company.dropIndexes()
+          await mongo.Company.createIndex(
+            { mainConsultantId: 1 },
+            { name: "company-mainConsultantId-unique" }
+          )
+          await mongo.Company.createIndex(
+            { subsidiaryCompanyIds: 1 },
+            { name: "company-subsidiaryCompanyIds-unique" }
+          )
+          await mongo.Company.createIndex(
+            { name: 1, url: 1, industry: 1 },
+            { name: "company-name-url-industry-index" }
+          )
 
-        return {
-          success: true,
-          message: "Done."
+          return {
+            success: true,
+            message: "Done."
+          }
+        } catch (error) {
+          return {
+            success: false,
+            message: error.message
+          }
         }
-      } catch (error) {
-        return {
-          success: false,
-          message: error.message
-        }
-      }
-    }),
+      }),
   }
 }

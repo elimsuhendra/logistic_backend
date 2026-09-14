@@ -43,6 +43,7 @@ async function start() {
   const app = express()
   app.use(express.json({ limit: '2mb' }))
   app.use(cors({ credentials: true, origin: '*' }))
+  app.use('/public', express.static(path.join(__dirname, '../public')))
 
   if (process.env.APP_ENV === 'production') {
     app.use(
