@@ -13,6 +13,7 @@ import _, { add } from "lodash"
 export default {
   Company: {
     id: parent => parent._id || parent.id,
+    inactive: parent => parent.inactive !== undefined ? parent.inactive : (parent.status === "INACTIVE" || !parent.mainConsultantId),
     logo: async ({ _id }, args, { dataloaders }) => {
       return await dataloaders.get('companyPhotoByIdLoader').load(_id)
     },
@@ -259,7 +260,13 @@ export default {
           })
           args.contacts = contactResponse
         }
-        args["status"] = !!args.mainConsultantId ? "ACTIVE" : "INACTIVE"
+        if (args.inactive !== undefined) {
+          args["inactive"] = args.inactive
+          // args["status"] = !args.inactive ? "ACTIVE" : "INACTIVE"
+        } else {
+          // args["status"] = !!args.mainConsultantId ? "ACTIVE" : "INACTIVE"
+          args["inactive"] = !args.mainConsultantId
+        }
         const company = await mongoCreate('Company', args, context)
         return {
           success: true,
@@ -290,7 +297,12 @@ export default {
           })
           args.contacts = contactResponse
         }
-        args["status"] = !!args.mainConsultantId ? "ACTIVE" : "INACTIVE"
+        if (args.inactive !== undefined) {
+          args["inactive"] = args.inactive
+        }
+        // else if ('mainConsultantId' in args) {
+        //   args["inactive"] = !args.mainConsultantId
+        // }
         const currentCategory = await mongoUpdate('Company', args, context)
         const companyResponse = await mongo.Company.findOne({ _id: ObjectId(args.id), deletedAt: null })
 

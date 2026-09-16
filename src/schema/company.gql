@@ -4,7 +4,7 @@ type Company {
   industry: String
   logo: Photo
   url: String
-  status: CompanyStatus
+  inactive: Boolean
   addresses: [Address]
   contacts: [CompanyContact]
 	placementFees: [PlacementFee]
@@ -40,18 +40,13 @@ input CompanyFilter {
   name_regex: String
   industry: String
   industry_regex: String
-  status: CompanyStatus
+  inactive: Boolean
   mainConsultantId: String
   subsidiaryCompanyIds_in: [String]
   _id_nin: [String]
   _id_in: [String]
   _id: String
   search: String
-}
-
-enum CompanyStatus {
-  ACTIVE
-	INACTIVE
 }
 
 type Address {
@@ -156,6 +151,7 @@ type Mutation {
     mainConsultantId: String
     subsidiaryCompanyIds: [String]
     numberOfJobs: Int
+    inactive: Boolean
   ): CreateCompanyResponse
   updateCompany(
     id: String!
@@ -168,6 +164,7 @@ type Mutation {
     mainConsultantId: String
     subsidiaryCompanyIds: [String]
     numberOfJobs: Int
+    inactive: Boolean
   ): UpdateCompanyResponse
   deleteCompany(id: String!): DeleteCompanyResponse
   deleteCompanies(ids: [String!]!): DeleteCompanyResponse

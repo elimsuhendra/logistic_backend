@@ -135,6 +135,7 @@ type Mutation {
     mobileCode: String
     mobileNumber: String
     dateJoin: Date
+    password: String
   ): RegisterResponse
   updateProfile(
     fullName: String
