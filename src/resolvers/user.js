@@ -238,7 +238,11 @@ export default {
         args.dateJoin = args["dateJoin"] ? moment.utc(moment(args["dateJoin"]).format("YYYY-MM-DD")).valueOf() : null
         if ('email' in args) { args.email = args.email.toLowerCase() }
         if ('password' in args) {
-          args.password = hashPassword(args.password)
+          if (args.password && args.password.trim()) {
+            args.password = hashPassword(args.password.trim())
+          } else {
+            delete args.password
+          }
         }
         const sendEmail = !updatedUser.approved && !!args.approved
         

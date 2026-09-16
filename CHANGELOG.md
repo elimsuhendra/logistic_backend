@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.2.0] - 2026-09-16 - Company Status Management and Asset Storage Updates
+
+### Added
+
+- **Company Active and Inactive Status**: Added support for designating companies as active or inactive when creating and updating company records, making it easier to manage client accounts and maintain clean company directories.
+- **Status-Based Company Filtering**: Enabled filtering company records by active or inactive status so users can quickly locate and organize their accounts.
+
+### Changed
+
+- **Optimized Upload Storage Structure**: Organized server file storage for uploaded media assets and documents, ensuring secure and consistent handling of customer and company files.
+
+
 ## [1.1.0] - 2026-09-14 - Media Storage and Cross-Platform Reliability
 
 ### Added
