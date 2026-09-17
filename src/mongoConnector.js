@@ -57,6 +57,7 @@ export default async () => {
       PeopleMessage: db.collection("peopleMessages"),
       PeopleEmail: db.collection("peopleEmails"),
       JobOrder: db.collection("jobOrders"),
+      JobPlanning: db.collection("jobPlannings"),
       Workflow: db.collection("workflows"),
       JobApplicant: db.collection("jobApplicants"),
       Report: db.collection("reports"),
