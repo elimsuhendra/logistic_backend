@@ -1,0 +1,105 @@
+type JobPlanning {
+  id: String!
+  jobPlanningNo: String
+  customerId: String
+  customer: Company
+  consigneeId: String
+  consignee: Company
+  qty: Int
+  containerSize: Float
+  destinations: [String]
+  reffNo: String
+  isDraft: Boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
+enum JobPlanningOrder {
+  jobPlanningNo_DESC
+  jobPlanningNo_ASC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input JobPlanningFilter {
+  OR: [JobPlanningFilter!]
+  AND: [JobPlanningFilter!]
+  _id_in: [String]
+  _id_nin: [String]
+  jobPlanningNo: String
+  jobPlanningNo_regex: String
+  customerId: String
+  consigneeId: String
+  containerSize: String
+  reffNo: String
+  isDraft: Boolean
+  search: String
+  createdAt_gte: Date
+  createdAt_lte: Date
+}
+
+type CreateJobPlanningResponse {
+  success: Boolean!
+  message: String
+  jobPlanning: JobPlanning
+}
+
+type UpdateJobPlanningResponse {
+  success: Boolean!
+  message: String
+  jobPlanning: JobPlanning
+}
+
+type DeleteJobPlanningResponse {
+  success: Boolean!
+  message: String
+}
+
+type Query {
+  allJobPlannings(
+    filter: JobPlanningFilter
+    first: Int
+    skip: Int
+    orderBy: JobPlanningOrder
+  ): [JobPlanning]
+  _allJobPlanningsMeta(filter: JobPlanningFilter): ObjectMeta
+  getJobPlanning(id: String): JobPlanning
+}
+
+type Mutation {
+  createJobPlanning(
+    jobPlanningNo: String
+    customerId: String
+    consigneeId: String
+    qty: Int
+    containerSize: String
+    destinations: [String]
+    reffNo: String
+    isDraft: Boolean
+  ): CreateJobPlanningResponse
+
+  updateJobPlanning(
+    id: String!
+    jobPlanningNo: String
+    customerId: String
+    consigneeId: String
+    qty: Int
+    containerSize: String
+    destinations: [String]
+    reffNo: String
+    isDraft: Boolean
+  ): UpdateJobPlanningResponse
+
+  deleteJobPlanning(id: String!): DeleteJobPlanningResponse
+  deleteJobPlannings(ids: [String!]!): DeleteJobPlanningResponse
+}
+
+type JobPlanningSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: JobPlanning
+  previousValues: JobPlanning
+}
+
+type Subscription {
+  JobPlanning(filter: SubscriptionFilter, dataFilter: JobPlanningFilter): JobPlanningSubscriptionPayload
+}
