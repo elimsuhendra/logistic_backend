@@ -12,6 +12,28 @@ const users = [
     inactive: false,
     approved: true,
   },
+  {
+    createdAt: Date.now() + indexTime++,
+    updatedAt: null,
+    deletedAt: null,
+    username: 'goldenexpressindo',
+    password: hashPassword('AmazingMagicCode'),
+    fullName: 'Golden Expressindo',
+    role: 'Admin',
+    inactive: false,
+    approved: true,
+  },
+  {
+    createdAt: Date.now() + indexTime++,
+    updatedAt: null,
+    deletedAt: null,
+    username: 'cahayabintangmas',
+    password: hashPassword('AmazingMagicCode'),
+    fullName: 'Cahaya Bintang Mas',
+    role: 'Admin',
+    inactive: false,
+    approved: true,
+  },
 ]
 
 export default users

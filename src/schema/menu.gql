@@ -1,0 +1,10 @@
+type Menu {
+  id: String!
+  name: String!
+  code: String!
+  path: String
+  icon: String
+  sortOrder: Int!
+  parentId: String
+  isActive: Boolean!
+}

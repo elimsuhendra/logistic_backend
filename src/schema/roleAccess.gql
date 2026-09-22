@@ -1,0 +1,9 @@
+type RoleAccess {
+  id: String!
+  roleId: String!
+  menuId: String!
+  canView: Boolean!
+  canCreate: Boolean!
+  canUpdate: Boolean!
+  canDelete: Boolean!
+}

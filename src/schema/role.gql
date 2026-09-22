@@ -1,0 +1,9 @@
+type Role {
+  id: String!
+  accountId: String!
+  name: String!
+  description: String
+  users: [User!]!
+  roleAccess: [RoleAccess!]!
+  inactive: Boolean!
+}

@@ -14,7 +14,7 @@ import bcrypt from 'bcryptjs'
 import agenda from 'jobs'
 import shortid from 'shortid'
 import { sms } from "utils/smsServices"
-import {isEmptyObject, isBlankString} from "utils/validate"
+import { isEmptyObject, isBlankString } from "utils/validate"
 import { mongoCreate, mongoUpdate, mongoDelete } from "utils/crud"
 
 export default {
@@ -28,7 +28,7 @@ export default {
     },
     groups: async ({ _id }, args, { dataloaders }) => {
       const loadedGroups = await dataloaders.get('groupsByUserLoader').load(_id)
-      
+
       return await dataloaders.get('groupsByUserLoader').load(_id)
     },
     lastGroup2: async ({ _id }, args, { dataloaders }) => {
@@ -39,6 +39,10 @@ export default {
       const current = await mongo.UserSalary.findOne({ userId: _id, year: parseInt(currentYear), deletedAt: null })
       return current || null
     },
+    account: async ({ _id }, args, { mongo }) => {
+      const account = await mongo.Account.findOne({ userIds: { $in: [ObjectId(_id)] }, deletedAt: null })
+      return account
+    }
   },
   Subscription: {
     User: {
@@ -71,15 +75,15 @@ export default {
 
       return null
     },
-    allUsers: requiresAuth.createResolver(async (parent, args, context) => {    
+    allUsers: requiresAuth.createResolver(async (parent, args, context) => {
       // Read
       const { allowAdmin, filter = {}, first, skip, orderBy } = args
       const { mongo, user } = context
 
-       //test
+      //test
       // user._id = "642a34cf7d32b01a70219b97" //kelvinsoh
       // user._id = "6231688581afed0661e06aac" //superadmin
- 
+
 
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
       const rolesObj = getRoles(currentUser)
@@ -95,20 +99,20 @@ export default {
           .skip(offset)
           .limit(limit)
           .toArray()
-              
-        const readyGroups = await mongo.Group.find({ 
-            deletedAt: null 
-          }).toArray()
-        
-        for(let i = 0; i<obj.length; i++){
+
+        const readyGroups = await mongo.Group.find({
+          deletedAt: null
+        }).toArray()
+
+        for (let i = 0; i < obj.length; i++) {
           let currUser = obj[i]
-          let readyGroups2 = readyGroups.filter(group => 
-              group.managerId.toString() === currUser._id.toString() ||
-              group.teamLeaderId.toString() === currUser._id.toString() ||
-              group.staffIds.includes(currUser._id.toString())
+          let readyGroups2 = readyGroups.filter(group =>
+            group.managerId.toString() === currUser._id.toString() ||
+            group.teamLeaderId.toString() === currUser._id.toString() ||
+            group.staffIds.includes(currUser._id.toString())
           )
-          
-          if(readyGroups2.length > 0){
+
+          if (readyGroups2.length > 0) {
             readyGroups2.sort((a, b) => b.updatedAt - a.updatedAt)
             readyGroups2 = readyGroups2.length > 0 ? readyGroups2[0] : []
             obj[i]["lastGroup"] = {
@@ -116,7 +120,7 @@ export default {
               name: readyGroups2.name
             }
           }
-        } 
+        }
 
         return obj
       }
@@ -149,7 +153,7 @@ export default {
       return await tryLogin(
         { username: args.username, password: args.password },
         { mongo, SECRET1, SECRET2 }
-      ) 
+      )
     },
     createUser: async (parent, args, context) => {
       await checkPermissions(checkUserAuth)({ context })
@@ -245,7 +249,7 @@ export default {
           }
         }
         const sendEmail = !updatedUser.approved && !!args.approved
-        
+
         const update = prepareUpdate(args)
         const obj = await mongo.User.updateOne(
           { _id: ObjectId(id) },
@@ -255,13 +259,15 @@ export default {
 
         const lastUser = await mongo.User.findOne({ _id: ObjectId(id) })
 
-        if (obj.modifiedCount) {
-          pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV + '-User', {
-            User: {
-              mutation: 'UPDATED',
-              node: { _id: ObjectId(id), roles: lastUser.roles }
-            }
-          })
+        if (obj.matchedCount) {
+          if (obj.modifiedCount) {
+            pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV + '-User', {
+              User: {
+                mutation: 'UPDATED',
+                node: { _id: ObjectId(id), roles: lastUser.roles }
+              }
+            })
+          }
 
           const updatedUser = await mongo.User.findOne({ _id: ObjectId(id) })
 
@@ -288,13 +294,13 @@ export default {
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
       if (!!currentUser) {
         if ('email' in args) { args.email = args.email.toLowerCase() }
-        
+
         const id = currentUser._id
-        if ('currentPassword' in args && 'newPassword' in args &&  bcrypt.compareSync(args.currentPassword, currentUser.password)) {
+        if ('currentPassword' in args && 'newPassword' in args && bcrypt.compareSync(args.currentPassword, currentUser.password)) {
           args.password = hashPassword(args.newPassword)
         }
 
-        delete args.currentPassword 
+        delete args.currentPassword
         delete args.newPassword
 
         const update = prepareUpdate(args)
@@ -305,13 +311,15 @@ export default {
         )
         const lastUser = await mongo.User.findOne({ _id: ObjectId(id) })
 
-        if (obj.modifiedCount) {
-          pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV + '-User', {
-            User: {
-              mutation: 'UPDATED',
-              node: { _id: ObjectId(id), role: lastUser.role }
-            }
-          })
+        if (obj.matchedCount) {
+          if (obj.modifiedCount) {
+            pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV + '-User', {
+              User: {
+                mutation: 'UPDATED',
+                node: { _id: ObjectId(id), role: lastUser.role }
+              }
+            })
+          }
           return { user: lastUser, success: true }
         } else {
           return new Error(
@@ -345,9 +353,9 @@ export default {
     },
     registerAs: async (parent, args, context) => {
       const { mongo, user } = context
-      const {email, mobileCode, mobileNumber } = args
+      const { email, mobileCode, mobileNumber } = args
       if ('email' in args) { args.email = args.email.toLowerCase() }
-      if ('firstName' in args) { args.fullName = args.firstName + (!!args.lastName? ` ${args.lastName}` : '')}
+      if ('firstName' in args) { args.fullName = args.firstName + (!!args.lastName ? ` ${args.lastName}` : '') }
       args.inactive = false
       args.approved = false
       args.roles = "Staff"
@@ -375,7 +383,7 @@ export default {
         } else {
           const rs = await mongo.User.insertOne(userObj)
           pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV + '-User', { User: { mutation: 'CREATED', node: userObj } })
-          
+
         }
 
         return {
@@ -395,13 +403,15 @@ export default {
       const { mongo } = context
       const { email } = args
       if (!!email) {
-        const currentUser = await mongo.User.findOne({email, deletedAt: null})
+        const currentUser = await mongo.User.findOne({ email, deletedAt: null })
         if (!!currentUser) {
           const user = await mongo.User.updateOne(
             { _id: ObjectId(currentUser._id) },
-            { $set: {
-              resetToken: `${shortid.generate()}${shortid.generate()}-${new Date().valueOf()}`,
-            } },
+            {
+              $set: {
+                resetToken: `${shortid.generate()}${shortid.generate()}-${new Date().valueOf()}`,
+              }
+            },
             { returnOriginal: false }
           )
           const lastUser = await mongo.User.findOne({ _id: ObjectId(currentUser._id) })
@@ -418,12 +428,12 @@ export default {
             success: true,
             message: "Your request to reset password has been sent. Please check your email."
           }
-        } 
+        }
         return {
           success: false,
           message: "Email can not find in system."
         }
-      } 
+      }
       return {
         success: false,
         message: "Please input email."
@@ -433,26 +443,28 @@ export default {
       const { mongo } = context
       const { email, token, password } = args
       if (!!email && !!token && !!password) {
-        const currentUser = await mongo.User.findOne({email, resetToken: { $exists: true, $eq: token}, deletedAt: null})
+        const currentUser = await mongo.User.findOne({ email, resetToken: { $exists: true, $eq: token }, deletedAt: null })
         if (!!currentUser) {
           await mongo.User.updateOne(
             { _id: ObjectId(currentUser._id) },
-            { $set: {
-              password: hashPassword(password),
-              resetToken: null
-            } },
+            {
+              $set: {
+                password: hashPassword(password),
+                resetToken: null
+              }
+            },
             { returnOriginal: false }
           )
           return {
             success: true,
             message: "Your password has been changed."
           }
-        } 
+        }
         return {
           success: false,
           message: "Invalid token."
         }
-      } 
+      }
       return {
         success: false,
         message: "Invalid email & token."

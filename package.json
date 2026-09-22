@@ -1,6 +1,6 @@
 {
   "name": "logistic_backend",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
@@ -11,6 +11,8 @@
     "db:modification": "babel-node ./src/migrations/modification/index.js",
     "db:index:reset": "babel-node ./src/migrations/indexing/reset.js",
     "db:seed": "babel-node ./src/seeder/index.js",
+    "db:seed:accounts": "babel-node ./src/seeder/index.js accounts",
+    "db:seed:users": "babel-node ./src/seeder/index.js users",
     "import:company": "babel-node ./src/imports/importCompanies.js",
     "import:customer": "babel-node ./src/imports/importMtcCustomers.js",
     "import:postal": "babel-node ./src/imports/importPostal.js"

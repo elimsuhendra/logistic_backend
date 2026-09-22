@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.3.1] - 2026-09-22 - Account Association and User Profile Details
+
+### Added
+
+- **Account Association for Users**: User accounts can now be linked directly to specific organization accounts, displaying associated account names and code initials.
+- **Employee ID Support**: Users can now have unique employee identification numbers assigned and updated during registration and user management.
+- **Contact Details Management**: Enhanced profile updates to support maintaining up-to-date mobile phone numbers and email contact information.
+
+### Changed
+
+- **Smooth Profile Saving**: Improved user and profile update handling to ensure save operations complete seamlessly without unexpected warning messages when details are saved.
+
 ## [1.3.0] - 2026-09-17 - Job Planning Details Streamlining
 
 ### Changed
