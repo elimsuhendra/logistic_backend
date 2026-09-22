@@ -1,0 +1,119 @@
+type Account {
+  id: String!
+  type: AccountType!
+  # fullName: String
+  accountName: String
+  initial: String
+  userIds: [String]
+  logoUrl: String
+  logoWidth: Float
+  logoHeight: Float
+  email: String
+  # contactNo: PhoneNumberObject
+  # modules: [AccountModule]
+  inactive: Boolean
+  createdAt: Date
+  updatedAt: Date
+
+  # resolver
+  # isSystemAdmin: Boolean
+  # settings: [AccountSetting]
+}
+
+enum AccountType {
+  PERSONAL
+  BUSINESS
+  SYSTEM
+}
+
+# enum AccountModule {
+#   SUPPLY_CHAIN
+#   EVENT
+#   MEMBERSHIP
+# }
+
+enum AccountOrder {
+  # fullName_DESC
+  # fullName_ASC
+  accountName_DESC
+  accountName_ASC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input AccountFilter {
+  OR: [AccountFilter!]
+  AND: [AccountFilter!]
+  # fullName_regex: String
+  accountName_regex: String
+  inactive: Boolean
+  createdAt_gte: Date
+  createdAt_lte: Date
+}
+
+type Query {
+  """
+  Retrieve a single account by its ID.
+  """
+  getAccount(id: String): Account
+  """
+  Retrieve a list of all accounts matching optional filters.
+  """
+  allAccounts(filter: AccountFilter, first: Int, skip: Int, showAll: Boolean, orderBy: AccountOrder): [Account!]!
+  """
+  Retrieve count of all accounts matching filters.
+  """
+  _allAccountsMeta(filter: AccountFilter, showAll: Boolean, first: Int, skip: Int): ObjectMeta
+}
+
+input CreateAccountInput {
+  accountName: String!
+  # fullName: String
+  initial: String!
+  userId: String!
+  type: AccountType!
+  logoUrl: String
+  logoWidth: Float
+  logoHeight: Float
+  email: String
+  # contactNo: PhoneNumberObject
+  inactive: Boolean
+}
+
+input UpdateAccountInput {
+  id: String!
+  accountName: String
+  # fullName: String
+  logoUrl: String
+  logoWidth: Float
+  logoHeight: Float
+  email: String
+  # contactNo: PhoneNumberObject
+  inactive: Boolean
+}
+
+type Mutation {
+  """
+  Create a new account record.
+  """
+  createAccount(userId: String, input: CreateAccountInput!): CommonResponse
+  """
+  Update an existing account record.
+  """
+  updateAccount(id: String!, input: UpdateAccountInput!): CommonResponse
+  """
+  Delete an account record.
+  @mcp-disabled
+  """
+  deleteAccount(id: String!): CommonResponse
+}
+
+type AccountSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Account
+  previousValues: Account
+}
+
+type Subscription {
+  Account(filter: SubscriptionFilter, dataFilter: AccountFilter): AccountSubscriptionPayload
+}

@@ -11,6 +11,7 @@ type User {
   dateJoin: Date
   deletedAt: Date
   avatar: Photo
+  employeeID: String
   #pilot web
   email: String
   lastName: String
@@ -29,6 +30,7 @@ type User {
   lastGroup: Group
   lastGroup2: [Group]
   salary: UserSalary
+  account: Account
 }
 
 enum RoleType {
@@ -123,6 +125,7 @@ type Mutation {
     mobileCode: String
     mobileNumber: String
     dateJoin: Date
+    employeeID: String
   ): RegisterResponse
   updateUser(
     id: String!
@@ -136,6 +139,7 @@ type Mutation {
     mobileNumber: String
     dateJoin: Date
     password: String
+    employeeID: String
   ): RegisterResponse
   updateProfile(
     fullName: String
