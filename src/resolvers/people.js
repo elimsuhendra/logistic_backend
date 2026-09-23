@@ -10,7 +10,7 @@ import { withFilter } from 'graphql-subscriptions'
 import { sms } from "utils/smsServices"
 import moment from 'moment'
 import agenda from 'jobs'
-import { mongoCreate, mongoUpdate, mongoDelete, mongoMultiDelete, ensureHasTextIndex} from 'utils/crud'
+import { mongoCreate, mongoUpdate, mongoDelete, mongoMultiDelete, ensureHasTextIndex } from 'utils/crud'
 import _ from "lodash"
 import path from "path"
 import skill from './skill'
@@ -22,7 +22,7 @@ export default {
       return await dataloaders.get('peoplePhotoByIdLoader').load(_id)
     },
     resumes: async ({ _id }, args, { dataloaders }) => {
-      return await dataloaders.get('documentsByObject').load({ objectId: _id.toString(), objectType: 'People', documentType:  'resumes'})
+      return await dataloaders.get('documentsByObject').load({ objectId: _id.toString(), objectType: 'People', documentType: 'resumes' })
     },
     documents: async ({ _id }, args, { dataloaders }) => {
       return await dataloaders.get('documentsByObject').load({ objectId: _id.toString(), objectType: 'People', documentType: 'documents' })
@@ -30,7 +30,7 @@ export default {
     notes: async ({ _id }, args, { dataloaders }) => {
       return await dataloaders.get('notesByPeopleIdLoader').load(_id)
     },
-    activities: async ({ _id }, args, { dataloaders }) => {
+    activityLogs: async ({ _id }, args, { dataloaders }) => {
       return await dataloaders.get('activitiesByPeopleIdLoader').load(_id)
     },
     jobOrders: async ({ _id }, args, { dataloaders }) => {
@@ -39,7 +39,7 @@ export default {
     applications: async ({ _id }, args, { dataloaders }) => {
       return await dataloaders.get('jobApplicantsByCandidateIdLoader').load(_id)
     },
-    importedFromUrl: ({ rawCandidateId }, args, {serverUrl}) => {
+    importedFromUrl: ({ rawCandidateId }, args, { serverUrl }) => {
       if (!rawCandidateId) return null
       return `${serverUrl}/raw-candidates/${rawCandidateId}`
     },
@@ -58,7 +58,7 @@ export default {
       return await dataloaders.get('skillsBySkillIdsLoader').load(skillIds)
     },
     jobOrder: async ({ jobOrderId }, args, { dataloaders }) => {
-      if(jobOrderId){
+      if (jobOrderId) {
         return await dataloaders.get('jobOrderByJobOrderId').load(jobOrderId)
       }
     },
@@ -67,7 +67,7 @@ export default {
     People: {
       subscribe: requiresAuth.createResolver(
         withFilter(
-          () => pubsub.asyncIterator(process.env.APP_NAME + '-' + process.env.APP_ENV +'-People'),
+          () => pubsub.asyncIterator(process.env.APP_NAME + '-' + process.env.APP_ENV + '-People'),
           (payload, args) => {
             return compareObject(payload.People.node, args.dataFilter)
           }
@@ -80,101 +80,19 @@ export default {
       async (parent, { id }, { mongo, user }) => {
         const currentPeople = id ? await mongo.People.findOne({ _id: ObjectId(id), deletedAt: null }) : null
         return currentPeople
-    }),
+      }),
     allPeople: requiresAuth.createResolver(
       async (parent, { filter, first, skip, orderBy }, { mongo }) => {
         const limit = first || 10
         const offset = skip || 0
-        const {search, salary_lte, salary_gte, showAttachment, ...rest} = filter || {}
+        const { search, salary_lte, salary_gte, showAttachment, ...rest } = filter || {}
         let filters = buildMongoFilters(rest) || {}
         delete filters.deletedAt
         let searchFilter = null
 
         let showAttachmentFilter = null
         if (showAttachment) {
-          const candidateDocuments = await mongo.Document.find({objectType: "People", documentType: "resumes", deletedAt: null}).toArray()
-          let candidateIds = _.uniq(candidateDocuments.map(document => document.objectId.toString()) || [])
-          if (candidateIds && candidateIds.length > 0) {
-            showAttachmentFilter = {
-              "$or": [
-                {_id: {$in: candidateIds.map(id => ObjectId(id))}},
-                {rawCandidateId: { $ne: null }}
-              ]
-            }
-          } else {
-            showAttachmentFilter = {
-              rawCandidateId: { $ne: null }
-            }
-          }
-        }
-
-        let salaryFilter = null
-        if (!!salary_lte && !!salary_gte) {
-          salaryFilter = {
-            idealEmployments: {
-              $elemMatch: {
-                $or: [
-                  {minSalary: { $gt: salary_gte, $lt: salary_lte }},
-                  {maxSalary: { $gt: salary_gte, $lt: salary_lte }}
-                ]
-              }
-            }
-          }
-        }
-        const getFilterAge = filters["$and"] && filters["$and"].filter(i => i.age)
-        const removeFilterAge = filters["$and"] && filters["$and"].filter(i => !i.age)
-        delete filters["$and"]
-        if (removeFilterAge && removeFilterAge.length > 0) {
-          filters["$and"] = removeFilterAge
-        }
-        const filterResponse = [filters, searchFilter, salaryFilter, getFilterAge, showAttachmentFilter].filter(i => !!i && Object.keys(i).length > 0)
-        const filterResult = (filterResponse && filterResponse.length > 0) ? {
-          $and: [
-            {deletedAt: null},
-            Object.keys(filters || []).length && Object.keys(searchFilter || []).length ? {
-              $or: [
-                filters || {}, 
-                searchFilter || {}
-              ]
-            } : {
-              $and: [
-                filters || {}, 
-                searchFilter || {}
-              ]
-            },
-            salaryFilter || {},
-            getFilterAge && getFilterAge.length > 0 ? {
-              $and: getFilterAge
-            } : {},
-            showAttachmentFilter || {},
-          ]
-        }: {deletedAt: null}
-
-        if (search && (await ensureHasTextIndex("People", { mongo }))) {
-          filterResult['$text'] =  { $search: `\"${sanitizeRegex(search).toLowerCase()}\"` }
-        }
-
-        const obj = mongo.People.find(filterResult)
-        if (orderBy) obj.sort(buildMongoOrders(orderBy))
-        else obj.sort({ createdAt: -1 }) // -1 = DESC
-        if (first) obj.limit(limit)
-        if (skip) obj.skip(offset)
-        return await obj.toArray()
-      }
-    ),
-    _allPeopleMeta: requiresAuth.createResolver(
-      async (parent, { filter, first, skip }, { mongo }) => {
-        const limit = 1
-        const offset = (first || 10) + (skip || 0)
-
-        const {search, salary_lte, salary_gte, showAttachment, ...rest} = filter || {}
-        let filters = buildMongoFilters(rest) || {}
-        delete filters.deletedAt
-        let searchFilter = null
-
-        let showAttachmentFilter = {}
-        if (showAttachment) {
-          const candidateDocuments = await mongo.Document.find({objectType: "People", documentType: "resumes", deletedAt: null}).toArray()
+          const candidateDocuments = await mongo.Document.find({ objectType: "People", documentType: "resumes", deletedAt: null }).toArray()
           let candidateIds = _.uniq(candidateDocuments.map(document => document.objectId.toString()) || [])
           if (candidateIds && candidateIds.length > 0) {
             showAttachmentFilter = {
@@ -215,12 +133,12 @@ export default {
             { deletedAt: null },
             Object.keys(filters || []).length && Object.keys(searchFilter || []).length ? {
               $or: [
-                filters || {}, 
+                filters || {},
                 searchFilter || {}
               ]
             } : {
               $and: [
-                filters || {}, 
+                filters || {},
                 searchFilter || {}
               ]
             },
@@ -230,10 +148,92 @@ export default {
             } : {},
             showAttachmentFilter || {},
           ]
-        }: { deletedAt: null }
+        } : { deletedAt: null }
 
         if (search && (await ensureHasTextIndex("People", { mongo }))) {
-          filterResult['$text'] =  { $search: `\"${sanitizeRegex(search).toLowerCase()}\"` }
+          filterResult['$text'] = { $search: `\"${sanitizeRegex(search).toLowerCase()}\"` }
+        }
+
+        const obj = mongo.People.find(filterResult)
+        if (orderBy) obj.sort(buildMongoOrders(orderBy))
+        else obj.sort({ createdAt: -1 }) // -1 = DESC
+        if (first) obj.limit(limit)
+        if (skip) obj.skip(offset)
+        return await obj.toArray()
+      }
+    ),
+    _allPeopleMeta: requiresAuth.createResolver(
+      async (parent, { filter, first, skip }, { mongo }) => {
+        const limit = 1
+        const offset = (first || 10) + (skip || 0)
+
+        const { search, salary_lte, salary_gte, showAttachment, ...rest } = filter || {}
+        let filters = buildMongoFilters(rest) || {}
+        delete filters.deletedAt
+        let searchFilter = null
+
+        let showAttachmentFilter = {}
+        if (showAttachment) {
+          const candidateDocuments = await mongo.Document.find({ objectType: "People", documentType: "resumes", deletedAt: null }).toArray()
+          let candidateIds = _.uniq(candidateDocuments.map(document => document.objectId.toString()) || [])
+          if (candidateIds && candidateIds.length > 0) {
+            showAttachmentFilter = {
+              "$or": [
+                { _id: { $in: candidateIds.map(id => ObjectId(id)) } },
+                { rawCandidateId: { $ne: null } }
+              ]
+            }
+          } else {
+            showAttachmentFilter = {
+              rawCandidateId: { $ne: null }
+            }
+          }
+        }
+
+        let salaryFilter = null
+        if (!!salary_lte && !!salary_gte) {
+          salaryFilter = {
+            idealEmployments: {
+              $elemMatch: {
+                $or: [
+                  { minSalary: { $gt: salary_gte, $lt: salary_lte } },
+                  { maxSalary: { $gt: salary_gte, $lt: salary_lte } }
+                ]
+              }
+            }
+          }
+        }
+        const getFilterAge = filters["$and"] && filters["$and"].filter(i => i.age)
+        const removeFilterAge = filters["$and"] && filters["$and"].filter(i => !i.age)
+        delete filters["$and"]
+        if (removeFilterAge && removeFilterAge.length > 0) {
+          filters["$and"] = removeFilterAge
+        }
+        const filterResponse = [filters, searchFilter, salaryFilter, getFilterAge, showAttachmentFilter].filter(i => !!i && Object.keys(i).length > 0)
+        const filterResult = (filterResponse && filterResponse.length > 0) ? {
+          $and: [
+            { deletedAt: null },
+            Object.keys(filters || []).length && Object.keys(searchFilter || []).length ? {
+              $or: [
+                filters || {},
+                searchFilter || {}
+              ]
+            } : {
+              $and: [
+                filters || {},
+                searchFilter || {}
+              ]
+            },
+            salaryFilter || {},
+            getFilterAge && getFilterAge.length > 0 ? {
+              $and: getFilterAge
+            } : {},
+            showAttachmentFilter || {},
+          ]
+        } : { deletedAt: null }
+
+        if (search && (await ensureHasTextIndex("People", { mongo }))) {
+          filterResult['$text'] = { $search: `\"${sanitizeRegex(search).toLowerCase()}\"` }
         }
 
         const people = await mongo.People.find(filterResult).skip(offset).limit(limit).toArray()
@@ -252,28 +252,28 @@ export default {
         const { mongo } = context
         const limit = first || 10
         const offset = skip || 0
-        const sortBy = !!orderBy? buildMongoOrders(orderBy) : { createdAt: -1 }
+        const sortBy = !!orderBy ? buildMongoOrders(orderBy) : { createdAt: -1 }
 
         let pipelines = []
 
         let distinctTempCandidateIds = []
 
         let JobApplicantArgs = {}
-        let offer = {"offer.workType" : "Contract / Temp / Part Time"}
-        
+        let offer = { "offer.workType": "Contract / Temp / Part Time" }
+
         let payrollCycleEndDate_lte2 = new Date(payrollCycleEndDate_lte).valueOf()
         let payrollCycleEndDate_gte2 = new Date(payrollCycleEndDate_gte).valueOf()
 
-        if(payrollCycleEndDate_lte){
-          let payrollCycleEndDate = {'$lte': payrollCycleEndDate_lte2}
+        if (payrollCycleEndDate_lte) {
+          let payrollCycleEndDate = { '$lte': payrollCycleEndDate_lte2 }
 
           offer = {
             ...offer,
             'offer.payrollCycleEndDate': payrollCycleEndDate
           }
         }
-        else if(payrollCycleEndDate_lte && payrollCycleEndDate_gte){
-          let payrollCycleEndDate = {'$gte': payrollCycleEndDate_gte2, '$lte': payrollCycleEndDate_lte2}
+        else if (payrollCycleEndDate_lte && payrollCycleEndDate_gte) {
+          let payrollCycleEndDate = { '$gte': payrollCycleEndDate_gte2, '$lte': payrollCycleEndDate_lte2 }
 
           offer = {
             ...offer,
@@ -285,17 +285,17 @@ export default {
           ...offer
         }
 
-        if(!_.isEmpty(companyFilter)){
+        if (!_.isEmpty(companyFilter)) {
           let companyId;
-          for(var key in companyFilter){
-            if(companyFilter.hasOwnProperty('_id')){
+          for (var key in companyFilter) {
+            if (companyFilter.hasOwnProperty('_id')) {
               companyId = ObjectId(companyFilter[key])
             }
           }
 
-          const jobOrderData = await mongo.JobOrder.distinct("_id", {companyId: companyId}) || []
+          const jobOrderData = await mongo.JobOrder.distinct("_id", { companyId: companyId }) || []
 
-          JobApplicantArgs.jobId = {$in:jobOrderData}
+          JobApplicantArgs.jobId = { $in: jobOrderData }
         }
 
         distinctTempCandidateIds = await mongo.JobApplicant.distinct('candidateId', JobApplicantArgs)
@@ -313,28 +313,30 @@ export default {
             const regexStr = `\(\^|\\W\)${str}`
 
             return {
-              $match: { $or: [
-                { fullName: { $regex: regexStr, $options: 'i' } },
-                { email: { $regex: str, $options: 'i' } },
-              ] }
+              $match: {
+                $or: [
+                  { fullName: { $regex: regexStr, $options: 'i' } },
+                  { email: { $regex: str, $options: 'i' } },
+                ]
+              }
             }
           })
 
           pipelines = pipelines.concat(addFilters)
         }
-        
+
         let filters = buildMongoFilters(params) || {}
         delete filters.deletedAt
         let searchFilter = null
 
         let showAttachmentFilter = null
         if (showAttachment) {
-          const candidateDocuments = await mongo.Document.find({objectType: "People", documentType: "resumes", deletedAt: null}).toArray()
+          const candidateDocuments = await mongo.Document.find({ objectType: "People", documentType: "resumes", deletedAt: null }).toArray()
           let candidateIds = _.uniq(candidateDocuments.map(document => document.objectId.toString()) || [])
           if (candidateIds && candidateIds.length > 0) {
             showAttachmentFilter = {
               "$or": [
-                { _id: {$in: candidateIds.map(id => ObjectId(id))} },
+                { _id: { $in: candidateIds.map(id => ObjectId(id)) } },
                 { rawCandidateId: { $ne: null } }
               ]
             }
@@ -372,12 +374,12 @@ export default {
             { deletedAt: null },
             Object.keys(filters || []).length && Object.keys(searchFilter || []).length ? {
               $or: [
-                filters || {}, 
+                filters || {},
                 searchFilter || {}
               ]
             } : {
               $and: [
-                filters || {}, 
+                filters || {},
                 searchFilter || {}
               ]
             },
@@ -387,7 +389,7 @@ export default {
             } : {},
             showAttachmentFilter || {},
           ]
-        }: { deletedAt: null }
+        } : { deletedAt: null }
 
         if (keyword) {
           filterResult['$text'] = { $search: `\"${sanitizeRegex(keyword).toLowerCase()}\"` }
@@ -413,28 +415,28 @@ export default {
         const { mongo } = context
         const limit = first || 10
         const offset = skip || 0
-        const sortBy = !!orderBy? buildMongoOrders(orderBy) : { createdAt: -1 }
+        const sortBy = !!orderBy ? buildMongoOrders(orderBy) : { createdAt: -1 }
 
         let pipelines = []
 
         let distinctTempCandidateIds = []
 
         let JobApplicantArgs = {}
-        let offer = {"offer.workType" : "Contract / Temp / Part Time"}
-        
+        let offer = { "offer.workType": "Contract / Temp / Part Time" }
+
         let payrollCycleEndDate_lte2 = new Date(payrollCycleEndDate_lte).valueOf()
         let payrollCycleEndDate_gte2 = new Date(payrollCycleEndDate_gte).valueOf()
 
-        if(payrollCycleEndDate_lte){
-          let payrollCycleEndDate = {'$lte': payrollCycleEndDate_lte2}
+        if (payrollCycleEndDate_lte) {
+          let payrollCycleEndDate = { '$lte': payrollCycleEndDate_lte2 }
 
           offer = {
             ...offer,
             'offer.payrollCycleEndDate': payrollCycleEndDate
           }
         }
-        else if(payrollCycleEndDate_lte && payrollCycleEndDate_gte){
-          let payrollCycleEndDate = {'$gte': payrollCycleEndDate_gte2, '$lte': payrollCycleEndDate_lte2}
+        else if (payrollCycleEndDate_lte && payrollCycleEndDate_gte) {
+          let payrollCycleEndDate = { '$gte': payrollCycleEndDate_gte2, '$lte': payrollCycleEndDate_lte2 }
 
           offer = {
             ...offer,
@@ -446,17 +448,17 @@ export default {
           ...offer
         }
 
-        if(!_.isEmpty(companyFilter)){
+        if (!_.isEmpty(companyFilter)) {
           let companyId;
-          for(var key in companyFilter){
-            if(companyFilter.hasOwnProperty('_id')){
+          for (var key in companyFilter) {
+            if (companyFilter.hasOwnProperty('_id')) {
               companyId = ObjectId(companyFilter[key])
             }
           }
 
-          const jobOrderData = await mongo.JobOrder.distinct("_id", {companyId: companyId}) || []
+          const jobOrderData = await mongo.JobOrder.distinct("_id", { companyId: companyId }) || []
 
-          JobApplicantArgs.jobId = {$in:jobOrderData}
+          JobApplicantArgs.jobId = { $in: jobOrderData }
         }
 
         distinctTempCandidateIds = await mongo.JobApplicant.distinct('candidateId', JobApplicantArgs)
@@ -474,28 +476,30 @@ export default {
             const regexStr = `\(\^|\\W\)${str}`
 
             return {
-              $match: { $or: [
-                { fullName: { $regex: regexStr, $options: 'i' } },
-                { email: { $regex: str, $options: 'i' } },
-              ] }
+              $match: {
+                $or: [
+                  { fullName: { $regex: regexStr, $options: 'i' } },
+                  { email: { $regex: str, $options: 'i' } },
+                ]
+              }
             }
           })
 
           pipelines = pipelines.concat(addFilters)
         }
-        
+
         let filters = buildMongoFilters(params) || {}
         delete filters.deletedAt
         let searchFilter = null
 
         let showAttachmentFilter = null
         if (showAttachment) {
-          const candidateDocuments = await mongo.Document.find({objectType: "People", documentType: "resumes", deletedAt: null}).toArray()
+          const candidateDocuments = await mongo.Document.find({ objectType: "People", documentType: "resumes", deletedAt: null }).toArray()
           let candidateIds = _.uniq(candidateDocuments.map(document => document.objectId.toString()) || [])
           if (candidateIds && candidateIds.length > 0) {
             showAttachmentFilter = {
               "$or": [
-                { _id: {$in: candidateIds.map(id => ObjectId(id))} },
+                { _id: { $in: candidateIds.map(id => ObjectId(id)) } },
                 { rawCandidateId: { $ne: null } }
               ]
             }
@@ -533,12 +537,12 @@ export default {
             { deletedAt: null },
             Object.keys(filters || []).length && Object.keys(searchFilter || []).length ? {
               $or: [
-                filters || {}, 
+                filters || {},
                 searchFilter || {}
               ]
             } : {
               $and: [
-                filters || {}, 
+                filters || {},
                 searchFilter || {}
               ]
             },
@@ -548,7 +552,7 @@ export default {
             } : {},
             showAttachmentFilter || {},
           ]
-        }: { deletedAt: null }
+        } : { deletedAt: null }
 
         if (keyword) {
           filterResult['$text'] = { $search: `\"${sanitizeRegex(keyword).toLowerCase()}\"` }
@@ -579,12 +583,12 @@ export default {
         let distinctTempCandidateIds = []
 
         let JobApplicantArgs = {}
-        let offer = {"offer.workType" : "Contract / Temp / Part Time"}
-        
+        let offer = { "offer.workType": "Contract / Temp / Part Time" }
+
         // check filter payrollCycleEndDate_lte payrollCycleEndDate_gte and return param
         let payrollCycleEndDate_lte = dayjs().endOf('month').valueOf()
 
-        let payrollCycleEndDate = {'$lte': payrollCycleEndDate_lte}
+        let payrollCycleEndDate = { '$lte': payrollCycleEndDate_lte }
 
         offer = {
           ...offer,
@@ -612,7 +616,7 @@ export default {
 
         const obj = mongo.People.aggregate(pipelines)
         let res = await obj.toArray()
-        return  {
+        return {
           count: res.length
         }
       }
@@ -621,17 +625,17 @@ export default {
   Mutation: {
     applyJob: requiresAuth.createResolver(async (parent, args, context) => {
       const { mongo } = context
-      const {jobId, candidate} = args || {}
-      const currentJob = await mongo.JobOrder.findOne({_id: ObjectId(jobId), deletedAt: null})
+      const { jobId, candidate } = args || {}
+      const currentJob = await mongo.JobOrder.findOne({ _id: ObjectId(jobId), deletedAt: null })
       if (!!currentJob) {
-        const peopleObj = {...candidate}
+        const peopleObj = { ...candidate }
         peopleObj.status = "ACTIVE"
         peopleObj.birthday = peopleObj["birthday"] ? moment.utc(moment(peopleObj["birthday"]).format("YYYY-MM-DD")).valueOf() : null
         const people = await mongoCreate('People', peopleObj, context)
         const jobApplicantObj = {
-          jobId: ObjectId(currentJob._id), 
+          jobId: ObjectId(currentJob._id),
           candidateId: ObjectId(people._id),
-          phase: "Applicants", 
+          phase: "Applicants",
           workflowId: currentJob.workflowId,
           position: 0
         }
@@ -643,8 +647,8 @@ export default {
             fullName: people.fullName,
           })
         }
-        const company = await mongo.Company.findOne({_id: ObjectId(currentJob.companyId), deletedAt: null})
-        const owner = await mongo.User.findOne({_id: ObjectId(currentJob.ownerId), deletedAt: null})
+        const company = await mongo.Company.findOne({ _id: ObjectId(currentJob.companyId), deletedAt: null })
+        const owner = await mongo.User.findOne({ _id: ObjectId(currentJob.ownerId), deletedAt: null })
         if (owner && owner.email) {
           agenda.now('forward-apply-job', {
             forwarder: owner.email,
@@ -733,10 +737,10 @@ export default {
       await checkPermissions(checkUserAuth)({ context })
       await mongoMultiDelete('People', args, context)
       const keyObjs = args.ids.map(key => ObjectId(key))
-      const jobApplicantsByCandidateId = await mongo.JobApplicant.find({candidateId: {$in: keyObjs}, deletedAt: null}).toArray()
+      const jobApplicantsByCandidateId = await mongo.JobApplicant.find({ candidateId: { $in: keyObjs }, deletedAt: null }).toArray()
       const jobApplicantIds = jobApplicantsByCandidateId && jobApplicantsByCandidateId.length > 0 && jobApplicantsByCandidateId.map(jobApplicant => jobApplicant._id) || null
       if (jobApplicantIds && jobApplicantIds.length > 0) {
-        await mongoMultiDelete('JobApplicant', {ids: jobApplicantIds}, context)
+        await mongoMultiDelete('JobApplicant', { ids: jobApplicantIds }, context)
       }
       return {
         success: true
@@ -751,24 +755,24 @@ export default {
             return { existed: false }
           }
         }
-        const currentCandidate = await mongo.People.findOne({ fullName: { "$regex" : argName , "$options" : "i"}, deletedAt: null })
+        const currentCandidate = await mongo.People.findOne({ fullName: { "$regex": argName, "$options": "i" }, deletedAt: null })
         return {
           existed: !!currentCandidate && currentCandidate.fullName.toLowerCase() === argName.toLowerCase() ? true : false
-        } 
-    }),
+        }
+      }),
     createCandidateIndexes: requiresAuth.createResolver(
       async (parent, args, { mongo, user }) => {
         try {
           await mongo.People.createIndex({
             createdAt: 1
           })
-        } catch (_err) {}
+        } catch (_err) { }
 
         try {
           await mongo.People.createIndex({
             createdAt: -1
           })
-        } catch (_err) {}
+        } catch (_err) { }
 
         try {
           await mongo.People.createIndex({
@@ -777,11 +781,11 @@ export default {
           await mongo.People.createIndex({
             status: 1
           })
-        } catch (_err) {}
-        
-      return {
-        success: true
-      }
-    }),
+        } catch (_err) { }
+
+        return {
+          success: true
+        }
+      }),
   }
 }

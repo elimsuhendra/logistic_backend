@@ -16,7 +16,7 @@ export async function numberOfJobsFromWorkflow({ id }, { mongo }) {
 export default {
   Workflow: {
     id: parent => parent._id || parent.id,
-    numberOfJobs: async ({ _id } , args, { mongo }) => {
+    numberOfJobs: async ({ _id }, args, { mongo }) => {
       return _id ? await numberOfJobsFromWorkflow({ id: _id }, { mongo }) : 0
     },
   },
@@ -27,7 +27,7 @@ export default {
     Workflow: {
       subscribe: requiresAuth.createResolver(
         withFilter(
-          () => pubsub.asyncIterator(process.env.APP_NAME + '-' + process.env.APP_ENV +'-Workflow'),
+          () => pubsub.asyncIterator(process.env.APP_NAME + '-' + process.env.APP_ENV + '-Workflow'),
           (payload, args) => {
             return compareObject(payload.Workflow.node, args.dataFilter)
           }
@@ -40,7 +40,7 @@ export default {
       async (parent, { id }, { mongo, user }) => {
         const currentWorkflow = id ? await mongo.Workflow.findOne({ _id: ObjectId(id), deletedAt: null }) : null
         return currentWorkflow
-    }),
+      }),
     allWorkflows: requiresAuth.createResolver(
       async (parent, { filter, first, skip, orderBy }, { mongo }) => {
         const limit = first || 10
@@ -178,7 +178,7 @@ export default {
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
 
       if (!!currentUser) {
-        const {workflows} = args || {}
+        const { workflows } = args || {}
         const bulkArgs = workflows.map((workflow, index) => {
           return {
             updateOne: {

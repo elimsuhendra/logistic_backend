@@ -3,16 +3,27 @@ import { prepareUpdate, prepareCreate, softNestedDelete } from 'src/utils/model'
 import pubsub from 'src/utils/pubsub'
 import _ from "lodash"
 
-export const mongoCreate = async (collectionName, args, { mongo, skipSubscription = false }, validation) => {
+export const mongoCreate = async (collectionName, args, context, validation) => {
   try {
+    const { mongo, skipSubscription = false } = context
     const newObj = prepareCreate(args)
     const rs = await mongo[collectionName].insertOne(newObj)
 
     if (rs.insertedId) {
       if (!skipSubscription) {
-        pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV +'-' + collectionName, {
+        pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV + '-' + collectionName, {
           [collectionName]: { mutation: 'CREATED', node: { ...newObj, id: rs.insertedId } }
         })
+
+        await createLog(
+          {
+            action: 'create_' + collectionName,
+            objectId: newObj._id,
+            objectType: collectionName,
+            payload: newObj,
+          },
+          context,
+        );
       }
 
       return {
@@ -29,24 +40,43 @@ export const mongoCreate = async (collectionName, args, { mongo, skipSubscriptio
   }
 }
 
-export const mongoUpdate = async (collectionName, { id, ...args }, { mongo, skipSubscription = false }, validation) => {
+export const mongoUpdate = async (collectionName, { id, ...args }, context, validation) => {
   try {
+    const { mongo, skipSubscription = false } = context
     const update = prepareUpdate(args)
+    const lastData = await mongo[collectionName].findOne({ _id: ObjectId(id) })
     const rs = await mongo[collectionName].findOneAndUpdate(
       { _id: ObjectId(id) },
       { $set: update },
       { returnOriginal: false }
     )
+
     if (rs.value) {
       if (!skipSubscription) {
-        pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV +'-' + collectionName, {
+        pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV + '-' + collectionName, {
           [collectionName]: {
             mutation: 'UPDATED',
             node: rs.value
           }
         })
+
+        await createLog(
+          {
+            action: 'update_' + collectionName,
+            objectId: rs.value._id,
+            objectType: collectionName,
+            payload: args,
+            lastData: lastData,
+          },
+          context,
+        );
       }
-      return await rs.value
+      const result = rs.value
+      result.ok = 1
+      result.value = rs.value
+      result.matchedCount = 1
+      result.modifiedCount = 1
+      return result
     } else {
       console.log('⛔️ Error status 422 - ', JSON.stringify(rs))
       return new Error(`⛔️ Can not Update ${collectionName}`)
@@ -60,23 +90,37 @@ export const mongoUpdate = async (collectionName, { id, ...args }, { mongo, skip
 export const mongoUpdateWithFilter = async (
   collectionName,
   { filters, ...args },
-  { mongo },
+  context,
   validation
 ) => {
   try {
+    const { mongo } = context || {}
     const update = prepareUpdate(args)
+    const lastData = await mongo[collectionName].findOne(filters)
     const rs = await mongo[collectionName].findOneAndUpdate(
       filters,
       { $set: update },
       { returnOriginal: false }
     )
     if (rs.value) {
-      pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV +'-' + collectionName, {
+      pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV + '-' + collectionName, {
         [collectionName]: {
           mutation: 'UPDATED',
           node: rs.value
         }
       })
+
+      await createLog(
+        {
+          action: 'update_' + collectionName,
+          objectId: rs.value._id,
+          objectType: collectionName,
+          payload: args,
+          lastData: lastData,
+        },
+        context,
+      );
+
       return await rs.value
     } else {
       console.log('[Error] Status 422 - ', JSON.stringify(rs))
@@ -88,20 +132,31 @@ export const mongoUpdateWithFilter = async (
   }
 }
 
-export const mongoDelete = async (collectionName, { id }, { mongo, skipSubscription = false }, validation) => {
+export const mongoDelete = async (collectionName, { id }, context, validation) => {
   try {
+    const { mongo, skipSubscription = false } = context || {}
     let rs = await softNestedDelete(mongo, id, collectionName)
     if (!rs.errors) {
       let obj = await mongo[collectionName].findOne({ _id: ObjectId(id) })
       obj.id = obj._id
       if (!skipSubscription) {
-        pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV +'-' + collectionName, {
+        pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV + '-' + collectionName, {
           [collectionName]: {
             mutation: 'DELETED',
             previousValues: obj,
             node: obj
           }
         })
+
+        await createLog(
+          {
+            action: 'delete_' + collectionName,
+            objectId: id,
+            objectType: collectionName,
+            lastData: obj,
+          },
+          context,
+        );
       }
       return { success: true }
     } else {
@@ -120,7 +175,7 @@ export const mongoMultiDelete = async (collectionName, { ids }, { mongo }, valid
   try {
     let rs = await softNestedDelete(mongo, ids, collectionName)
     if (!rs.errors) {
-      pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV +'-' + collectionName, {
+      pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV + '-' + collectionName, {
         [collectionName]: {
           mutation: 'DELETED',
           previousValues: ids
@@ -267,4 +322,46 @@ export async function ensureHasTextIndex(collectionName, { mongo }) {
   const indexes = await mongo[collectionName].indexes()
 
   return indexes.some(index => _.get(index, "key._fts") === "text")
+}
+
+export async function createLog(args, context) {
+  try {
+    const { mongo, user } = context || {}
+    if (!mongo || !mongo.ActivityLog) return null
+    const { action, objectId, objectType, payload, lastData = null } = args
+
+    const formattedObjectId = objectId ? (ObjectId.isValid(objectId) ? ObjectId(objectId) : objectId) : null
+    const formattedCreatorId = user && user._id ? (ObjectId.isValid(user._id) ? ObjectId(user._id) : user._id) : null
+
+    const newActivityLog = {
+      _id: new ObjectId(),
+      objectId: formattedObjectId,
+      objectType: objectType,
+      action: action,
+      payload: payload,
+      lastData: lastData,
+      createdAt: new Date().getTime(),
+      creatorId: formattedCreatorId,
+    }
+
+    await mongo.ActivityLog.insertOne(newActivityLog)
+
+    pubsub.publish(
+      process.env.APP_NAME + '-' + process.env.APP_ENV + '-ActivityLog',
+      {
+        ActivityLog: {
+          mutation: 'CREATED',
+          node: newActivityLog,
+        },
+      }
+    )
+
+    return {
+      success: true,
+      log: newActivityLog,
+    }
+  } catch (err) {
+    console.error('[Error] createLog failed:', err)
+    return { success: false, error: err }
+  }
 }

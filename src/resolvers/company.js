@@ -26,7 +26,7 @@ export default {
     notes: async ({ _id }, args, { dataloaders }) => {
       return await dataloaders.get('notesByCompanyIdLoader').load(_id)
     },
-    activities: async ({ _id }, args, { dataloaders }) => {
+    activityLogs: async ({ _id }, args, { dataloaders }) => {
       return await dataloaders.get('activitiesByCompanyIdLoader').load(_id)
     },
     jobOrders: async ({ _id }, args, { dataloaders }) => {

@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] - 2026-09-23 - Comprehensive Activity History and Performance Improvements
+
+### Added
+
+- **Automatic Activity Tracking**: Every time records such as companies, candidates, job orders, and users are created, updated, or removed, the system now automatically records an activity history entry, making it easy to see who performed an action and when it occurred.
+- **Change Details and Historical Comparison**: Activity records now capture submitted changes alongside prior details, providing a transparent audit trail for administrative review.
+
+### Changed
+
+- **Standardized Activity Timelines**: Unified activity logging across all sections of the application so history timelines display reliably and consistently.
+- **Faster Data Retrieval**: Optimized list counts and search results to ensure summary statistics and pagination load smoothly without system delays.
+
+### Fixed
+
+- **Reliable User Management Actions**: Resolved an issue where saving edits to user details or removing accounts could stall, ensuring user management operations finish immediately and accurately.
+
 
 ## [1.3.1] - 2026-09-22 - Account Association and User Profile Details
 

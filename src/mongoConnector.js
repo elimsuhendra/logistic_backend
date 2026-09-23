@@ -52,7 +52,7 @@ export default async () => {
       ParameterType: db.collection("parameterTypes"),
       Document: db.collection("documents"),
       Note: db.collection("notes"),
-      Activity: db.collection("activities"),
+      ActivityLog: db.collection("activityLogs"),
       Tenant: db.collection("tenants"),
       PeopleMessage: db.collection("peopleMessages"),
       PeopleEmail: db.collection("peopleEmails"),

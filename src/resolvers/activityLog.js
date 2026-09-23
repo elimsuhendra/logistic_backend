@@ -11,8 +11,10 @@ import _ from "lodash"
 import jobApplicant from './jobApplicant'
 
 export default {
-  Activity: {
+  ActivityLog: {
     id: parent => parent._id || parent.id,
+    payload: parent => parent.payload || parent.info,
+    lastData: parent => parent.lastData,
     creator: async ({ creatorId }, args, { dataloaders }) => {
       return !!creatorId ? await dataloaders.get('userByIdLoader').load(creatorId) : null
     },
@@ -21,12 +23,12 @@ export default {
     },
   },
   Subscription: {
-    Activity: {
+    ActivityLog: {
       subscribe: requiresAuth.createResolver(
         withFilter(
-          () => pubsub.asyncIterator(process.env.APP_NAME + '-' + process.env.APP_ENV +'-Activity'),
+          () => pubsub.asyncIterator(process.env.APP_NAME + '-' + process.env.APP_ENV + '-ActivityLog'),
           (payload, args) => {
-            return compareObject(payload.Activity.node, args.dataFilter)
+            return compareObject(payload.ActivityLog.node, args.dataFilter)
           }
         )
       )
@@ -35,15 +37,34 @@ export default {
   Query: {
     getActivity: requiresAuth.createResolver(
       async (parent, { id }, { mongo, user }) => {
-        const currentActivity = id ? await mongo.Activity.findOne({ _id: ObjectId(id), deletedAt: null }) : null
+        const currentActivity = id ? await mongo.ActivityLog.findOne({ _id: ObjectId(id), deletedAt: null }) : null
         return currentActivity
-    }),
+      }),
+    getActivityLog: requiresAuth.createResolver(
+      async (parent, { id }, { mongo, user }) => {
+        const currentActivity = id ? await mongo.ActivityLog.findOne({ _id: ObjectId(id), deletedAt: null }) : null
+        return currentActivity
+      }),
     allActivities: requiresAuth.createResolver(
       async (parent, { filter, first, skip, orderBy }, { mongo }) => {
         const limit = first || 10
         const offset = skip || 0
         const filters = buildMongoFilters(filter)
-        const obj = mongo.Activity.find(filters)
+        const obj = mongo.ActivityLog.find(filters)
+        if (first) obj.limit(limit)
+        if (skip) obj.skip(offset)
+        if (orderBy) obj.sort(buildMongoOrders(orderBy))
+        else obj.sort({ createdAt: -1 }) // -1 = DESC
+
+        return await obj.toArray()
+      }
+    ),
+    allActivityLogs: requiresAuth.createResolver(
+      async (parent, { filter, first, skip, orderBy }, { mongo }) => {
+        const limit = first || 10
+        const offset = skip || 0
+        const filters = buildMongoFilters(filter)
+        const obj = mongo.ActivityLog.find(filters)
         if (first) obj.limit(limit)
         if (skip) obj.skip(offset)
         if (orderBy) obj.sort(buildMongoOrders(orderBy))
@@ -58,9 +79,27 @@ export default {
         const offset = (first || 10) + (skip || 0)
 
         const filters = buildMongoFilters(filter) || {}
-        const activities = await mongo.Activity.find(filters).skip(offset).limit(limit).toArray()
+        const count = await mongo.ActivityLog.countDocuments(filters)
+        const activities = await mongo.ActivityLog.find(filters).skip(offset).limit(limit).toArray()
 
         return {
+          count,
+          hasPrev: skip > 0,
+          hasNext: (activities || []).length > 0
+        }
+      }
+    ),
+    _allActivityLogsMeta: requiresAuth.createResolver(
+      async (parent, { filter, first, skip }, { mongo }) => {
+        const limit = 1
+        const offset = (first || 10) + (skip || 0)
+
+        const filters = buildMongoFilters(filter) || {}
+        const count = await mongo.ActivityLog.countDocuments(filters)
+        const activities = await mongo.ActivityLog.find(filters).skip(offset).limit(limit).toArray()
+
+        return {
+          count,
           hasPrev: skip > 0,
           hasNext: (activities || []).length > 0
         }
@@ -73,7 +112,7 @@ export default {
         const limit = first || 10
         const offset = skip || 0
         const filters = buildMongoFilters(filter)
-        
+
         const jobApplicants = await jobApplicant.Query.allJobApplicants(
           parent,
           { filter: jobApplicantFilter, first: 9999 },
@@ -82,17 +121,17 @@ export default {
 
         if ((jobApplicants || []).length > 0) {
           const jobApplicantIds = (jobApplicants || []).map(jobApplicant => jobApplicant._id)
-  
+
           filters.objectId = { $in: jobApplicantIds }
-  
-          const obj = mongo.Activity.find(filters)
+
+          const obj = mongo.ActivityLog.find(filters)
           if (first) obj.limit(limit)
           if (skip) obj.skip(offset)
           if (orderBy) obj.sort(buildMongoOrders(orderBy))
           else obj.sort({ createdAt: -1 }) // -1 = DESC
 
           const activities = await obj.toArray()
-  
+
           return activities
         }
 
@@ -101,7 +140,7 @@ export default {
     ),
   },
   Mutation: {
-    createActivity: requiresAuth.createResolver(async (parent, args, context) => {
+    createActivityLog: requiresAuth.createResolver(async (parent, args, context) => {
       await checkPermissions(checkUserAuth)({ context })
 
       const { mongo, user } = context
@@ -109,10 +148,11 @@ export default {
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
 
       if (!!currentUser) {
-        const activity = await mongoCreate('Activity', args, context)
+        const payload = args.input ? { ...args.input, ...args } : args
+        const activity = await mongoCreate('ActivityLog', payload, context)
         return {
           success: true,
-          message: "Activity has been created successfully!",
+          message: "Activity Log has been created successfully!",
           activity,
         }
       }
@@ -122,7 +162,7 @@ export default {
         message: "User is not authorized.",
       }
     }),
-    createActivities: requiresAuth.createResolver(async (parent, args, context) => {
+    createActivityLogs: requiresAuth.createResolver(async (parent, args, context) => {
       await checkPermissions(checkUserAuth)({ context })
 
       const { mongo, user } = context
@@ -132,9 +172,9 @@ export default {
 
       if (!!currentUser) {
         const newObjs = activities && activities.map(activity => prepareCreate(activity))
-        const obj = await mongo.Activity.insertMany(newObjs)
+        const obj = await mongo.ActivityLog.insertMany(newObjs)
         if (obj.insertedCount) {
-          return await mongo.Activity.find({ _id: { $in: Object.values(obj.insertedIds)}}).toArray()
+          return await mongo.ActivityLog.find({ _id: { $in: Object.values(obj.insertedIds) } }).toArray()
         } else {
           return new Error(
             JSON.stringify({
@@ -147,7 +187,7 @@ export default {
 
       return null
     }),
-    updateActivity: requiresAuth.createResolver(async (parent, args, context) => {
+    updateActivityLog: requiresAuth.createResolver(async (parent, args, context) => {
       await checkPermissions(checkUserAuth)({ context })
 
       const { mongo, user } = context
@@ -155,13 +195,13 @@ export default {
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
 
       if (!!currentUser) {
-
-        const currentCategory = await mongoUpdate('Activity', args, context)
-        const activityResponse = await mongo.Activity.findOne({ _id: ObjectId(args.id), deletedAt: null })
+        const payload = args.input ? { ...args.input, ...args } : args
+        const currentCategory = await mongoUpdate('ActivityLog', payload, context)
+        const activityResponse = await mongo.ActivityLog.findOne({ _id: ObjectId(args.id), deletedAt: null })
 
         return {
           success: true,
-          message: "Activity has been updated successfully!",
+          message: "Activity Log has been updated successfully!",
           activity: activityResponse,
         }
       }
@@ -170,7 +210,7 @@ export default {
         message: "User is not authorized."
       }
     }),
-    deleteActivity: requiresAuth.createResolver(async (parent, args, context) => {
+    deleteActivityLog: requiresAuth.createResolver(async (parent, args, context) => {
       await checkPermissions(checkUserAuth)({ context })
 
       const { mongo, user } = context
@@ -178,10 +218,10 @@ export default {
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
 
       if (!!currentUser) {
-        await mongoDelete('Activity', args, context)
+        await mongoDelete('ActivityLog', args, context)
         return {
           success: true,
-          message: "Activity has been deleted successfully!"
+          message: "Activity Log has been deleted successfully!"
         }
       }
       return {

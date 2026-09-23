@@ -16,6 +16,7 @@ import shortid from 'shortid'
 import { sms } from "utils/smsServices"
 import { isEmptyObject, isBlankString } from "utils/validate"
 import { mongoCreate, mongoUpdate, mongoDelete } from "utils/crud"
+import { createLog } from '../utils/crud'
 
 export default {
   User: {
@@ -135,9 +136,9 @@ export default {
         }
         if (currentUser) {
           const filters = buildMongoFilters(filter)
-          const obj = await mongo.User.find(filters)
+          const count = await mongo.User.countDocuments(filters)
 
-          return { count: obj.count() }
+          return { count }
         }
         return { count: 0 }
       }
@@ -148,12 +149,26 @@ export default {
     })
   },
   Mutation: {
-    login: async (parent, args, { mongo, SECRET1, SECRET2 }) => {
+    login: async (parent, args, context) => {
       if ('username' in args) { args.username = args.username.toLowerCase().trim() }
-      return await tryLogin(
+      const rs = await tryLogin(
         { username: args.username, password: args.password },
-        { mongo, SECRET1, SECRET2 }
+        context
       )
+
+      const { user } = rs
+      if (!!user) {
+        await createLog(
+          {
+            action: 'user_login',
+            objectId: user._id,
+            objectType: "User",
+            payload: args,
+          },
+          context,
+        );
+      }
+      return rs
     },
     createUser: async (parent, args, context) => {
       await checkPermissions(checkUserAuth)({ context })
@@ -204,7 +219,8 @@ export default {
               errors: errors
             }
           } else {
-            const rs = await mongo.User.insertOne(userObj)
+            // const rs = await mongo.User.insertOne(userObj)
+            const rs = await mongoCreate('User', userObj, context)
 
             pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV + '-User', { User: { mutation: 'CREATED', node: userObj } })
           }
@@ -251,23 +267,21 @@ export default {
         const sendEmail = !updatedUser.approved && !!args.approved
 
         const update = prepareUpdate(args)
-        const obj = await mongo.User.updateOne(
-          { _id: ObjectId(id) },
-          { $set: update },
-          { returnOriginal: false }
-        )
-
+        // const obj = await mongo.User.updateOne(
+        //   { _id: ObjectId(id) },
+        //   { $set: update },
+        //   { returnOriginal: false }
+        // )
+        const obj = await mongoUpdate('User', { id, ...args }, context)
         const lastUser = await mongo.User.findOne({ _id: ObjectId(id) })
 
-        if (obj.matchedCount) {
-          if (obj.modifiedCount) {
-            pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV + '-User', {
-              User: {
-                mutation: 'UPDATED',
-                node: { _id: ObjectId(id), roles: lastUser.roles }
-              }
-            })
-          }
+        if (obj && !(obj instanceof Error)) {
+          pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV + '-User', {
+            User: {
+              mutation: 'UPDATED',
+              node: { _id: ObjectId(id), roles: lastUser ? lastUser.roles : obj.roles }
+            }
+          })
 
           const updatedUser = await mongo.User.findOne({ _id: ObjectId(id) })
 
@@ -282,7 +296,7 @@ export default {
           return { user: updatedUser, success: true }
         } else {
           return new Error(
-            JSON.stringify({ matchedCount: obj.matchedCount, modifiedCount: obj.modifiedCount })
+            JSON.stringify({ error: `Cannot update User ${id}` })
           )
         }
       }
@@ -336,7 +350,9 @@ export default {
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
       const deletedUser = await mongo.User.findOne({ _id: ObjectId(args.id), deletedAt: null })
       if (!!currentUser && !!deletedUser && !!getRoles(currentUser).isAdmin) {
-        await mongo.User.updateOne({ _id: ObjectId(args.id) }, { $set: { deletedAt: new Date().getTime() } })
+        // await mongo.User.updateOne({ _id: ObjectId(args.id) }, { $set: { deletedAt: new Date().getTime() } })
+        const rs = await mongoDelete('User', args, context)
+
         pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV + '-User', {
           User: {
             mutation: 'DELETED',
@@ -344,6 +360,8 @@ export default {
             node: deletedUser
           }
         })
+
+
 
         return {
           success: true,

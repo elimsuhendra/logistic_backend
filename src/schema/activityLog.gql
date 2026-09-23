@@ -1,11 +1,13 @@
-type Activity {
+type ActivityLog {
   id: String!
   actionDescription: String
 	action: String
 	objectId: String
 	objectType: String
+  payload: JSON
+  lastData: JSON
 	creatorId: String
-	references: [ActivityReference]
+	# references: [ActivityReference]
   createdAt: Date
 
   # resolver
@@ -37,18 +39,28 @@ type ActivityReference {
 type CreateActivityResponse {
   success: Boolean!
   message: String
-  activity: Activity
+  activity: ActivityLog
 }
 
 type UpdateActivityResponse {
   success: Boolean!
   message: String
-  activity: Activity
+  activity: ActivityLog
 }
 
 type DeleteActivityResponse {
   success: Boolean!
   message: String
+}
+
+input ActivityLogInput {
+  actionDescription: String
+  action: String
+  objectId: String
+  objectType: String
+  creatorId: String
+  payload: JSON
+  lastData: JSON
 }
 
 input ActivityReferenceInput {
@@ -62,44 +74,51 @@ input ActivityObject {
   objectId: String
   objectType: String
   creatorId: String
-  references: [ActivityReferenceInput]
+  # references: [ActivityReferenceInput]
 }
 
 type Query {
-  allActivities(filter: ActivityFilter, first: Int, skip: Int, orderBy: ActivityOrder): [Activity]
+  allActivities(filter: ActivityFilter, first: Int, skip: Int, orderBy: ActivityOrder): [ActivityLog]
   _allActivitiesMeta(filter: ActivityFilter, first: Int, skip: Int): ObjectMeta
-  allJobApplicantActivities(filter: ActivityFilter, jobApplicantFilter: JobApplicantFilter, first: Int, skip: Int, orderBy: ActivityOrder): [Activity]
-  getActivity(id: String): Activity
+  allActivityLogs(filter: ActivityFilter, first: Int, skip: Int, orderBy: ActivityOrder): [ActivityLog]
+  _allActivityLogsMeta(filter: ActivityFilter, first: Int, skip: Int): ObjectMeta
+  allJobApplicantActivities(filter: ActivityFilter, jobApplicantFilter: JobApplicantFilter, first: Int, skip: Int, orderBy: ActivityOrder): [ActivityLog]
+  getActivity(id: String): ActivityLog
+  getActivityLog(id: String): ActivityLog
 }
 
 type Mutation {
-  createActivity(
+  createActivityLog(
+    input: ActivityLogInput
     actionDescription: String
     action: String
     objectId: String
     objectType: String
     creatorId: String
-    references: [ActivityReferenceInput]
+    payload: JSON
+    lastData: JSON
   ): CreateActivityResponse
-  createActivities(activities: [ActivityObject!]!): [Activity!]!
-  updateActivity(
+  createActivityLogs(activities: [ActivityObject!]!): [ActivityLog!]!
+  updateActivityLog(
     id: String!
+    input: ActivityLogInput
     actionDescription: String
     action: String
     objectId: String
     objectType: String
     creatorId: String
-    references: [ActivityReferenceInput]
+    payload: JSON
+    lastData: JSON
   ): UpdateActivityResponse
-  deleteActivity(id: String!): DeleteActivityResponse
+  deleteActivityLog(id: String!): DeleteActivityResponse
 }
 
-type ActivitySubscriptionPayload {
+type ActivityLogSubscriptionPayload {
   mutation: _ModelMutationType!
-  node: Activity
-  previousValues: Activity
+  node: ActivityLog
+  previousValues: ActivityLog
 }
 
 type Subscription {
-  Activity(filter: SubscriptionFilter, dataFilter: ActivityFilter): ActivitySubscriptionPayload
+  ActivityLog(filter: SubscriptionFilter, dataFilter: ActivityFilter): ActivityLogSubscriptionPayload
 }
