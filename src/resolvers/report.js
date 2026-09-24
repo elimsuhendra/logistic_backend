@@ -17,7 +17,7 @@ export default {
     Report: {
       subscribe: requiresAuth.createResolver(
         withFilter(
-          () => pubsub.asyncIterator(process.env.APP_NAME + '-' + process.env.APP_ENV +'-Report'),
+          () => pubsub.asyncIterator(process.env.APP_NAME + '-' + process.env.APP_ENV + '-Report'),
           (payload, args) => {
             return compareObject(payload.Report.node, args.dataFilter)
           }
@@ -30,7 +30,7 @@ export default {
       async (parent, { id }, { mongo, user }) => {
         const currentReport = id ? await mongo.Report.findOne({ _id: ObjectId(id), deletedAt: null }) : null
         return currentReport
-    }),
+      }),
     allReports: requiresAuth.createResolver(
       async (parent, { filter, first, skip, orderBy }, { mongo }) => {
         const limit = first || 10

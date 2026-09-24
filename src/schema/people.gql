@@ -40,7 +40,7 @@ type People {
   resumes: [Document]
   documents: [Document]
   notes: [Note]
-  activities: [Activity]
+  activityLogs: [ActivityLog]
   jobOrders: [JobOrder]
   applications: [JobApplicant]
   experiences: [Experience]

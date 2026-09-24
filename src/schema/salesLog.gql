@@ -83,12 +83,12 @@ type Mutation {
   deleteSalesLog(id: String!): DeleteSalesLogResponse
 }
 
-type ActivitySubscriptionPayload {
+type SalesLogSubscriptionPayload {
   mutation: _ModelMutationType!
-  node: Activity
-  previousValues: Activity
+  node: SalesLog
+  previousValues: SalesLog
 }
 
 type Subscription {
-  Activity(filter: SubscriptionFilter, dataFilter: SalesLogFilter): ActivitySubscriptionPayload
+  SalesLog(filter: SubscriptionFilter, dataFilter: SalesLogFilter): SalesLogSubscriptionPayload
 }

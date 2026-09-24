@@ -8,21 +8,21 @@ import { sanitizeRegex, formatSlug } from 'utils/common'
 import pubsub from 'src/utils/pubsub'
 import moment from 'moment'
 import { withFilter } from 'graphql-subscriptions'
-import { mongoCreate, mongoUpdate, mongoDelete, mongoMultiDelete} from 'utils/crud'
+import { mongoCreate, mongoUpdate, mongoDelete, mongoMultiDelete } from 'utils/crud'
 import _ from "lodash"
 
 function addUniqueSlugs(arr) {
   const slugSet = new Set();
   return arr.map(item => {
-      let slug = kebabCase(item.title);
-      let uniqueSlug = slug;
-      let counter = 1;
-      while (slugSet.has(uniqueSlug)) {
-        uniqueSlug = `${slug}-${counter}`;
-        counter++;
-      }
-      slugSet.add(uniqueSlug);
-      return { ...item, slug: uniqueSlug };
+    let slug = kebabCase(item.title);
+    let uniqueSlug = slug;
+    let counter = 1;
+    while (slugSet.has(uniqueSlug)) {
+      uniqueSlug = `${slug}-${counter}`;
+      counter++;
+    }
+    slugSet.add(uniqueSlug);
+    return { ...item, slug: uniqueSlug };
   });
 }
 
@@ -49,7 +49,7 @@ export default {
       if (!_id) return []
       return await dataloaders.get('notesByJobOrderIdLoader').load(_id)
     },
-    activities: async ({ _id }, args, { dataloaders }) => {
+    activityLogs: async ({ _id }, args, { dataloaders }) => {
       if (!_id) return []
       return await dataloaders.get('activitiesByJobOrderIdLoader').load(_id)
     },
@@ -57,7 +57,7 @@ export default {
       return await dataloaders.get('jobApplicantsByJobOrderIdLoader').load(_id)
     },
     lastActive: async ({ _id }, args, { dataloaders, mongo }) => {
-      const activities = await mongo.Activity.find({
+      const activities = await mongo.ActivityLog.find({
         objectType: "JobOrder", objectId: ObjectId(_id), deletedAt: null
       }).sort({ createdAt: -1 }).toArray()
       if (activities && activities.length) {
@@ -71,7 +71,7 @@ export default {
     JobOrder: {
       subscribe: requiresAuth.createResolver(
         withFilter(
-          () => pubsub.asyncIterator(process.env.APP_NAME + '-' + process.env.APP_ENV +'-JobOrder'),
+          () => pubsub.asyncIterator(process.env.APP_NAME + '-' + process.env.APP_ENV + '-JobOrder'),
           (payload, args) => {
             return compareObject(payload.JobOrder.node, args.dataFilter)
           }
@@ -83,34 +83,36 @@ export default {
     getJobOrder: requiresAuth.createResolver(
       async (parent, { id }, { mongo, user }) => {
         const currentJobOrder = id ? await mongo.JobOrder.findOne(
-          Object.assign(!ObjectId.isValid(id) 
+          Object.assign(!ObjectId.isValid(id)
             ? { slug: id }
-            : {$or: [
-              {_id: ObjectId(id)},
-              {slug: id}
-            ]}, 
-          {deletedAt: null})
+            : {
+              $or: [
+                { _id: ObjectId(id) },
+                { slug: id }
+              ]
+            },
+            { deletedAt: null })
         ) : null
         return currentJobOrder
-    }),
+      }),
     allJobOrders: requiresAuth.createResolver(
       async (parent, { filter, ownerFilter, first, skip, orderBy }, { mongo }) => {
         const limit = first || 10
         const offset = skip || 0
-        const {search, salary_lte, salary_gte, candidateId, ...rest} = filter || {}
+        const { search, salary_lte, salary_gte, candidateId, ...rest } = filter || {}
         let filters = buildMongoFilters(rest) || {}
         delete filters.deletedAt
         let searchFilter = null
         if (!!search) {
           let searchArr = {}
-          const companies = await mongo.Company.find({ 
-            name: {$regex: `${sanitizeRegex(search)}`, $options: 'i'},
-            deletedAt: null 
+          const companies = await mongo.Company.find({
+            name: { $regex: `${sanitizeRegex(search)}`, $options: 'i' },
+            deletedAt: null
           }).project({ _id: 1 }).toArray()
           const companyIds = companies.map(company => ObjectId(company._id))
-          const users = await mongo.User.find({ 
-            fullName: {$regex: `${sanitizeRegex(search)}`, $options: 'i'},
-            deletedAt: null 
+          const users = await mongo.User.find({
+            fullName: { $regex: `${sanitizeRegex(search)}`, $options: 'i' },
+            deletedAt: null
           }).project({ _id: 1 }).toArray()
           const userIds = users.map(user => ObjectId(user._id))
           if (companyIds && companyIds.length > 0) {
@@ -133,8 +135,8 @@ export default {
             }
           }
           if (Object.keys(searchArr).length > 1) {
-            const formatSearch = Object.keys(searchArr).map(i => ({[i]: searchArr[i]}))
-            searchFilter = {"$or": formatSearch}
+            const formatSearch = Object.keys(searchArr).map(i => ({ [i]: searchArr[i] }))
+            searchFilter = { "$or": formatSearch }
           } else {
             searchFilter = searchArr
           }
@@ -151,26 +153,26 @@ export default {
             }
           }
         }
-        
+
         const filterResponse = [filters, searchFilter].filter(i => !!i && Object.keys(i).length > 0)
         const filterResult = (filterResponse && filterResponse.length > 0) ? {
           $and: [
-            {deletedAt: null},
+            { deletedAt: null },
             Object.keys(filters || []).length && Object.keys(searchFilter || []).length ? {
               $or: [
-                filters || {}, 
+                filters || {},
                 searchFilter || {},
               ]
             } : {
               $and: [
-                filters || {}, 
+                filters || {},
                 searchFilter || {},
               ]
             }
           ]
-        }: {deletedAt: null}
+        } : { deletedAt: null }
 
-        if(ownerFilter != undefined){
+        if (ownerFilter != undefined) {
           const userFilters = buildMongoFilters(ownerFilter)
           const eligibleOwners = await mongo.User.distinct('_id', userFilters)
           const ownerIds = eligibleOwners.map(owner => ObjectId(owner))
@@ -189,20 +191,20 @@ export default {
     ),
     _allJobOrdersMeta: requiresAuth.createResolver(
       async (parent, { filter }, { mongo }) => {
-        const {search, salary_lte, salary_gte, candidateId, ...rest} = filter || {}
+        const { search, salary_lte, salary_gte, candidateId, ...rest } = filter || {}
         let filters = buildMongoFilters(rest) || {}
         delete filters.deletedAt
         let searchFilter = null
         if (!!search) {
           let searchArr = {}
-          const companies = await mongo.Company.find({ 
-            name: {$regex: `${sanitizeRegex(search)}`, $options: 'i'},
-            deletedAt: null 
+          const companies = await mongo.Company.find({
+            name: { $regex: `${sanitizeRegex(search)}`, $options: 'i' },
+            deletedAt: null
           }).project({ _id: 1 }).toArray()
           const companyIds = companies.map(company => ObjectId(company._id))
-          const users = await mongo.User.find({ 
-            fullName: {$regex: `${sanitizeRegex(search)}`, $options: 'i'},
-            deletedAt: null 
+          const users = await mongo.User.find({
+            fullName: { $regex: `${sanitizeRegex(search)}`, $options: 'i' },
+            deletedAt: null
           }).project({ _id: 1 }).toArray()
           const userIds = users.map(user => ObjectId(user._id))
           if (companyIds && companyIds.length > 0) {
@@ -225,8 +227,8 @@ export default {
             }
           }
           if (Object.keys(searchArr).length > 1) {
-            const formatSearch = Object.keys(searchArr).map(i => ({[i]: searchArr[i]}))
-            searchFilter = {"$or": formatSearch}
+            const formatSearch = Object.keys(searchArr).map(i => ({ [i]: searchArr[i] }))
+            searchFilter = { "$or": formatSearch }
           } else {
             searchFilter = searchArr
           }
@@ -246,20 +248,20 @@ export default {
         const filterResponse = [filters, searchFilter].filter(i => !!i && Object.keys(i).length > 0)
         const filterResult = (filterResponse && filterResponse.length > 0) ? {
           $and: [
-            {deletedAt: null},
+            { deletedAt: null },
             Object.keys(filters || []).length && Object.keys(searchFilter || []).length ? {
               $or: [
-                filters || {}, 
+                filters || {},
                 searchFilter || {},
               ]
             } : {
               $and: [
-                filters || {}, 
+                filters || {},
                 searchFilter || {},
               ]
             }
           ]
-        }: {deletedAt: null}
+        } : { deletedAt: null }
         const obj = mongo.JobOrder.find(filterResult)
         return { count: obj.count() }
       }
@@ -309,7 +311,7 @@ export default {
 
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
       const currentJobOrder = await mongo.JobOrder.findOne({ _id: ObjectId(args.id) })
-      const jobOfferedCount = await mongo.JobApplicant.find({jobId: ObjectId(args.id), phase: "Offered", offer: {$ne: null}, deletedAt: null}).count()
+      const jobOfferedCount = await mongo.JobApplicant.find({ jobId: ObjectId(args.id), phase: "Offered", offer: { $ne: null }, deletedAt: null }).count()
       if (args.jobSlot < jobOfferedCount) {
         return {
           success: false,
@@ -379,7 +381,7 @@ export default {
       if (!!currentUser) {
         await mongoMultiDelete('JobOrder', args, context)
         if (args && args.ids && args.ids.length > 0) {
-          const jobApplicants = await mongo.JobApplicant.find({ jobId: {$in: args.ids.map(id => ObjectId(id))} , deletedAt: null}).toArray()
+          const jobApplicants = await mongo.JobApplicant.find({ jobId: { $in: args.ids.map(id => ObjectId(id)) }, deletedAt: null }).toArray()
           const jobApplicantIds = jobApplicants.map(jobApplicant => ObjectId(jobApplicant._id))
           if (jobApplicantIds && jobApplicantIds.length > 0) {
             await mongoMultiDelete('JobApplicant', { ids: jobApplicantIds }, context)
@@ -421,7 +423,7 @@ export default {
               }
             }
           })
-          await mongo.JobOrder.bulkWrite(bulkArgs, { ordered: true }) 
+          await mongo.JobOrder.bulkWrite(bulkArgs, { ordered: true })
         }
         return {
           success: true,
@@ -434,62 +436,62 @@ export default {
       }
     }),
     createJobOrderIndexes: requiresAuth.createResolver(
-      async (parent, {}, { mongo, user }) => {
-      try {
-        await mongo.JobOrder.createIndex(
-          { title: "text", jobNo: "text", workType: "text", industry: "text"},
-          { name: "jobOrder-jobNo-unique" }
-        )
-        await mongo.JobOrder.createIndex(
-          { status: 1},
-          { name: "jobOrder-status-unique" }
-        )
-        await mongo.JobOrder.createIndex(
-          { ownerId: 1},
-          { name: "jobOrder-ownerId-unique" }
-        )
-        await mongo.JobOrder.createIndex(
-          { consultantIds: 1},
-          { name: "jobOrder-consultantIds-unique" }
-        )
-        await mongo.JobOrder.createIndex(
-          { candidateId: 1},
-          { name: "jobOrder-candidateId-unique" }
-        )
-        await mongo.JobOrder.createIndex(
-          { hideJob: 1},
-          { name: "jobOrder-hideJob-unique" }
-        )
-        await mongo.JobOrder.createIndex(
-          { companyId: 1},
-          { name: "jobOrder-companyId-unique" }
-        )
-        await mongo.JobOrder.createIndex(
-          { salaryMin: 1},
-          { name: "jobOrder-salaryMin-unique" }
-        )
-        await mongo.JobOrder.createIndex(
-          { salaryMax: 1},
-          { name: "jobOrder-salaryMax-unique" }
-        )
-        await mongo.JobOrder.createIndex(
-          { createdAt: 1},
-          { name: "jobOrder-createdAtASC-unique" }
-        )
-        await mongo.JobOrder.createIndex(
-          { createdAt: -1},
-          { name: "jobOrder-createdAt-DESC-unique" }
-        )
-        return {
-          success: true,
-          message: "Done."
+      async (parent, { }, { mongo, user }) => {
+        try {
+          await mongo.JobOrder.createIndex(
+            { title: "text", jobNo: "text", workType: "text", industry: "text" },
+            { name: "jobOrder-jobNo-unique" }
+          )
+          await mongo.JobOrder.createIndex(
+            { status: 1 },
+            { name: "jobOrder-status-unique" }
+          )
+          await mongo.JobOrder.createIndex(
+            { ownerId: 1 },
+            { name: "jobOrder-ownerId-unique" }
+          )
+          await mongo.JobOrder.createIndex(
+            { consultantIds: 1 },
+            { name: "jobOrder-consultantIds-unique" }
+          )
+          await mongo.JobOrder.createIndex(
+            { candidateId: 1 },
+            { name: "jobOrder-candidateId-unique" }
+          )
+          await mongo.JobOrder.createIndex(
+            { hideJob: 1 },
+            { name: "jobOrder-hideJob-unique" }
+          )
+          await mongo.JobOrder.createIndex(
+            { companyId: 1 },
+            { name: "jobOrder-companyId-unique" }
+          )
+          await mongo.JobOrder.createIndex(
+            { salaryMin: 1 },
+            { name: "jobOrder-salaryMin-unique" }
+          )
+          await mongo.JobOrder.createIndex(
+            { salaryMax: 1 },
+            { name: "jobOrder-salaryMax-unique" }
+          )
+          await mongo.JobOrder.createIndex(
+            { createdAt: 1 },
+            { name: "jobOrder-createdAtASC-unique" }
+          )
+          await mongo.JobOrder.createIndex(
+            { createdAt: -1 },
+            { name: "jobOrder-createdAt-DESC-unique" }
+          )
+          return {
+            success: true,
+            message: "Done."
+          }
+        } catch (error) {
+          return {
+            success: false,
+            message: error.message
+          }
         }
-      } catch (error) {
-        return {
-          success: false,
-          message: error.message
-        }
-      }
-    }),
+      }),
   }
 }

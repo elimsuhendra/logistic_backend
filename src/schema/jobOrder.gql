@@ -35,7 +35,7 @@ type JobOrder {
   workflow: Workflow
   documents: [Document]
   notes: [Note]
-  activities: [Activity]
+  activityLogs: [ActivityLog]
   jobApplicants: [JobApplicant]
 }
 

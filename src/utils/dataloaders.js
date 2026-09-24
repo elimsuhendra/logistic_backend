@@ -16,7 +16,7 @@ async function batchGetCompanyPhotoById(mongo, keys) {
 async function batchGetPhotoByObject(mongo, keys) {
   const keyObjs = keys.map(key => ObjectId(key.objectId))
   const typeObjs = keys.map(key => key.objectType)
-  return await mongo.Photo.find({ objectType: { $in: typeObjs }, objectId: { $in: keyObjs }, deletedAt: null }).sort({ objectType: 1, objectId: 1, position: 1, createdAt: -1}).toArray()
+  return await mongo.Photo.find({ objectType: { $in: typeObjs }, objectId: { $in: keyObjs }, deletedAt: null }).sort({ objectType: 1, objectId: 1, position: 1, createdAt: -1 }).toArray()
 }
 
 async function getDocumentByObject(mongo, keys) {
@@ -24,11 +24,11 @@ async function getDocumentByObject(mongo, keys) {
   const objectTypes = keys.map(({ objectType }) => String(objectType))
   const documentTypes = keys.map(({ documentType }) => String(documentType))
 
-  return await mongo.Document.find({ 
-    objectType: { $in: objectTypes }, 
-    objectId: { $in: keyObjs }, 
+  return await mongo.Document.find({
+    objectType: { $in: objectTypes },
+    objectId: { $in: keyObjs },
     documentType: { $in: documentTypes },
-    deletedAt: null 
+    deletedAt: null
   })
     .sort({ position: 1 })
     .toArray()
@@ -41,7 +41,7 @@ async function batchGetCompanyNoteById(mongo, keys) {
 
 async function batchGetCompanyActivityById(mongo, keys) {
   const keyObjs = keys.map(key => ObjectId(key))
-  return await mongo.Activity.find({ objectType: 'Company', objectId: { $in: keyObjs }, deletedAt: null }).toArray()
+  return await mongo.ActivityLog.find({ objectType: 'Company', objectId: { $in: keyObjs }, deletedAt: null }).toArray()
 }
 
 async function batchGetPeopleNoteById(mongo, keys) {
@@ -51,7 +51,7 @@ async function batchGetPeopleNoteById(mongo, keys) {
 
 async function batchGetPeopleActivityById(mongo, keys) {
   const keyObjs = keys.map(key => ObjectId(key))
-  return await mongo.Activity.find({ objectType: 'People', objectId: { $in: keyObjs }, deletedAt: null }).toArray()
+  return await mongo.ActivityLog.find({ objectType: 'People', objectId: { $in: keyObjs }, deletedAt: null }).toArray()
 }
 
 async function batchGetUserByIds(mongo, keys) {
@@ -75,7 +75,7 @@ async function batchGetJobOrdersByCandidateIds(mongo, keys) {
   const jobOrderIds = jobApplicantsByCandidateId.map(jobApplicant => ObjectId(jobApplicant.jobId))
   const jobOrders = await mongo.JobOrder.find({ _id: { $in: jobOrderIds }, deletedAt: null }).toArray()
   const result = jobOrders.map(jobOrder => ({
-    ...jobOrder, 
+    ...jobOrder,
     candidateIds: jobApplicantsByCandidateId.filter(jobApplicant => jobApplicant.jobId.toString() === jobOrder._id.toString()).map(jobApplicant => jobApplicant.candidateId.toString()) || null
   }))
   return result
@@ -98,7 +98,7 @@ async function batchGetJobOrderNoteById(mongo, keys) {
 
 async function batchGetJobOrderActivityById(mongo, keys) {
   const keyObjs = keys.map(key => ObjectId(key))
-  return await mongo.Activity.find({ objectType: 'JobOrder', objectId: { $in: keyObjs }, deletedAt: null }).sort({ createdAt: -1 }).toArray()
+  return await mongo.ActivityLog.find({ objectType: 'JobOrder', objectId: { $in: keyObjs }, deletedAt: null }).sort({ createdAt: -1 }).toArray()
 }
 
 async function batchGetPeoplePhotoById(mongo, keys) {
@@ -113,7 +113,7 @@ async function batchGetJobApplicantNoteById(mongo, keys) {
 
 async function batchGetJobApplicantActivityById(mongo, keys) {
   const keyObjs = keys.map(key => ObjectId(key))
-  return await mongo.Activity.find({ objectType: 'JobApplicant', objectId: { $in: keyObjs }, deletedAt: null }).toArray()
+  return await mongo.ActivityLog.find({ objectType: 'JobApplicant', objectId: { $in: keyObjs }, deletedAt: null }).toArray()
 }
 
 async function batchGetJobOrderCompanyById(mongo, keys) {
@@ -135,24 +135,24 @@ async function batchGetGroupUserById(mongo, keys) {
   const keyObjs = keys.map(key => ObjectId(key))
   const keyStrings = keys.map(key => key.toString())
 
-  return await mongo.Group.find({ 
+  return await mongo.Group.find({
     $or: [
-      {managerId: { $in: keyObjs }},
-      {teamLeaderId: { $in: keyObjs }},
-      {staffIds: { $in: keyStrings }}
+      { managerId: { $in: keyObjs } },
+      { teamLeaderId: { $in: keyObjs } },
+      { staffIds: { $in: keyStrings } }
     ],
-    deletedAt: null 
+    deletedAt: null
   }).toArray()
 }
 
 async function getLastGroupUserById(mongo, keys) {
   const keyStrings = keys.map(key => key.toString())
   const keyObjs = keys.map(key => ObjectId(key))
-  let readyGroup = await mongo.Group.find({ 
+  let readyGroup = await mongo.Group.find({
     $or: [
-      {staffIds: { $in: keyStrings }},
-      {teamLeaderId: { $in: keyObjs }},
-      {staffIds: { $in: keyObjs }},
+      { staffIds: { $in: keyStrings } },
+      { teamLeaderId: { $in: keyObjs } },
+      { staffIds: { $in: keyObjs } },
     ],
     deletedAt: null
   }).limit(1).sort({ updatedAt: -1 }).toArray()
@@ -186,7 +186,7 @@ async function batchGetSkillsBySkillIds(mongo, keys) {
   const keyObjs = keys[0].map(key => ObjectId(key))
   const skills = await mongo.Skill.find({ _id: { $in: keyObjs }, deletedAt: null }).toArray()
   const result = skills.map(skill => ({
-    ...skill, 
+    ...skill,
   }))
   return result
 }
@@ -275,7 +275,7 @@ module.exports = (mongo) => {
       return Promise.all(keys.map(async (key) => {
         const readyDocuments = await documents
         return readyDocuments.filter(document => {
-          return String(document.objectId) === String(key.objectId) && 
+          return String(document.objectId) === String(key.objectId) &&
             String(document.objectType) === String(key.objectType) &&
             String(document.documentType) === String(key.documentType)
         })
@@ -350,7 +350,7 @@ module.exports = (mongo) => {
     },
     { cacheKeyFn: key => key.toString() }
   ))
-  
+
   datamap.set('workflowByIdLoader', new DataLoader(
     keys => {
       const workflows = batchGetWorkflowByIds(mongo, keys)
@@ -486,8 +486,8 @@ module.exports = (mongo) => {
         ))
 
         readyGroups2.sort((a, b) => b.updatedAt - a.updatedAt)
-        if(readyGroups2.length > 0){
-          readyGroups2 = readyGroups2.slice(0,1)
+        if (readyGroups2.length > 0) {
+          readyGroups2 = readyGroups2.slice(0, 1)
         }
         return readyGroups2
       }))
