@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.3] - 2026-09-25 - Automated Job Planning Numbering and Streamlined Activity History
+
+### Added
+
+- **Automatic Job Planning Numbering**: Enabled the system to retrieve the latest job planning record for an account and month, allowing new planning entries to automatically receive the next sequential reference number without manual numbering errors.
+
+### Changed
+
+- **Streamlined Activity History Details**: Simplified the activity log format to ensure system audit trails and change history records remain clear, consistent, and easy to review across all actions.
+
+
 ## [1.3.2] - 2026-09-23 - Comprehensive Activity History and Performance Improvements
 
 ### Added
