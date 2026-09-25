@@ -6,7 +6,10 @@ type JobPlanning {
   consigneeId: String
   consignee: Company
   qty: Int
+  size: Float
   containerSize: Float
+  carType: String
+  sizeMeasurement: String
   destinations: [String]
   reffNo: String
   isDraft: Boolean
@@ -30,7 +33,10 @@ input JobPlanningFilter {
   jobPlanningNo_regex: String
   customerId: String
   consigneeId: String
+  size: String
   containerSize: String
+  carType: String
+  sizeMeasurement: String
   reffNo: String
   isDraft: Boolean
   search: String
@@ -64,6 +70,7 @@ type Query {
   ): [JobPlanning]
   _allJobPlanningsMeta(filter: JobPlanningFilter): ObjectMeta
   getJobPlanning(id: String): JobPlanning
+  getLastJobPlanning(prefixJobPlanningNo: String): JobPlanning
 }
 
 type Mutation {
@@ -72,7 +79,10 @@ type Mutation {
     customerId: String
     consigneeId: String
     qty: Int
+    size: String
     containerSize: String
+    carType: String
+    sizeMeasurement: String
     destinations: [String]
     reffNo: String
     isDraft: Boolean
@@ -84,7 +94,10 @@ type Mutation {
     customerId: String
     consigneeId: String
     qty: Int
+    size: String
     containerSize: String
+    carType: String
+    sizeMeasurement: String
     destinations: [String]
     reffNo: String
     isDraft: Boolean

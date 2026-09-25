@@ -6,11 +6,13 @@ import { compareObject } from 'utils/model'
 import pubsub from 'src/utils/pubsub'
 import { withFilter } from 'graphql-subscriptions'
 import { mongoCreate, mongoUpdate, mongoDelete, mongoMultiDelete } from 'utils/crud'
+import { sanitizeRegex } from 'utils/common'
 import _ from "lodash"
 
 export default {
   JobPlanning: {
     id: parent => parent._id || parent.id,
+    size: parent => (parent.size !== undefined && parent.size !== null) ? parent.size : parent.containerSize,
     customer: async ({ customerId }, args, { dataloaders }) => {
       return customerId ? await dataloaders.get('companyByIdLoader').load(customerId) : null
     },
@@ -38,6 +40,21 @@ export default {
         return await mongo.JobPlanning.findOne(query)
       }
     ),
+    getLastJobPlanning: requiresAuth.createResolver(
+      async (parent, { prefixJobPlanningNo }, { mongo }) => {
+        if (!prefixJobPlanningNo) return null
+        const prefix = sanitizeRegex(prefixJobPlanningNo.trim())
+        const [jobPlanning] = await mongo.JobPlanning.find({
+          jobPlanningNo: { $regex: `^${prefix}`, $options: 'i' },
+          deletedAt: null,
+        })
+          .sort({ jobPlanningNo: -1 })
+          .limit(1)
+          .toArray()
+
+        return jobPlanning || null
+      }
+    ),
     allJobPlannings: requiresAuth.createResolver(
       async (parent, { filter, first, skip, orderBy }, { mongo }) => {
         const limit = first || 20
@@ -53,6 +70,9 @@ export default {
               { jobPlanningNo: { $regex: regexStr, $options: 'i' } },
               { reffNo: { $regex: regexStr, $options: 'i' } },
               { containerSize: { $regex: regexStr, $options: 'i' } },
+              { size: { $regex: regexStr, $options: 'i' } },
+              { carType: { $regex: regexStr, $options: 'i' } },
+              { sizeMeasurement: { $regex: regexStr, $options: 'i' } },
             ]
           }
         }
@@ -81,6 +101,9 @@ export default {
               { jobPlanningNo: { $regex: regexStr, $options: 'i' } },
               { reffNo: { $regex: regexStr, $options: 'i' } },
               { containerSize: { $regex: regexStr, $options: 'i' } },
+              { size: { $regex: regexStr, $options: 'i' } },
+              { carType: { $regex: regexStr, $options: 'i' } },
+              { sizeMeasurement: { $regex: regexStr, $options: 'i' } },
             ]
           }
         }
@@ -127,6 +150,7 @@ export default {
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
 
       if (!!currentUser) {
+
         if (typeof args.isDraft === 'boolean') {
           args.isDraft = args.isDraft
         }
