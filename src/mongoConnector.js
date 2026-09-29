@@ -47,6 +47,7 @@ export default async () => {
       User: db.collection("users"),
       Account: db.collection("accounts"),
       Company: db.collection("companies"),
+      Customer: db.collection("customers"),
       People: db.collection("candidates"),
       Photo: db.collection("photos"),
       ParameterType: db.collection("parameterTypes"),
