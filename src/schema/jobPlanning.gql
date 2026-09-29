@@ -13,8 +13,16 @@ type JobPlanning {
   destinations: [String]
   reffNo: String
   isDraft: Boolean
+  statusOperation: StatusOperationEnum
   createdAt: Date
   updatedAt: Date
+}
+
+enum StatusOperationEnum {
+  Draft
+  Pending
+  Cancel
+  OnProgress
 }
 
 enum JobPlanningOrder {
