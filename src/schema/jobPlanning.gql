@@ -2,9 +2,7 @@ type JobPlanning {
   id: String!
   jobPlanningNo: String
   customerId: String
-  customer: Company
   consigneeId: String
-  consignee: Company
   qty: Int
   size: Float
   containerSize: Float
@@ -16,6 +14,11 @@ type JobPlanning {
   statusOperation: StatusOperationEnum
   createdAt: Date
   updatedAt: Date
+
+  # relations
+  customer: Customer
+  consignee: Customer
+
 }
 
 enum StatusOperationEnum {

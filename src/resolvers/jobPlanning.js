@@ -14,10 +14,10 @@ export default {
     id: parent => parent._id || parent.id,
     size: parent => (parent.size !== undefined && parent.size !== null) ? parent.size : parent.containerSize,
     customer: async ({ customerId }, args, { dataloaders }) => {
-      return customerId ? await dataloaders.get('companyByIdLoader').load(customerId) : null
+      return customerId ? await dataloaders.get('customerByIdLoader').load(customerId) : null
     },
     consignee: async ({ consigneeId }, args, { dataloaders }) => {
-      return consigneeId ? await dataloaders.get('companyByIdLoader').load(consigneeId) : null
+      return consigneeId ? await dataloaders.get('customerByIdLoader').load(consigneeId) : null
     },
   },
   Subscription: {
