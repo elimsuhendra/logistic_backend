@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.4] - 2026-10-01 - Fleet Vehicle Management and Plate Verification
+
+### Added
+
+- **Fleet Vehicle Management**: Added complete support for storing and managing vehicle records including license plates, registration documents, vehicle dimensions, capacities, and active operational status.
+- **License Plate Verification**: Introduced real-time checking to confirm whether a license plate number is already registered or available for use, preventing accidental duplicate vehicle entries across the fleet.
+
+
 ## [1.3.3] - 2026-09-25 - Automated Job Planning Numbering and Streamlined Activity History
 
 ### Added

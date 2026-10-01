@@ -1,0 +1,131 @@
+type Vehicle {
+  id: String!
+  policeNo: String!
+  stnk: String
+  stnkExp: String
+  kirExp: String
+  ownerName: String
+  brand: String
+  type: String
+  cbm: Float
+  tonase: Float
+  outsideDimension: String
+  insideDimension: String
+  machineNo: String
+  chasisNo: String
+  cbmIng2: Float
+  insideDimension_1: String
+  insideDimension_2: String
+  insideDimension_3: String
+  cbmInsideDimension: Float
+  inactive: Boolean
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date
+
+  # resolver
+  activityLogs: [ActivityLog]
+}
+
+enum VehicleOrder {
+  policeNo_DESC
+  policeNo_ASC
+  ownerName_DESC
+  ownerName_ASC
+  brand_DESC
+  brand_ASC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+input VehicleFilter {
+  OR: [VehicleFilter!]
+  AND: [VehicleFilter!]
+  policeNo: String
+  policeNo_regex: String
+  stnk: String
+  stnk_regex: String
+  ownerName: String
+  ownerName_regex: String
+  brand: String
+  brand_regex: String
+  type: String
+  type_regex: String
+  search: String
+  createdAt_gte: Date
+  createdAt_lte: Date
+  inactive: Boolean
+  inactive_ne: Boolean
+  _id_nin: [String]
+  _id_in: [String]
+}
+
+type VehicleResponse {
+  success: Boolean!
+  message: String
+  vehicle: Vehicle
+  errors: [Error!]
+}
+
+type Query {
+  allVehicles(filter: VehicleFilter, first: Int, skip: Int, orderBy: VehicleOrder): [Vehicle]
+  _allVehiclesMeta(filter: VehicleFilter): ObjectMeta
+  getVehicle(id: String): Vehicle
+}
+
+type Mutation {
+  createVehicle(
+    policeNo: String
+    stnk: String
+    stnkExp: String
+    kirExp: String
+    ownerName: String
+    brand: String
+    type: String
+    cbm: Float
+    tonase: Float
+    outsideDimension: String
+    insideDimension: String
+    machineNo: String
+    chasisNo: String
+    cbmIng2: Float
+    insideDimension_1: String
+    insideDimension_2: String
+    insideDimension_3: String
+    cbmInsideDimension: Float
+    inactive: Boolean
+  ): VehicleResponse
+  updateVehicle(
+    id: String!
+    policeNo: String
+    stnk: String
+    stnkExp: String
+    kirExp: String
+    ownerName: String
+    brand: String
+    type: String
+    cbm: Float
+    tonase: Float
+    outsideDimension: String
+    insideDimension: String
+    machineNo: String
+    chasisNo: String
+    cbmIng2: Float
+    insideDimension_1: String
+    insideDimension_2: String
+    insideDimension_3: String
+    cbmInsideDimension: Float
+    inactive: Boolean
+  ): VehicleResponse
+  deleteVehicle(id: String!): CommonResponse
+}
+
+type VehicleSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Vehicle
+  previousValues: Vehicle
+}
+
+type Subscription {
+  Vehicle(filter: SubscriptionFilter, dataFilter: VehicleFilter): VehicleSubscriptionPayload
+}

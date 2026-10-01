@@ -80,7 +80,8 @@ export default async () => {
       Skill: db.collection("skills"),
       Institution: db.collection("institutions"),
       SalesLog: db.collection("salesLogs"),
-      SalesLogDetail: db.collection("salesLogDetails")
+      SalesLogDetail: db.collection("salesLogDetails"),
+      Vehicle: db.collection("vehicles")
     },
     db,
   }
