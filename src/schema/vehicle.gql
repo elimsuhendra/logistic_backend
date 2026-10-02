@@ -22,6 +22,7 @@ type Vehicle {
   createdAt: Date
   updatedAt: Date
   deletedAt: Date
+  driverId: String
 
   # resolver
   activityLogs: [ActivityLog]
@@ -94,6 +95,7 @@ type Mutation {
     insideDimension_3: String
     cbmInsideDimension: Float
     inactive: Boolean
+    driverId: String
   ): VehicleResponse
   updateVehicle(
     id: String!
@@ -116,6 +118,7 @@ type Mutation {
     insideDimension_3: String
     cbmInsideDimension: Float
     inactive: Boolean
+    driverId: String
   ): VehicleResponse
   deleteVehicle(id: String!): CommonResponse
 }
