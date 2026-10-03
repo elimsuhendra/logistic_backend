@@ -31,6 +31,11 @@ export default {
     activityLogs: async ({ _id }, args, { mongo }) => {
       if (!mongo || !mongo.ActivityLog) return []
       return await mongo.ActivityLog.find({ objectId: ObjectId(_id), objectType: 'Vehicle', deletedAt: null }).sort({ createdAt: -1 }).toArray()
+    },
+    driver: async (parent, args, { mongo }) => {
+      if (!mongo || !mongo.User) return null
+      if (!parent.driverId) return null
+      return await mongo.User.findOne({ _id: ObjectId(parent.driverId), deletedAt: null })
     }
   },
   Subscription: {
@@ -139,7 +144,7 @@ export default {
 
           const newObj = prepareCreate(normalizedArgs)
           newObj._id = new ObjectId()
-          console.log({newObj})
+          console.log({ newObj })
           const rs = await mongoCreate('Vehicle', newObj, context)
           return {
             success: true,

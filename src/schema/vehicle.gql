@@ -26,6 +26,7 @@ type Vehicle {
 
   # resolver
   activityLogs: [ActivityLog]
+  driver: User
 }
 
 enum VehicleOrder {
