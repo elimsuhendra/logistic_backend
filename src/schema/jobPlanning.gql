@@ -2,19 +2,59 @@ type JobPlanning {
   id: String!
   jobPlanningNo: String
   customerId: String
-  customer: Company
   consigneeId: String
-  consignee: Company
   qty: Int
   size: Float
   containerSize: Float
   carType: String
   sizeMeasurement: String
-  destinations: [String]
+  destination: String
+  destinations: [destinationObject]
   reffNo: String
   isDraft: Boolean
+  statusOperation: StatusOperationEnum
   createdAt: Date
   updatedAt: Date
+
+  # relations
+  customer: Customer
+  consignee: Customer
+
+}
+
+type destinationObject {
+  destination: String
+  qty: Int
+  size: Float
+  sizeMeasurement: String
+  sizeMeasurment: String
+  vehicleId: String
+  driverId: String
+  policeNo: String
+  driver: String
+
+  # relations
+  vehicle: Vehicle
+  driverUser: User
+}
+
+input destinationObjectInput {
+  destination: String
+  qty: Int
+  size: Float
+  sizeMeasurement: String
+  sizeMeasurment: String
+  vehicleId: String
+  driverId: String
+  policeNo: String
+  driver: String
+}
+
+enum StatusOperationEnum {
+  Draft
+  Pending
+  Cancel
+  OnProgress
 }
 
 enum JobPlanningOrder {
@@ -83,7 +123,8 @@ type Mutation {
     containerSize: String
     carType: String
     sizeMeasurement: String
-    destinations: [String]
+    destination: String
+    destinations: [destinationObjectInput]
     reffNo: String
     isDraft: Boolean
   ): CreateJobPlanningResponse
@@ -98,7 +139,8 @@ type Mutation {
     containerSize: String
     carType: String
     sizeMeasurement: String
-    destinations: [String]
+    destination: String
+    destinations: [destinationObjectInput]
     reffNo: String
     isDraft: Boolean
   ): UpdateJobPlanningResponse

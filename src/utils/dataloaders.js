@@ -64,6 +64,11 @@ async function batchGetCompanyById(mongo, keys) {
   return await mongo.Company.find({ _id: { $in: keyObjs }, deletedAt: null }).toArray()
 }
 
+async function batchGetCustomerById(mongo, keys) {
+  const keyObjs = keys.filter(key => key && ObjectId.isValid(key)).map(key => ObjectId(key))
+  return await mongo.Customer.find({ _id: { $in: keyObjs }, deletedAt: null }).toArray()
+}
+
 async function batchGetWorkflowByIds(mongo, keys) {
   const keyObjs = keys.map(key => ObjectId(key))
   return await mongo.Workflow.find({ _id: { $in: keyObjs }, deletedAt: null }).toArray()
@@ -346,6 +351,17 @@ module.exports = (mongo) => {
       return Promise.all(keys.map(async (key) => {
         const readyCompanies = await companies
         return readyCompanies.find(company => company._id.toString() === key.toString())
+      }))
+    },
+    { cacheKeyFn: key => key.toString() }
+  ))
+
+  datamap.set('customerByIdLoader', new DataLoader(
+    keys => {
+      const customers = batchGetCustomerById(mongo, keys)
+      return Promise.all(keys.map(async (key) => {
+        const readyCustomers = await customers
+        return readyCustomers.find(customer => customer._id.toString() === key.toString())
       }))
     },
     { cacheKeyFn: key => key.toString() }

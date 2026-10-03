@@ -14,10 +14,58 @@ export default {
     id: parent => parent._id || parent.id,
     size: parent => (parent.size !== undefined && parent.size !== null) ? parent.size : parent.containerSize,
     customer: async ({ customerId }, args, { dataloaders }) => {
-      return customerId ? await dataloaders.get('companyByIdLoader').load(customerId) : null
+      return customerId ? await dataloaders.get('customerByIdLoader').load(customerId) : null
     },
     consignee: async ({ consigneeId }, args, { dataloaders }) => {
-      return consigneeId ? await dataloaders.get('companyByIdLoader').load(consigneeId) : null
+      return consigneeId ? await dataloaders.get('customerByIdLoader').load(consigneeId) : null
+    },
+    destinations: parent => {
+      if (!parent || !parent.destinations) return []
+      let list = parent.destinations
+      if (typeof list === 'string') {
+        try {
+          list = JSON.parse(list)
+        } catch (_) {
+          list = [list]
+        }
+      }
+      if (!Array.isArray(list)) return []
+      return list.map(item => {
+        if (typeof item === 'string') {
+          return {
+            destination: item,
+            qty: null,
+            size: null,
+            sizeMeasurement: '',
+            sizeMeasurment: '',
+            vehicleId: null,
+            driverId: null,
+            policeNo: '',
+            driver: '',
+          }
+        }
+        return {
+          destination: (item && (item.destination || item.value || item.name)) || '',
+          qty: (item && item.qty) ? parseInt(item.qty, 10) : null,
+          size: (item && item.size) ? parseFloat(item.size) : null,
+          sizeMeasurement: (item && (item.sizeMeasurement || item.sizeMeasurment)) || '',
+          sizeMeasurment: (item && (item.sizeMeasurment || item.sizeMeasurement)) || '',
+          vehicleId: (item && item.vehicleId) || null,
+          driverId: (item && item.driverId) || null,
+          policeNo: (item && item.policeNo) || '',
+          driver: (item && item.driver) || '',
+        }
+      })
+    },
+  },
+  destinationObject: {
+    vehicle: async ({ vehicleId }, args, { mongo }) => {
+      if (!vehicleId) return null
+      return await mongo.Vehicle.findOne({ _id: ObjectId(vehicleId), deletedAt: null })
+    },
+    driverUser: async ({ driverId }, args, { mongo }) => {
+      if (!driverId) return null
+      return await mongo.User.findOne({ _id: ObjectId(driverId), deletedAt: null })
     },
   },
   Subscription: {

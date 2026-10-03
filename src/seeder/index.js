@@ -5,6 +5,7 @@ import importUsers from "./users"
 import importParameterTypes from './parameterTypes'
 import importTenant from './tenant'
 import { ObjectId } from "mongodb"
+import importAccounts from "./accounts"
 
 const loadSeeds = async () => {
   try {
@@ -13,6 +14,9 @@ const loadSeeds = async () => {
       console.log("Loading seeds.")
       console.log("\n")
 
+      console.log('Importing Accounts.')
+      const accounts = await importAccounts(context)
+      console.log('Accounts Imported')
 
       console.log('Importing Tenant.')
       const tenant = await importTenant(context)
