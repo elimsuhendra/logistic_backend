@@ -52,7 +52,7 @@ export default {
         region: s3Region,
         accessKeyId: AWSAccessKeyId,
         secretAccessKey: AWSSecretAccessKey
-  })
+      })
 
       const s3PutParams = {
         Bucket: s3Bucket,
@@ -71,7 +71,12 @@ export default {
       let signedRequestURL = await s3.getSignedUrl('putObject', s3PutParams)
       let signedDownloadURL = await s3.getSignedUrl('getObject', s3GetParams)
 
-      let url = `https://${s3Bucket}.s3.amazonaws.com/${filename}`
+      const s3Domain = process.env.S3_DOMAIN
+        ? process.env.S3_DOMAIN.replace(/\/+$/, '')
+        : (s3Region
+          ? `https://${s3Bucket}.s3.${s3Region}.amazonaws.com`
+          : `https://${s3Bucket}.s3.amazonaws.com`)
+      let url = `${s3Domain}/${filename}`
 
       // s3.getSignedUrl('putObject', s3PutParams, (err, url) => {
       //   console.log('error:', err)
