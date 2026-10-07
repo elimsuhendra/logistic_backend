@@ -113,8 +113,7 @@ type Query {
   getLastJobPlanning(prefixJobPlanningNo: String): JobPlanning
 }
 
-type Mutation {
-  createJobPlanning(
+input JobPlanningInput {
     jobPlanningNo: String
     customerId: String
     consigneeId: String
@@ -127,22 +126,18 @@ type Mutation {
     destinations: [destinationObjectInput]
     reffNo: String
     isDraft: Boolean
+    statusOperation: StatusOperationEnum
+    statusOperasional: StatusOperationEnum
+}
+
+type Mutation {
+  createJobPlanning(
+    input: JobPlanningInput!
   ): CreateJobPlanningResponse
 
   updateJobPlanning(
     id: String!
-    jobPlanningNo: String
-    customerId: String
-    consigneeId: String
-    qty: Int
-    size: String
-    containerSize: String
-    carType: String
-    sizeMeasurement: String
-    destination: String
-    destinations: [destinationObjectInput]
-    reffNo: String
-    isDraft: Boolean
+    input: JobPlanningInput!
   ): UpdateJobPlanningResponse
 
   deleteJobPlanning(id: String!): DeleteJobPlanningResponse

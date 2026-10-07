@@ -12,6 +12,7 @@ import _ from "lodash"
 export default {
   JobPlanning: {
     id: parent => parent._id || parent.id,
+    statusOperation: parent => parent.statusOperation,
     size: parent => (parent.size !== undefined && parent.size !== null) ? parent.size : parent.containerSize,
     customer: async ({ customerId }, args, { dataloaders }) => {
       return customerId ? await dataloaders.get('customerByIdLoader').load(customerId) : null
@@ -166,21 +167,22 @@ export default {
     createJobPlanning: requiresAuth.createResolver(async (parent, args, context) => {
       await checkPermissions(checkUserAuth)({ context })
       const { mongo, user } = context
+      const { input } = args
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
 
       if (!!currentUser) {
-        if (!args.jobPlanningNo) {
+        if (!input.jobPlanningNo) {
           return {
             success: false,
             message: "Job Planning No is required.",
           }
         }
 
-        args.isDraft = typeof args.isDraft === 'boolean' ? args.isDraft : false
-        const jobPlanning = await mongoCreate('JobPlanning', args, context)
+        input.isDraft = typeof input.isDraft === 'boolean' ? input.isDraft : false
+        const jobPlanning = await mongoCreate('JobPlanning', input, context)
         return {
           success: true,
-          message: args.isDraft
+          message: input.isDraft
             ? "Job planning draft has been saved successfully!"
             : "Job planning has been created successfully!",
           jobPlanning,
@@ -195,20 +197,23 @@ export default {
     updateJobPlanning: requiresAuth.createResolver(async (parent, args, context) => {
       await checkPermissions(checkUserAuth)({ context })
       const { mongo, user } = context
+      const { id, input } = args
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
 
       if (!!currentUser) {
-
-        if (typeof args.isDraft === 'boolean') {
-          args.isDraft = args.isDraft
+        if (id) {
+          input.id = id
         }
-        args["updatedAt"] = new Date().getTime()
-        await mongoUpdate('JobPlanning', args, context)
-        const jobPlanningResponse = await mongo.JobPlanning.findOne({ _id: ObjectId(args.id), deletedAt: null })
+        if (typeof input.isDraft === 'boolean') {
+          input.isDraft = input.isDraft
+        }
+        input["updatedAt"] = new Date().getTime()
+        await mongoUpdate('JobPlanning', input, context)
+        const jobPlanningResponse = await mongo.JobPlanning.findOne({ _id: ObjectId(input.id), deletedAt: null })
 
         return {
           success: true,
-          message: args.isDraft
+          message: input.isDraft
             ? "Job planning draft has been updated successfully!"
             : "Job planning has been updated successfully!",
           jobPlanning: jobPlanningResponse,
