@@ -23,6 +23,7 @@ type Vehicle {
   updatedAt: Date
   deletedAt: Date
   driverId: String
+  carType: String
 
   # resolver
   activityLogs: [ActivityLog]
@@ -38,6 +39,11 @@ enum VehicleOrder {
   brand_ASC
   createdAt_DESC
   createdAt_ASC
+}
+
+enum CarTypeEnum {
+  Box
+  Trailler
 }
 
 input VehicleFilter {
@@ -83,6 +89,7 @@ type Mutation {
     kirExp: String
     ownerName: String
     brand: String
+    carType: String
     type: String
     cbm: Float
     tonase: Float
@@ -106,6 +113,7 @@ type Mutation {
     kirExp: String
     ownerName: String
     brand: String
+    carType: String
     type: String
     cbm: Float
     tonase: Float
