@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.5] - 2026-10-12 - More Reliable File and Photo Uploads
+
+### Fixed
+
+- **Reliable Photo and File Uploads**: Uploaded photos and documents are now stored safely in cloud storage, so they remain available after system updates and can be opened from any device.
+- **Exported Reports**: Excel reports are now saved to cloud storage using the same improved upload method for more dependable downloads.
+
+### Changed
+
+- **Unique File Names**: Every uploaded file now receives its own unique name, so a new upload never replaces an older file with the same name.
+
+
 ## [1.3.4] - 2026-10-01 - Fleet Vehicle Management and Plate Verification
 
 ### Added

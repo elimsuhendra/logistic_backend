@@ -1,13 +1,8 @@
 import express from 'express'
-import fs from 'fs'
 import path from 'path'
-import appRoot from 'app-root-path'
+import { uploadToS3 } from 'helpers/s3'
 
 export const uploadRoute = (app, { router }) => {
-  const uploadDir = path.join(appRoot.path, 'public', 'upload')
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true })
-  }
 
   // Handle direct file upload via raw binary stream
   router.post('/upload', express.raw({ type: '*/*', limit: '20mb' }), async (req, res) => {
@@ -28,24 +23,22 @@ export const uploadRoute = (app, { router }) => {
 
       const rawFilename = req.headers['x-filename'] || req.query.filename || `photo-${Date.now()}`
       let cleanName = path.basename(rawFilename).replace(/[^a-zA-Z0-9._-]/g, '_')
-      
+
       if (!path.extname(cleanName) && extFromMime) {
         cleanName += extFromMime
       }
 
-      // Ensure unique filename if already exists
-      let targetPath = path.join(uploadDir, cleanName)
-      if (fs.existsSync(targetPath)) {
-        const ext = path.extname(cleanName)
-        const nameWithoutExt = path.basename(cleanName, ext)
-        cleanName = `${nameWithoutExt}-${Date.now()}${ext}`
-        targetPath = path.join(uploadDir, cleanName)
-      }
+      // Always add a unique suffix so existing S3 objects are never overwritten
+      const ext = path.extname(cleanName)
+      const nameWithoutExt = path.basename(cleanName, ext)
+      cleanName = `${nameWithoutExt}-${Date.now()}${ext}`
 
-      fs.writeFileSync(targetPath, req.body)
-
-      const serverUrl = `${req.protocol}://${req.get('host')}`
-      const fileUrl = `${serverUrl}/public/upload/${cleanName}`
+      const key = `uploads/${cleanName}`
+      const fileUrl = await uploadToS3({
+        key,
+        body: req.body,
+        contentType: mimeType || 'application/octet-stream'
+      })
 
       return res.status(200).json({
         success: true,
