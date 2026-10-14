@@ -243,6 +243,154 @@ export default {
         success: false
       }
     },
+    importUsers: async (parent, args, context) => {
+      // Create multiple users. If the username or email already exists, update that user instead.
+      await checkPermissions(checkUserAuth)({ context })
+      const { mongo, user } = context
+      const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
+      const rolesObj = getRoles(currentUser)
+
+      const emptyResponse = (message) => ({
+        success: false,
+        message,
+        createdCount: 0,
+        updatedCount: 0,
+        failedCount: 0,
+        results: []
+      })
+
+      if (!currentUser || !rolesObj.isAdmin) return emptyResponse('Unauthorized Action')
+
+      const MAX_IMPORT_ROWS = 1000
+      const rows = args.users || []
+      if (rows.length === 0) return emptyResponse('No user records found to import.')
+      if (rows.length > MAX_IMPORT_ROWS) return emptyResponse(`Too many rows. Maximum ${MAX_IMPORT_ROWS} users per import.`)
+
+      const ALLOWED_ROLES = ['SuperAdmin', 'Finance', 'Admin', 'Manager', 'TeamLeader', 'Staff', 'Driver']
+      const exactCaseInsensitive = (value) => new RegExp(`^${_.escapeRegExp(value)}$`, 'i')
+      const clean = (value) => (value === null || value === undefined ? '' : String(value).trim())
+
+      let createdCount = 0
+      let updatedCount = 0
+      let failedCount = 0
+      const results = []
+
+      for (let i = 0; i < rows.length; i++) {
+        const input = rows[i]
+        const rowNumber = input.row || i + 2
+        const username = clean(input.username).replace(/^@/, '').toLowerCase()
+        const email = clean(input.email).toLowerCase()
+        const fullName = clean(input.fullName)
+        const password = clean(input.password)
+        const employeeID = clean(input.employeeID)
+        const mobileCode = clean(input.mobileCode)
+        const mobileNumber = clean(input.mobileNumber)
+
+        const fail = (message, action = null) => {
+          failedCount++
+          results.push({ row: rowNumber, username, email, action, success: false, message })
+        }
+
+        try {
+          if (!username && !email) {
+            fail('Username or Email is required.')
+            continue
+          }
+
+          let role = null
+          if (clean(input.role)) {
+            role = ALLOWED_ROLES.find(r => r.toLowerCase() === clean(input.role).replace(/\s+/g, '').toLowerCase())
+            if (!role) {
+              fail(`Invalid role "${input.role}". Allowed: ${ALLOWED_ROLES.join(', ')}.`)
+              continue
+            }
+            if (role === 'SuperAdmin' && !rolesObj.isSuperAdmin) {
+              fail('Only a SuperAdmin can assign the SuperAdmin role.')
+              continue
+            }
+          }
+
+          // Find existing users by username or email
+          const conditions = []
+          if (username) conditions.push({ username: exactCaseInsensitive(username) })
+          if (email) conditions.push({ email: exactCaseInsensitive(email) })
+          const matches = await mongo.User.find({ deletedAt: null, $or: conditions }).toArray()
+          const uniqueMatches = _.uniqBy(matches, m => m._id.toString())
+
+          if (uniqueMatches.length > 1) {
+            fail('Username and Email belong to different existing users.')
+            continue
+          }
+
+          const existing = uniqueMatches[0]
+
+          if (existing) {
+            // UPDATE: only overwrite fields that are provided in the file
+            const update = {}
+            if (fullName) update.fullName = fullName
+            if (username) update.username = username
+            if (email) update.email = email
+            if (role) update.role = role
+            if (employeeID) update.employeeID = employeeID
+            if (mobileCode) update.mobileCode = mobileCode
+            if (mobileNumber) update.mobileNumber = mobileNumber
+            if (typeof input.inactive === 'boolean') update.inactive = input.inactive
+            if (password) update.password = hashPassword(password)
+
+            const rs = await mongoUpdate('User', { id: existing._id.toString(), ...update }, context)
+            if (!rs || rs instanceof Error) {
+              fail('Failed to update user.', 'updated')
+              continue
+            }
+
+            updatedCount++
+            results.push({ row: rowNumber, username: existing.username, email: existing.email, action: 'updated', success: true, message: 'User updated.' })
+          } else {
+            // CREATE
+            if (!password) {
+              fail('Password is required for a new user.', 'created')
+              continue
+            }
+
+            const newObj = {
+              _id: new ObjectId(),
+              fullName,
+              username: username || null,
+              email: email || null,
+              password: hashPassword(password),
+              role: role || 'Staff',
+              employeeID,
+              inactive: typeof input.inactive === 'boolean' ? input.inactive : false,
+              approved: true,
+              dateJoin: null,
+            }
+            if (mobileCode) newObj.mobileCode = mobileCode
+            if (mobileNumber) newObj.mobileNumber = mobileNumber
+
+            const rs = await mongoCreate('User', newObj, context)
+            if (!rs || rs instanceof Error) {
+              fail('Failed to create user.', 'created')
+              continue
+            }
+
+            createdCount++
+            results.push({ row: rowNumber, username, email, action: 'created', success: true, message: 'User created.' })
+          }
+        } catch (err) {
+          console.log('⛔️ importUsers row error - ', err)
+          fail(err.message || 'Unexpected error.')
+        }
+      }
+
+      return {
+        success: createdCount + updatedCount > 0,
+        message: `Created ${createdCount}, updated ${updatedCount}, failed ${failedCount}.`,
+        createdCount,
+        updatedCount,
+        failedCount,
+        results
+      }
+    },
     updateUser: async (parent, args, context) => {
       // Update data
       await checkPermissions(checkUserAuth)({ context })

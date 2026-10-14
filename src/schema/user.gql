@@ -112,8 +112,40 @@ type ResetPasswordResponse {
   message: String
 }
 
+input UserImportInput {
+  row: Int
+  fullName: String
+  username: String
+  email: String
+  password: String
+  role: String
+  employeeID: String
+  inactive: Boolean
+  mobileCode: String
+  mobileNumber: String
+}
+
+type UserImportResult {
+  row: Int!
+  username: String
+  email: String
+  action: String
+  success: Boolean!
+  message: String
+}
+
+type ImportUsersResponse {
+  success: Boolean!
+  message: String
+  createdCount: Int
+  updatedCount: Int
+  failedCount: Int
+  results: [UserImportResult]
+}
+
 type Mutation {
   login(username: String, password: String): LoginResponse!
+  importUsers(users: [UserImportInput!]!): ImportUsersResponse
   createUser(
     username: String
     email: String
