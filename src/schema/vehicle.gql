@@ -75,6 +75,47 @@ type VehicleResponse {
   errors: [Error!]
 }
 
+input VehicleImportInput {
+  row: Int
+  policeNo: String
+  stnk: String
+  stnkExp: String
+  kirExp: String
+  ownerName: String
+  brand: String
+  carType: String
+  type: String
+  cbm: Float
+  tonase: Float
+  outsideDimension: String
+  insideDimension: String
+  machineNo: String
+  chasisNo: String
+  cbmIng2: Float
+  insideDimension_1: String
+  insideDimension_2: String
+  insideDimension_3: String
+  cbmInsideDimension: Float
+  inactive: Boolean
+}
+
+type VehicleImportResult {
+  row: Int!
+  policeNo: String
+  action: String
+  success: Boolean!
+  message: String
+}
+
+type ImportVehiclesResponse {
+  success: Boolean!
+  message: String
+  createdCount: Int
+  updatedCount: Int
+  failedCount: Int
+  results: [VehicleImportResult]
+}
+
 type Query {
   allVehicles(filter: VehicleFilter, first: Int, skip: Int, orderBy: VehicleOrder): [Vehicle]
   _allVehiclesMeta(filter: VehicleFilter): ObjectMeta
@@ -82,6 +123,7 @@ type Query {
 }
 
 type Mutation {
+  importVehicles(vehicles: [VehicleImportInput!]!): ImportVehiclesResponse
   createVehicle(
     policeNo: String
     stnk: String
