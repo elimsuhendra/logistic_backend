@@ -93,6 +93,161 @@ export default {
     )
   },
   Mutation: {
+    importVehicles: async (parent, args, context) => {
+      await checkPermissions(checkUserAuth)({ context })
+      const { mongo, user } = context
+      const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
+
+      const emptyResponse = (message) => ({
+        success: false,
+        message,
+        createdCount: 0,
+        updatedCount: 0,
+        failedCount: 0,
+        results: []
+      })
+
+      if (!currentUser) return emptyResponse('Unauthorized Action')
+
+      const MAX_IMPORT_ROWS = 1000
+      const rows = args.vehicles || []
+      if (rows.length === 0) return emptyResponse('No vehicle records found to import.')
+      if (rows.length > MAX_IMPORT_ROWS) return emptyResponse(`Too many rows. Maximum ${MAX_IMPORT_ROWS} vehicles per import.`)
+
+      const clean = (value) => (value === null || value === undefined ? '' : String(value).trim())
+      const parseFloatOrNull = (value) => {
+        const s = clean(value)
+        if (!s) return null
+        const n = parseFloat(s)
+        return isNaN(n) ? null : n
+      }
+
+      let createdCount = 0
+      let updatedCount = 0
+      let failedCount = 0
+      const results = []
+
+      for (let i = 0; i < rows.length; i++) {
+        const input = rows[i]
+        const rowNumber = input.row || i + 2
+        const policeNo = clean(input.policeNo)
+
+        const fail = (message, action = null) => {
+          failedCount++
+          results.push({ row: rowNumber, policeNo, action, success: false, message })
+        }
+
+        try {
+          if (!policeNo) {
+            fail('Police No. is required.')
+            continue
+          }
+
+          if (input.stnkExp) {
+            // change format date 30-May-26 to YYYY-MM-DD
+            const date = new Date(input.stnkExp)
+            const y = date.getFullYear()
+            const m = String(date.getMonth() + 1).padStart(2, '0')
+            const d = String(date.getDate()).padStart(2, '0')
+            input.stnkExp = `${y}-${m}-${d}`
+          }
+
+          if (input.kirExp) {
+            // change format date 30-May-26 to YYYY-MM-DD
+            const date = new Date(input.kirExp)
+            const y = date.getFullYear()
+            const m = String(date.getMonth() + 1).padStart(2, '0')
+            const d = String(date.getDate()).padStart(2, '0')
+            input.kirExp = `${y}-${m}-${d}`
+          }
+
+          const existing = await mongo.Vehicle.findOne({ policeNo, deletedAt: null })
+
+          if (existing) {
+            // UPDATE: only overwrite fields that are provided
+            const update = { policeNo }
+            if (clean(input.stnk)) update.stnk = clean(input.stnk)
+            if (clean(input.stnkExp)) update.stnkExp = clean(input.stnkExp)
+            if (clean(input.kirExp)) update.kirExp = clean(input.kirExp)
+            if (clean(input.ownerName)) update.ownerName = clean(input.ownerName)
+            if (clean(input.brand)) update.brand = clean(input.brand)
+            if (clean(input.carType)) update.carType = clean(input.carType)
+            if (clean(input.type)) update.type = clean(input.type)
+            const cbm = parseFloatOrNull(input.cbm)
+            if (cbm !== null) update.cbm = cbm
+            const tonase = parseFloatOrNull(input.tonase)
+            if (tonase !== null) update.tonase = tonase
+            if (clean(input.outsideDimension)) update.outsideDimension = clean(input.outsideDimension)
+            if (clean(input.insideDimension)) update.insideDimension = clean(input.insideDimension)
+            if (clean(input.machineNo)) update.machineNo = clean(input.machineNo)
+            if (clean(input.chasisNo)) update.chasisNo = clean(input.chasisNo)
+            const cbmIng2 = parseFloatOrNull(input.cbmIng2)
+            if (cbmIng2 !== null) update.cbmIng2 = cbmIng2
+            if (clean(input.insideDimension_1)) update.insideDimension_1 = clean(input.insideDimension_1)
+            if (clean(input.insideDimension_2)) update.insideDimension_2 = clean(input.insideDimension_2)
+            if (clean(input.insideDimension_3)) update.insideDimension_3 = clean(input.insideDimension_3)
+            const cbmInsideDimension = parseFloatOrNull(input.cbmInsideDimension)
+            if (cbmInsideDimension !== null) update.cbmInsideDimension = cbmInsideDimension
+            if (typeof input.inactive === 'boolean') update.inactive = input.inactive
+            const rs = await mongoUpdate('Vehicle', { id: existing._id.toString(), ...update }, context)
+            if (!rs || rs instanceof Error) {
+              fail('Failed to update vehicle.', 'updated')
+              continue
+            }
+
+            updatedCount++
+            results.push({ row: rowNumber, policeNo, action: 'updated', success: true, message: 'Vehicle updated.' })
+          } else {
+            // CREATE
+            const newObj = prepareCreate({
+              policeNo,
+              plat: policeNo,
+              stnk: clean(input.stnk),
+              stnkExp: clean(input.stnkExp),
+              kirExp: clean(input.kirExp),
+              ownerName: clean(input.ownerName),
+              brand: clean(input.brand),
+              carType: clean(input.carType),
+              type: clean(input.type),
+              cbm: parseFloatOrNull(input.cbm),
+              tonase: parseFloatOrNull(input.tonase),
+              outsideDimension: clean(input.outsideDimension),
+              insideDimension: clean(input.insideDimension),
+              machineNo: clean(input.machineNo),
+              chasisNo: clean(input.chasisNo),
+              cbmIng2: parseFloatOrNull(input.cbmIng2),
+              insideDimension_1: clean(input.insideDimension_1),
+              insideDimension_2: clean(input.insideDimension_2),
+              insideDimension_3: clean(input.insideDimension_3),
+              cbmInsideDimension: parseFloatOrNull(input.cbmInsideDimension),
+              inactive: typeof input.inactive === 'boolean' ? input.inactive : false,
+            })
+            newObj._id = new ObjectId()
+
+            const rs = await mongoCreate('Vehicle', newObj, context)
+            if (!rs || rs instanceof Error) {
+              fail('Failed to create vehicle.', 'created')
+              continue
+            }
+
+            createdCount++
+            results.push({ row: rowNumber, policeNo, action: 'created', success: true, message: 'Vehicle created.' })
+          }
+        } catch (err) {
+          console.log('⛔️ importVehicles row error - ', err)
+          fail(err.message || 'Unexpected error.')
+        }
+      }
+
+      return {
+        success: createdCount + updatedCount > 0,
+        message: `Created ${createdCount}, updated ${updatedCount}, failed ${failedCount}.`,
+        createdCount,
+        updatedCount,
+        failedCount,
+        results
+      }
+    },
     createVehicle: async (parent, args, context) => {
       await checkPermissions(checkUserAuth)({ context })
       const { mongo, user } = context
@@ -146,7 +301,6 @@ export default {
 
           const newObj = prepareCreate(normalizedArgs)
           newObj._id = new ObjectId()
-          console.log({ newObj })
           const rs = await mongoCreate('Vehicle', newObj, context)
           return {
             success: true,
