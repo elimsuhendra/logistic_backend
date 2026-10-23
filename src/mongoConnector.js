@@ -59,6 +59,7 @@ export default async () => {
       PeopleEmail: db.collection("peopleEmails"),
       JobOrder: db.collection("jobOrders"),
       JobPlanning: db.collection("jobPlannings"),
+      CashRequest: db.collection("cashRequests"),
       Workflow: db.collection("workflows"),
       JobApplicant: db.collection("jobApplicants"),
       Report: db.collection("reports"),
@@ -86,7 +87,8 @@ export default async () => {
       MenuPermission: db.collection("menuPermissions"),
       Menu: db.collection("menus"),
       Role: db.collection("roles"),
-      Employee: db.collection("employee")
+      Employee: db.collection("employee"),
+      Approval: db.collection("approvals")
     },
     db,
   }

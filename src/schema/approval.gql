@@ -1,0 +1,210 @@
+type Approval {
+  id: String!
+  reffNo: String
+  reffId: String
+  collectionName: String
+  userId: String
+  approval: approvalEnum
+  createdAt: Date
+  updatedAt: Date
+
+  # relations
+  user: User
+}
+
+enum approvalEnum {
+  Approved
+  Rejected
+  Pending
+  Cancelled
+}
+
+enum ApprovalOrder {
+  reffNo_DESC
+  reffNo_ASC
+  createdAt_DESC
+  createdAt_ASC
+  updatedAt_DESC
+  updatedAt_ASC
+}
+
+input ApprovalFilter {
+  OR: [ApprovalFilter!]
+  AND: [ApprovalFilter!]
+  _id_in: [String]
+  _id_nin: [String]
+  reffNo: String
+  reffNo_regex: String
+  reffId: String
+  collectionName: String
+  userId: String
+  approval: approvalEnum
+  search: String
+  createdAt_gte: Date
+  createdAt_lte: Date
+}
+
+input ApprovalInput {
+  reffNo: String
+  reffId: String
+  collectionName: String
+  userId: String
+  approval: approvalEnum
+}
+
+type CreateApprovalResponse {
+  success: Boolean!
+  message: String
+  approval: Approval
+}
+
+type UpdateApprovalResponse {
+  success: Boolean!
+  message: String
+  approval: Approval
+}
+
+type DeleteApprovalResponse {
+  success: Boolean!
+  message: String
+}
+
+type Query {
+  allApprovals(
+    filter: ApprovalFilter
+    first: Int
+    skip: Int
+    orderBy: ApprovalOrder
+  ): [Approval]
+  _allApprovalsMeta(filter: ApprovalFilter): ObjectMeta
+  getApproval(reffId: String, id: String): Approval
+}
+
+type Mutation {
+  createApproval(
+    input: ApprovalInput
+    reffNo: String
+    reffId: String
+    collectionName: String
+    userId: String
+    approval: approvalEnum
+  ): CreateApprovalResponse
+
+  updateApproval(
+    id: String!
+    input: ApprovalInput
+    reffNo: String
+    reffId: String
+    collectionName: String
+    userId: String
+    approval: approvalEnum
+  ): UpdateApprovalResponse
+
+  deleteApproval(id: String!): DeleteApprovalResponse
+  deleteApprovals(ids: [String!]!): DeleteApprovalResponse
+}
+
+type ApprovalSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Approval
+  previousValues: Approval
+}
+
+type Subscription {
+  Approval(filter: SubscriptionFilter, dataFilter: ApprovalFilter): ApprovalSubscriptionPayload
+}
+
+enum ApprovalOrder {
+  reffNo_DESC
+  reffNo_ASC
+  createdAt_DESC
+  createdAt_ASC
+  updatedAt_DESC
+  updatedAt_ASC
+}
+
+input ApprovalFilter {
+  OR: [ApprovalFilter!]
+  AND: [ApprovalFilter!]
+  _id_in: [String]
+  _id_nin: [String]
+  reffNo: String
+  reffNo_regex: String
+  reffId: String
+  collectionName: String
+  userId: String
+  approval: approvalEnum
+  search: String
+  createdAt_gte: Date
+  createdAt_lte: Date
+}
+
+input ApprovalInput {
+  reffNo: String
+  reffId: String
+  collectionName: String
+  userId: String
+  approval: approvalEnum
+}
+
+type CreateApprovalResponse {
+  success: Boolean!
+  message: String
+  approval: Approval
+}
+
+type UpdateApprovalResponse {
+  success: Boolean!
+  message: String
+  approval: Approval
+}
+
+type DeleteApprovalResponse {
+  success: Boolean!
+  message: String
+}
+
+type Query {
+  allApprovals(
+    filter: ApprovalFilter
+    first: Int
+    skip: Int
+    orderBy: ApprovalOrder
+  ): [Approval]
+  _allApprovalsMeta(filter: ApprovalFilter): ObjectMeta
+  getApproval(reffId: String, id: String): Approval
+}
+
+type Mutation {
+  createApproval(
+    input: ApprovalInput
+    reffNo: String
+    reffId: String
+    collectionName: String
+    userId: String
+    approval: approvalEnum
+  ): CreateApprovalResponse
+
+  updateApproval(
+    id: String!
+    input: ApprovalInput
+    reffNo: String
+    reffId: String
+    collectionName: String
+    userId: String
+    approval: approvalEnum
+  ): UpdateApprovalResponse
+
+  deleteApproval(id: String!): DeleteApprovalResponse
+  deleteApprovals(ids: [String!]!): DeleteApprovalResponse
+}
+
+type ApprovalSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Approval
+  previousValues: Approval
+}
+
+type Subscription {
+  Approval(filter: SubscriptionFilter, dataFilter: ApprovalFilter): ApprovalSubscriptionPayload
+}

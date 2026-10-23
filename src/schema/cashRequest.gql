@@ -1,0 +1,201 @@
+type CashRequest {
+  id: String!
+  jobPlanningId: String
+  customerId: String
+  consigneeId: String
+  employeeId: String
+  requestDate: Date
+  cashType: bondTypeEnum
+  cashNo: String
+  destination: [String]
+  destinations: [cashDestinationObject]
+  jobs: [cashJobObject]
+  otherCash: Float
+  sparePartCash: Float
+  requestTotal: Float
+  jobSettlement: Float
+  sparePartSettlement: Float
+  otherSettlement: Float
+  returnTotal: Float
+  isDraft: Boolean
+  statusOperation: statusOperationKasbonEnum
+  createdAt: Date
+  updatedAt: Date
+
+  # relations
+  jobPlanning: JobPlanning
+  customer: Customer
+  consignee: Customer
+  employee: User
+}
+
+type cashJobObject {
+  jobPlanningId: String
+  customerId: String
+  consigneeId: String
+  destinations: [cashDestinationObject]
+  total: Float
+
+  # relations
+  jobPlanning: JobPlanning
+  customer: Customer
+  consignee: Customer
+}
+
+input cashJobObjectInput {
+  jobPlanningId: String
+  customerId: String
+  consigneeId: String
+  destinations: [cashDestinationObjectInput]
+  total: Float
+}
+
+type cashDestinationObject {
+  jobPlanningId: String
+  customerId: String
+  consigneeId: String
+  destination: String
+  nominal: Float
+  qty: Int
+  size: Float
+  sizeMeasurement: String
+  vehicleId: String
+  driverId: String
+  policeNo: String
+  driver: String
+}
+
+input cashDestinationObjectInput {
+  jobPlanningId: String
+  customerId: String
+  consigneeId: String
+  destination: String
+  nominal: Float
+  qty: Int
+  size: Float
+  sizeMeasurement: String
+  vehicleId: String
+  driverId: String
+  policeNo: String
+  driver: String
+}
+
+enum bondTypeEnum {
+  PJ
+  SP
+  KG
+}
+
+enum CashRequestOrder {
+  cashNo_DESC
+  cashNo_ASC
+  requestDate_DESC
+  requestDate_ASC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+enum statusOperationKasbonEnum {
+  Draft
+  Pending
+  Cancel
+  Due_3_Days
+  Due_5_Days
+  Finish
+}
+
+input CashRequestFilter {
+  OR: [CashRequestFilter!]
+  AND: [CashRequestFilter!]
+  _id_in: [String]
+  _id_nin: [String]
+  cashNo: String
+  cashNo_regex: String
+  jobPlanningId: String
+  customerId: String
+  consigneeId: String
+  employeeId: String
+  cashType: bondTypeEnum
+  isDraft: Boolean
+  statusOperation: statusOperationKasbonEnum
+  search: String
+  requestDate_gte: Date
+  requestDate_lte: Date
+  createdAt_gte: Date
+  createdAt_lte: Date
+}
+
+type CreateCashRequestResponse {
+  success: Boolean!
+  message: String
+  cashRequest: CashRequest
+}
+
+type UpdateCashRequestResponse {
+  success: Boolean!
+  message: String
+  cashRequest: CashRequest
+}
+
+type DeleteCashRequestResponse {
+  success: Boolean!
+  message: String
+}
+
+type Query {
+  allCashRequests(
+    filter: CashRequestFilter
+    first: Int
+    skip: Int
+    orderBy: CashRequestOrder
+  ): [CashRequest]
+  _allCashRequestsMeta(filter: CashRequestFilter): ObjectMeta
+  getCashRequest(id: String): CashRequest
+  getLastCashRequest(prefixCashNo: String): CashRequest
+}
+
+input CashRequestInput {
+  jobPlanningId: String
+  customerId: String
+  consigneeId: String
+  employeeId: String
+  requestDate: Date
+  cashType: bondTypeEnum
+  cashNo: String
+  destination: [String]
+  destinations: [cashDestinationObjectInput]
+  jobs: [cashJobObjectInput]
+  otherCash: Float
+  sparePartCash: Float
+  requestTotal: Float
+  jobSettlement: Float
+  sparePartSettlement: Float
+  otherSettlement: Float
+  returnTotal: Float
+  isDraft: Boolean
+  statusOperation: StatusOperationEnum
+}
+
+type Mutation {
+  createCashRequest(
+    input: CashRequestInput!
+  ): CreateCashRequestResponse
+
+  updateCashRequest(
+    id: String!
+    input: CashRequestInput!
+  ): UpdateCashRequestResponse
+
+  deleteCashRequest(id: String!): DeleteCashRequestResponse
+  deleteCashRequests(ids: [String!]!): DeleteCashRequestResponse
+}
+
+type CashRequestSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: CashRequest
+  previousValues: CashRequest
+}
+
+type Subscription {
+  CashRequest(filter: SubscriptionFilter, dataFilter: CashRequestFilter): CashRequestSubscriptionPayload
+}
