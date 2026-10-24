@@ -1,7 +1,7 @@
 type Account {
   id: String!
   type: AccountType!
-  # fullName: String
+  fullName: String
   accountName: String
   initial: String
   userIds: [String]
@@ -16,6 +16,8 @@ type Account {
   updatedAt: Date
 
   # resolver
+  avatar: Photo
+  users: [User]
   # isSystemAdmin: Boolean
   # settings: [AccountSetting]
 }
@@ -37,6 +39,8 @@ enum AccountOrder {
   # fullName_ASC
   accountName_DESC
   accountName_ASC
+  initial_DESC
+  initial_ASC
   createdAt_DESC
   createdAt_ASC
 }
@@ -44,11 +48,28 @@ enum AccountOrder {
 input AccountFilter {
   OR: [AccountFilter!]
   AND: [AccountFilter!]
-  # fullName_regex: String
+  _id_in: [String]
+  _id_nin: [String]
+  type: AccountType
+  fullName_regex: String
+  accountName: String
   accountName_regex: String
+  initial: String
+  initial_regex: String
+  email: String
+  email_regex: String
+  search: String
   inactive: Boolean
+  inactive_ne: Boolean
   createdAt_gte: Date
   createdAt_lte: Date
+}
+
+type AccountResponse {
+  success: Boolean!
+  message: String
+  account: Account
+  errors: [Error!]
 }
 
 type Query {
@@ -67,11 +88,12 @@ type Query {
 }
 
 input CreateAccountInput {
-  accountName: String!
-  # fullName: String
-  initial: String!
-  userId: String!
-  type: AccountType!
+  accountName: String
+  fullName: String
+  initial: String
+  userId: String
+  userIds: [String]
+  type: AccountType
   logoUrl: String
   logoWidth: Float
   logoHeight: Float
@@ -81,9 +103,13 @@ input CreateAccountInput {
 }
 
 input UpdateAccountInput {
-  id: String!
+  id: String
   accountName: String
-  # fullName: String
+  fullName: String
+  initial: String
+  userId: String
+  userIds: [String]
+  type: AccountType
   logoUrl: String
   logoWidth: Float
   logoHeight: Float
@@ -96,11 +122,38 @@ type Mutation {
   """
   Create a new account record.
   """
-  createAccount(userId: String, input: CreateAccountInput!): CommonResponse
+  createAccount(
+    userId: String
+    input: CreateAccountInput
+    accountName: String
+    fullName: String
+    initial: String
+    userIds: [String]
+    type: AccountType
+    logoUrl: String
+    logoWidth: Float
+    logoHeight: Float
+    email: String
+    inactive: Boolean
+  ): AccountResponse
   """
   Update an existing account record.
   """
-  updateAccount(id: String!, input: UpdateAccountInput!): CommonResponse
+  updateAccount(
+    id: String!
+    input: UpdateAccountInput
+    accountName: String
+    fullName: String
+    initial: String
+    userId: String
+    userIds: [String]
+    type: AccountType
+    logoUrl: String
+    logoWidth: Float
+    logoHeight: Float
+    email: String
+    inactive: Boolean
+  ): AccountResponse
   """
   Delete an account record.
   @mcp-disabled
