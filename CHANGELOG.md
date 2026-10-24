@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [1.3.6] - 2026-10-23 - Business Account Administration and User Assignment
+
+### Added
+
+- **Business Account Management**: Added support for creating, viewing, updating, and removing business accounts, including company initials, contact email, status, and assigned team members.
+
 ## [1.3.5] - 2026-10-12 - More Reliable File and Photo Uploads
 
 ### Fixed

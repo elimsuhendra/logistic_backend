@@ -81,7 +81,11 @@ export default async () => {
       Institution: db.collection("institutions"),
       SalesLog: db.collection("salesLogs"),
       SalesLogDetail: db.collection("salesLogDetails"),
-      Vehicle: db.collection("vehicles")
+      Vehicle: db.collection("vehicles"),
+      MenuPermissions: db.collection("menuPermissions"),
+      MenuPermission: db.collection("menuPermissions"),
+      Menu: db.collection("menus"),
+      Role: db.collection("roles")
     },
     db,
   }
