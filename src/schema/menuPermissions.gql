@@ -1,0 +1,117 @@
+type MenuPermissions {
+  id: String!
+  label: String!
+  code: String!
+  permissions: MenuPermissionItem!
+  inactive: Boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
+type MenuPermissionItem {
+  view: PermissionItem!
+  create: PermissionItem!
+  update: PermissionItem!
+  delete: PermissionItem!
+}
+
+type PermissionItem {
+  enable: Boolean!
+  # url: "/users/create"
+  url: String
+}
+
+input PermissionItemInput {
+  enable: Boolean!
+  url: String
+}
+
+input MenuPermissionItemInput {
+  view: PermissionItemInput
+  create: PermissionItemInput
+  update: PermissionItemInput
+  delete: PermissionItemInput
+}
+
+enum MenuPermissionsOrder {
+  label_ASC
+  label_DESC
+  code_ASC
+  code_DESC
+  createdAt_ASC
+  createdAt_DESC
+}
+
+input MenuPermissionsFilter {
+  OR: [MenuPermissionsFilter!]
+  AND: [MenuPermissionsFilter!]
+  _id_in: [String]
+  _id_nin: [String]
+  label: String
+  label_regex: String
+  code: String
+  code_regex: String
+  search: String
+  inactive: Boolean
+  inactive_ne: Boolean
+  createdAt_gte: Date
+  createdAt_lte: Date
+}
+
+type MenuPermissionsResponse {
+  success: Boolean!
+  message: String
+  menuPermission: MenuPermissions
+  errors: [Error!]
+}
+
+type Query {
+  getMenuPermissions(id: String): MenuPermissions
+  allMenuPermissions(filter: MenuPermissionsFilter, first: Int, skip: Int, orderBy: MenuPermissionsOrder): [MenuPermissions!]!
+  _allMenuPermissionsMeta(filter: MenuPermissionsFilter, first: Int, skip: Int): ObjectMeta
+}
+
+input CreateMenuPermissionsInput {
+  label: String
+  code: String
+  permissions: MenuPermissionItemInput
+  inactive: Boolean
+}
+
+input UpdateMenuPermissionsInput {
+  id: String
+  label: String
+  code: String
+  permissions: MenuPermissionItemInput
+  inactive: Boolean
+}
+
+type Mutation {
+  createMenuPermissions(
+    input: CreateMenuPermissionsInput
+    label: String
+    code: String
+    permissions: MenuPermissionItemInput
+    inactive: Boolean
+  ): MenuPermissionsResponse
+  updateMenuPermissions(
+    id: String!
+    input: UpdateMenuPermissionsInput
+    label: String
+    code: String
+    permissions: MenuPermissionItemInput
+    inactive: Boolean
+  ): MenuPermissionsResponse
+  deleteMenuPermissions(id: String!): CommonResponse
+}
+
+type MenuPermissionsSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: MenuPermissions
+  previousValues: MenuPermissions
+}
+
+type Subscription {
+  MenuPermissions(filter: SubscriptionFilter, dataFilter: MenuPermissionsFilter): MenuPermissionsSubscriptionPayload
+}
+
