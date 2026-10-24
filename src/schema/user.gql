@@ -41,6 +41,9 @@ enum RoleType {
   TeamLeader
   Staff
   Driver
+  AdminPusat
+  AdminGarasi
+  Pengurus
 }
 
 enum UserOrder {
