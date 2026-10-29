@@ -1,9 +1,182 @@
 type Role {
   id: String!
-  accountId: String!
+  accountIds: [String!]!
+  code: String!
   name: String!
   description: String
-  users: [User!]!
-  roleAccess: [RoleAccess!]!
+  menuPermissions: [JSON]
   inactive: Boolean!
+  createdAt: Date
+  updatedAt: Date
+
+  # resolver
+  accounts: [Account]
+}
+
+type MenuPermissionData {
+  menuCode: String!
+  canAccess: Boolean!
+  canView: Boolean!
+  canCreate: Boolean!
+  canUpdate: Boolean!
+  canDelete: Boolean!
+}
+
+input MenuPermissionDataInput {
+  menuCode: String!
+  canAccess: Boolean
+  canView: Boolean
+  canCreate: Boolean
+  canUpdate: Boolean
+  canDelete: Boolean
+}
+
+enum RoleOrder {
+  name_ASC
+  name_DESC
+  code_ASC
+  code_DESC
+  createdAt_ASC
+  createdAt_DESC
+}
+
+input RoleFilter {
+  OR: [RoleFilter!]
+  AND: [RoleFilter!]
+  _id_in: [String]
+  _id_nin: [String]
+  name: String
+  name_regex: String
+  code: String
+  code_regex: String
+  accountIds_in: [String]
+  search: String
+  inactive: Boolean
+  inactive_ne: Boolean
+  createdAt_gte: Date
+  createdAt_lte: Date
+}
+
+type RoleResponse {
+  success: Boolean!
+  message: String
+  role: Role
+  errors: [Error!]
+}
+
+type Query {
+  getRole(id: String): Role
+  allRoles(filter: RoleFilter, first: Int, skip: Int, orderBy: RoleOrder): [Role!]!
+  _allRolesMeta(filter: RoleFilter, first: Int, skip: Int): ObjectMeta
+}
+
+type Mutation {
+  createRole(
+    code: String
+    name: String
+    description: String
+    accountIds: [String]
+    menuPermissions: [MenuPermissionDataInput]
+    inactive: Boolean
+  ): RoleResponse
+  updateRole(
+    id: String!
+    code: String
+    name: String
+    description: String
+    accountIds: [String]
+    menuPermissions: [MenuPermissionDataInput]
+    inactive: Boolean
+  ): RoleResponse
+  deleteRole(id: String!): CommonResponse
+}
+
+type RoleSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Role
+  previousValues: Role
+}
+
+type Subscription {
+  Role(filter: SubscriptionFilter, dataFilter: RoleFilter): RoleSubscriptionPayload
+}
+
+
+input MenuPermissionDataInput {
+  menuCode: String!
+  canAccess: Boolean
+  canView: Boolean
+  canCreate: Boolean
+  canUpdate: Boolean
+  canDelete: Boolean
+}
+
+enum RoleOrder {
+  name_ASC
+  name_DESC
+  code_ASC
+  code_DESC
+  createdAt_ASC
+  createdAt_DESC
+}
+
+input RoleFilter {
+  OR: [RoleFilter!]
+  AND: [RoleFilter!]
+  _id_in: [String]
+  _id_nin: [String]
+  name: String
+  name_regex: String
+  code: String
+  code_regex: String
+  accountIds_in: [String]
+  search: String
+  inactive: Boolean
+  inactive_ne: Boolean
+  createdAt_gte: Date
+  createdAt_lte: Date
+}
+
+type RoleResponse {
+  success: Boolean!
+  message: String
+  role: Role
+  errors: [Error!]
+}
+
+type Query {
+  getRole(id: String): Role
+  allRoles(filter: RoleFilter, first: Int, skip: Int, orderBy: RoleOrder): [Role!]!
+  _allRolesMeta(filter: RoleFilter, first: Int, skip: Int): ObjectMeta
+}
+
+type Mutation {
+  createRole(
+    code: String
+    name: String
+    description: String
+    accountIds: [String]
+    menuPermissions: [MenuPermissionDataInput]
+    inactive: Boolean
+  ): RoleResponse
+  updateRole(
+    id: String!
+    code: String
+    name: String
+    description: String
+    accountIds: [String]
+    menuPermissions: [MenuPermissionDataInput]
+    inactive: Boolean
+  ): RoleResponse
+  deleteRole(id: String!): CommonResponse
+}
+
+type RoleSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Role
+  previousValues: Role
+}
+
+type Subscription {
+  Role(filter: SubscriptionFilter, dataFilter: RoleFilter): RoleSubscriptionPayload
 }

@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.3.7] - 2026-10-26 - Role Management with Menu Access Control
+
+### Added
+
+- **Role Management**: Added support for creating, viewing, updating, and removing roles, including a role name, short code, description, linked business accounts, and active status.
+- **Menu Access per Role**: Each role can now store which menus it can open and whether it is allowed to view, create, update, or delete within each menu.
+
+
 ## [1.3.6] - 2026-10-23 - Business Account Administration and User Assignment
 
 ### Added

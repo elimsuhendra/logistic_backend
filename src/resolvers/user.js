@@ -21,6 +21,7 @@ import { createLog } from '../utils/crud'
 export default {
   User: {
     id: parent => parent._id || parent.id,
+    roleId: parent => (parent && parent.roleId ? String(parent.roleId) : null),
     avatar: async ({ _id }, args, { dataloaders }) => {
       if (!dataloaders) {
         console.log('No dataloaders provided')
@@ -43,6 +44,16 @@ export default {
     account: async ({ _id }, args, { mongo }) => {
       const account = await mongo.Account.findOne({ userIds: { $in: [ObjectId(_id)] }, deletedAt: null })
       return account
+    },
+    roleData: async ({ roleId, role }, args, { mongo }) => {
+      let roleObj = null
+      if(roleId){
+        roleObj = await mongo.Role.findOne({ _id: ObjectId(roleId), deletedAt: null })
+      }else if(role){
+        roleObj = await mongo.Role.findOne({ code: { $regex: `^${_.escapeRegExp(String(role).trim())}$`, $options: 'i' }, deletedAt: null })
+      }
+
+      return roleObj
     }
   },
   Subscription: {
@@ -145,7 +156,8 @@ export default {
     ),
     me: requiresAuth.createResolver(async (parent, args, { mongo, user }) => {
       if (!user) return null
-      return await mongo.User.findOne({ _id: ObjectId(user._id) })
+      const userObj = await mongo.User.findOne({ _id: ObjectId(user._id) })
+      return userObj
     })
   },
   Mutation: {
