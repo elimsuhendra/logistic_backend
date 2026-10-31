@@ -36,6 +36,7 @@ function normalizeAccountFilters(rawFilter, showAll) {
         { accountName: { $regex: regexStr, $options: 'i' } },
         { initial: { $regex: regexStr, $options: 'i' } },
         { email: { $regex: regexStr, $options: 'i' } },
+        { contactNo: { $regex: regexStr, $options: 'i' } },
       ]
     }
   }
@@ -60,6 +61,13 @@ export default {
     id: parent => parent._id || parent.id,
     type: parent => (parent && parent.type) || 'BUSINESS',
     inactive: parent => Boolean(parent && parent.inactive),
+    contactNo: parent => {
+      if (!parent || parent.contactNo === undefined || parent.contactNo === null) return null
+      if (typeof parent.contactNo === 'object') {
+        return parent.contactNo.number || null
+      }
+      return String(parent.contactNo)
+    },
     avatar: async ({ _id }, args, { dataloaders }) => {
       if (!dataloaders) {
         return null
@@ -171,6 +179,7 @@ export default {
           initial,
           type: input.type || 'BUSINESS',
           email: input.email ? String(input.email).trim().toLowerCase() : null,
+          contactNo: input.contactNo ? String(input.contactNo).trim() : null,
           logoUrl: input.logoUrl || null,
           logoWidth: input.logoWidth !== undefined ? input.logoWidth : null,
           logoHeight: input.logoHeight !== undefined ? input.logoHeight : null,
@@ -215,6 +224,9 @@ export default {
         if (input.email !== undefined) {
           input.email = input.email ? String(input.email).trim().toLowerCase() : null
         }
+        if (input.contactNo !== undefined) {
+          input.contactNo = input.contactNo ? String(input.contactNo).trim() : null
+        }
 
         const formattedUserIds = normalizeUserIds(input)
         if (formattedUserIds !== undefined) {
@@ -257,4 +269,3 @@ export default {
     }),
   }
 }
-
