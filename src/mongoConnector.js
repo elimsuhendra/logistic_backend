@@ -85,7 +85,8 @@ export default async () => {
       MenuPermissions: db.collection("menuPermissions"),
       MenuPermission: db.collection("menuPermissions"),
       Menu: db.collection("menus"),
-      Role: db.collection("roles")
+      Role: db.collection("roles"),
+      Employee: db.collection("employee")
     },
     db,
   }

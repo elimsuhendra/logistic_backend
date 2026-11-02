@@ -17,8 +17,9 @@ type User {
   email: String
   lastName: String
   firstName: String
+
   mobileNumber: String
-  mobileCode: String
+  phone: String
   postalCode: String
   country: String
   city: String
@@ -27,12 +28,15 @@ type User {
   approved: Boolean
   resetToken: String
 
+  # resolvers
   groups: [Group]
   lastGroup: Group
   lastGroup2: [Group]
   salary: UserSalary
   account: Account
+  accounts: [Account]
   roleData: Role
+  employees: [Employee]
 }
 
 enum RoleType {
@@ -127,8 +131,9 @@ input UserImportInput {
   role: String
   employeeID: String
   inactive: Boolean
-  mobileCode: String
+
   mobileNumber: String
+  phone: String
 }
 
 type UserImportResult {
@@ -149,55 +154,49 @@ type ImportUsersResponse {
   results: [UserImportResult]
 }
 
+input UserInput {
+  fullName: String
+  username: String
+  email: String
+  dateJoin: Date
+  password: String
+  inactive: Boolean
+  employee: EmployeeInput
+  employees: [EmployeeInput]
+}
+
 type Mutation {
   login(username: String, password: String): LoginResponse!
   importUsers(users: [UserImportInput!]!): ImportUsersResponse
   createUser(
-    username: String
-    email: String
-    fullName: String
-    password: String
-    role: RoleType
-  roleId: String
-    inactive: Boolean
-    excludeIndividualReport: Boolean
-    approved: Boolean
-    mobileCode: String
-    mobileNumber: String
-    dateJoin: Date
-    employeeID: String
+    input: UserInput!
   ): RegisterResponse
   updateUser(
     id: String!
-    username: String
-    fullName: String
-    inactive: Boolean
-    excludeIndividualReport: Boolean
-    approved: Boolean
-    role: String
-    roleId: String
-    mobileCode: String
-    mobileNumber: String
-    dateJoin: Date
-    password: String
-    employeeID: String
+    input: UserInput!
   ): RegisterResponse
   updateProfile(
     fullName: String
     currentPassword: String
+    email: String
+    dateJoin: Date
+    inactive: Boolean
+    employee: EmployeeInput
+    employees: [EmployeeInput]
     newPassword: String
     firstName: String
     lastName: String
-    mobileCode: String
     mobileNumber: String
+    phone: String
   ): RegisterResponse
   deleteUser(id: String!): CommonResponse
   registerAs(
     username: String!
     email: String!
     password: String!
-    mobileCode: String
+
     mobileNumber: String
+  phone: String
     firstName: String
     lastName: String
     address: String

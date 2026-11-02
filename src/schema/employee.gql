@@ -1,0 +1,30 @@
+type Employee {
+  id: String!
+  accountId: String
+  userId: String
+  roleId: String
+  employeeID: String
+  email: String
+  phone: String
+
+  inactive: Boolean
+  createdAt: Date
+  updatedAt: Date
+
+  groups: [Group]
+  lastGroup: Group
+  lastGroup2: [Group]
+  salary: UserSalary
+  account: Account
+  roleData: Role
+}
+
+input EmployeeInput{
+  accountId: String
+  userId: String
+  roleId: String
+  employeeID: String
+  email: String
+  emailEmployee: String
+  phone: String
+}
