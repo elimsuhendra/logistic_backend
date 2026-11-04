@@ -19,8 +19,24 @@ import { mongoCreate, mongoUpdate, mongoDelete } from "utils/crud"
 import { createLog } from '../utils/crud'
 
 export default {
+  Employee: {
+    id: parent => (parent && (parent._id || parent.id)) ? String(parent._id || parent.id) : null,
+    accountId: parent => (parent && parent.accountId) ? String(parent.accountId) : null,
+    userId: parent => (parent && parent.userId) ? String(parent.userId) : null,
+    roleId: parent => (parent && parent.roleId) ? String(parent.roleId) : null,
+    account: async (parent, args, { mongo }) => {
+      if (!parent || !parent.accountId || !ObjectId.isValid(String(parent.accountId))) return null
+      return await mongo.Account.findOne({ _id: ObjectId(String(parent.accountId)), deletedAt: null })
+    },
+    roleData: async (parent, args, { mongo }) => {
+      if (!parent || !parent.roleId || !ObjectId.isValid(String(parent.roleId))) return null
+      return await mongo.Role.findOne({ _id: ObjectId(String(parent.roleId)), deletedAt: null })
+    },
+  },
   User: {
     id: parent => parent._id || parent.id,
+    phone: parent => (parent && (parent.phone || parent.mobileNumber)) || null,
+    mobileNumber: parent => (parent && (parent.mobileNumber || parent.phone)) || null,
     roleId: parent => (parent && parent.roleId ? String(parent.roleId) : null),
     avatar: async ({ _id }, args, { dataloaders }) => {
       if (!dataloaders) {
@@ -42,8 +58,26 @@ export default {
       return current || null
     },
     account: async ({ _id }, args, { mongo }) => {
-      const account = await mongo.Account.findOne({ userIds: { $in: [ObjectId(_id)] }, deletedAt: null })
+      const emp = await mongo.Employee.findOne({ userId: { $in: [ObjectId(_id), String(_id)] }, deletedAt: null })
+      if (emp && emp.accountId && ObjectId.isValid(String(emp.accountId))) {
+        const empAccount = await mongo.Account.findOne({ _id: ObjectId(String(emp.accountId)), deletedAt: null })
+        if (empAccount) return empAccount
+      }
+      const account = await mongo.Account.findOne({ userIds: { $in: [ObjectId(_id), String(_id)] }, deletedAt: null })
       return account
+    },
+    accounts: async ({ _id }, args, { mongo }) => {
+      const empList = await mongo.Employee.find({ userId: { $in: [ObjectId(_id), String(_id)] }, deletedAt: null }).toArray()
+      const empAccountIds = (empList || [])
+        .map(e => e && e.accountId)
+        .filter(id => id && ObjectId.isValid(String(id)))
+        .map(id => ObjectId(String(id)))
+      if (empAccountIds.length > 0) {
+        const empAccounts = await mongo.Account.find({ _id: { $in: empAccountIds }, deletedAt: null }).toArray()
+        if (empAccounts && empAccounts.length > 0) return empAccounts
+      }
+      const accounts = await mongo.Account.find({ userIds: { $in: [ObjectId(_id), String(_id)] }, deletedAt: null }).toArray()
+      return accounts || []
     },
     roleData: async ({ roleId, role }, args, { mongo }) => {
       let roleObj = null
@@ -54,6 +88,16 @@ export default {
       }
 
       return roleObj
+    },
+    employees: async ({ _id }, args, { mongo }) => {
+      const list = await mongo.Employee.find({ userId: { $in: [ObjectId(_id), String(_id)] }, deletedAt: null }).toArray()
+      return (list || []).map(item => ({
+        ...item,
+        id: item._id ? String(item._id) : item.id,
+        accountId: item.accountId ? String(item.accountId) : null,
+        userId: item.userId ? String(item.userId) : null,
+        roleId: item.roleId ? String(item.roleId) : null,
+      }))
     }
   },
   Subscription: {
@@ -89,30 +133,30 @@ export default {
     },
     allUsers: requiresAuth.createResolver(async (parent, args, context) => {
       // Read
-      const { allowAdmin, filter = {}, first, skip, orderBy } = args
+      let { allowAdmin, filter = {}, first, skip, orderBy } = args
       const { mongo, user } = context
-
-      //test
-      // user._id = "642a34cf7d32b01a70219b97" //kelvinsoh
-      // user._id = "6231688581afed0661e06aac" //superadmin
-
 
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
       const rolesObj = getRoles(currentUser)
       if (currentUser) {
         const limit = first || 10
         const offset = skip || 0
+
+        if(currentUser.username == "superadmin"){
+          allowAdmin = true
+        }
         if (!allowAdmin) {
           filter._id_ne = currentUser._id.toString()
         }
         const filters = buildMongoFilters(filter)
+        // console.log({filters})
         const obj = await mongo.User.find(filters)
           .sort(orderBy ? buildMongoOrders(orderBy) : { createdAt: -1 })
           .skip(offset)
           .limit(limit)
           .toArray()
 
-        const readyGroups = await mongo.Group.find({
+          const readyGroups = await mongo.Group.find({
           deletedAt: null
         }).toArray()
 
@@ -185,13 +229,14 @@ export default {
     createUser: async (parent, args, context) => {
       await checkPermissions(checkUserAuth)({ context })
       const { mongo, user } = context
+      const { input } = args
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
       const rolesObj = getRoles(currentUser)
-
+      
       if (!!currentUser) {
-        if ('username' in args) {
+        if ('username' in input) {
           const validation = await userValidation({
-            user: Object.assign({}, args),
+            user: Object.assign({}, input),
             mongo
           })
 
@@ -204,21 +249,43 @@ export default {
           }
         }
 
-        if ('password' in args) {
-          args.password = hashPassword(args.password)
+        if ('password' in input) {
+          input.password = hashPassword(input.password)
         }
 
-        args.approved = true
-        args.dateJoin = args["dateJoin"] ? moment.utc(moment(args["dateJoin"]).format("YYYY-MM-DD")).valueOf() : null
+        input.approved = true
+        input.dateJoin = input["dateJoin"] ? moment.utc(moment(input["dateJoin"]).format("YYYY-MM-DD")).valueOf() : null
         try {
-          if (!rolesObj.isAdmin && !!args.roles && !!args.roles.includes('Admin')) {
+          if (!rolesObj.isAdmin && !!input.roles && !!input.roles.includes('Admin')) {
             return {
               success: false,
               message: 'Unauthorized Action'
             }
           }
 
-          const newObj = prepareCreate(args)
+          const paramUser = {
+            ...input
+          }
+          delete paramUser.employee
+          delete paramUser.employees
+          const employeeList = Array.isArray(input.employees) && input.employees.length > 0
+            ? input.employees
+            : (input.employee ? [input.employee] : [])
+          const primaryEmployee = employeeList[0] || input.employee
+          if (primaryEmployee) {
+            if (primaryEmployee.roleId) {
+              paramUser.roleId = primaryEmployee.roleId
+            }
+            if (primaryEmployee.employeeID) {
+              paramUser.employeeID = primaryEmployee.employeeID
+            }
+            if (primaryEmployee.phone) {
+              paramUser.phone = primaryEmployee.phone
+              paramUser.mobileNumber = primaryEmployee.phone
+            }
+          }
+
+          const newObj = prepareCreate(paramUser)
           newObj._id = new ObjectId()
 
           let { user, errors } = await userValidation({ user: newObj, mongo })
@@ -231,8 +298,21 @@ export default {
               errors: errors
             }
           } else {
-            // const rs = await mongo.User.insertOne(userObj)
             const rs = await mongoCreate('User', userObj, context)
+            if (employeeList.length > 0) {
+              for (let i = 0; i < employeeList.length; i++) {
+                const empItem = employeeList[i]
+                let paramEmployee = {
+                  userId: userObj._id,
+                  ...empItem,
+                }
+                if (!paramEmployee.email && paramEmployee.emailEmployee) {
+                  paramEmployee.email = paramEmployee.emailEmployee
+                }
+                paramEmployee = prepareCreate(paramEmployee)
+                await mongoCreate('Employee', paramEmployee, context)
+              }
+            }
 
             pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV + '-User', { User: { mutation: 'CREATED', node: userObj } })
           }
@@ -404,61 +484,130 @@ export default {
       }
     },
     updateUser: async (parent, args, context) => {
+      console.log("updateUser")
       // Update data
       await checkPermissions(checkUserAuth)({ context })
       const { mongo, user } = context
+      const { id, input } = args
 
-      const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
-      const updatedUser = await mongo.User.findOne({ _id: ObjectId(args.id), deletedAt: null })
+      try {
+        const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
+        const updatedUser = await mongo.User.findOne({ _id: ObjectId(id), deletedAt: null })
 
-      const rolesObj = getRoles(currentUser)
+        const rolesObj = getRoles(currentUser)
 
-      if (!!currentUser && !!updatedUser && (!!rolesObj.isAdmin)) {
-        const id = args.id
-        args.dateJoin = args["dateJoin"] ? moment.utc(moment(args["dateJoin"]).format("YYYY-MM-DD")).valueOf() : null
-        if ('email' in args) { args.email = args.email.toLowerCase() }
-        if ('password' in args) {
-          if (args.password && args.password.trim()) {
-            args.password = hashPassword(args.password.trim())
-          } else {
-            delete args.password
-          }
-        }
-        const sendEmail = !updatedUser.approved && !!args.approved
-
-        const update = prepareUpdate(args)
-        // const obj = await mongo.User.updateOne(
-        //   { _id: ObjectId(id) },
-        //   { $set: update },
-        //   { returnOriginal: false }
-        // )
-        const obj = await mongoUpdate('User', { id, ...args }, context)
-        const lastUser = await mongo.User.findOne({ _id: ObjectId(id) })
-
-        if (obj && !(obj instanceof Error)) {
-          pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV + '-User', {
-            User: {
-              mutation: 'UPDATED',
-              node: { _id: ObjectId(id), roles: lastUser ? lastUser.roles : obj.roles }
+        if (!!currentUser && !!updatedUser && (!!rolesObj.isAdmin)) {
+          input.dateJoin = input["dateJoin"] ? moment.utc(moment(input["dateJoin"]).format("YYYY-MM-DD")).valueOf() : null
+          if ('email' in input) { input.email = input.email.toLowerCase() }
+          if ('password' in input) {
+            if (input.password && input.password.trim()) {
+              input.password = hashPassword(input.password.trim())
+            } else {
+              delete input.password
             }
-          })
-
-          const updatedUser = await mongo.User.findOne({ _id: ObjectId(id) })
-
-          if (sendEmail) {
-            //Send Register Successfully Email
-            agenda.now('register-successfully-ecommerce-email', {
-              to: updatedUser.email,
-              subject: 'Thanks for your registration. Your account has been approved!',
-              fullName: updatedUser.fullName,
-            })
           }
-          return { user: updatedUser, success: true }
-        } else {
-          return new Error(
-            JSON.stringify({ error: `Cannot update User ${id}` })
-          )
+          const sendEmail = !updatedUser.approved && !!input.approved
+
+          const paramUser = {
+            ...input
+          }
+          delete paramUser.employee
+          delete paramUser.employees
+          const employeeList = Array.isArray(input.employees) && input.employees.length > 0
+            ? input.employees
+            : (input.employee ? [input.employee] : [])
+          const primaryEmployee = employeeList[0] || input.employee
+          if (primaryEmployee) {
+            if (primaryEmployee.roleId) {
+              paramUser.roleId = primaryEmployee.roleId
+            }
+            if (primaryEmployee.employeeID) {
+              paramUser.employeeID = primaryEmployee.employeeID
+            }
+            if (primaryEmployee.phone) {
+              paramUser.phone = primaryEmployee.phone
+              paramUser.mobileNumber = primaryEmployee.phone
+            }
+          }
+          const obj = await mongoUpdate('User', { id, ...paramUser }, context)
+          const lastUser = await mongo.User.findOne({ _id: ObjectId(id) })
+
+          // check user in employee
+          console.log({ currentUser })
+          const targetUserId = ObjectId.isValid(id) ? ObjectId(id) : (currentUser && currentUser._id)
+          if (Array.isArray(input.employees) && input.employees.length > 0) {
+            await mongo.Employee.updateMany(
+              { userId: { $in: [targetUserId, String(targetUserId)] }, deletedAt: null },
+              { $set: { deletedAt: Date.now() } }
+            )
+            for (let i = 0; i < input.employees.length; i++) {
+              const empItem = input.employees[i]
+              let paramEmployee = {
+                userId: targetUserId,
+                ...empItem,
+              }
+              if (!paramEmployee.email && paramEmployee.emailEmployee) {
+                paramEmployee.email = paramEmployee.emailEmployee
+              }
+              paramEmployee = prepareCreate(paramEmployee)
+              await mongoCreate('Employee', paramEmployee, context)
+            }
+          } else {
+            let employee = await mongo.Employee.findOne({ userId: targetUserId, deletedAt: null })
+            if (!employee && currentUser && currentUser._id) {
+              employee = await mongo.Employee.findOne({ userId: ObjectId(currentUser._id), deletedAt: null })
+            }
+            console.log({ employee })
+            if (!employee && input.employee) {
+              console.log("insert employee")
+              let paramEmployee = {
+                userId: targetUserId,
+                ...input.employee,
+              }
+              if (!paramEmployee.email && paramEmployee.emailEmployee) {
+                paramEmployee.email = paramEmployee.emailEmployee
+              }
+              paramEmployee = prepareCreate(paramEmployee)
+              await mongoCreate('Employee', paramEmployee, context)
+            } else if (employee && input.employee) {
+              let updateEmployee = {
+                id: employee._id || employee.id,
+                ...input.employee,
+              }
+              if (!updateEmployee.email && updateEmployee.emailEmployee) {
+                updateEmployee.email = updateEmployee.emailEmployee
+              }
+              await mongoUpdate('Employee', updateEmployee, context)
+            }
+          }
+
+          if (obj && !(obj instanceof Error)) {
+            pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV + '-User', {
+              User: {
+                mutation: 'UPDATED',
+                node: { _id: ObjectId(id), roles: lastUser ? lastUser.roles : obj.roles }
+              }
+            })
+
+            const updatedUser = await mongo.User.findOne({ _id: ObjectId(id) })
+
+            if (sendEmail) {
+              //Send Register Successfully Email
+              agenda.now('register-successfully-ecommerce-email', {
+                to: updatedUser.email,
+                subject: 'Thanks for your registration. Your account has been approved!',
+                fullName: updatedUser.fullName,
+              })
+            }
+            return { user: updatedUser, success: true }
+          } else {
+            return new Error(
+              JSON.stringify({ error: `Cannot update User ${id}` })
+            )
+          }
         }
+      } catch (err) {
+        console.log(err)
       }
     },
     updateProfile: async (parent, args, context) => {
@@ -467,22 +616,71 @@ export default {
 
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
       if (!!currentUser) {
-        if ('email' in args) { args.email = args.email.toLowerCase() }
+        if ('email' in args && args.email) { args.email = args.email.toLowerCase() }
+        if ('dateJoin' in args) {
+          args.dateJoin = args.dateJoin ? moment.utc(moment(args.dateJoin).format("YYYY-MM-DD")).valueOf() : null
+        }
 
         const id = currentUser._id
-        if ('currentPassword' in args && 'newPassword' in args && bcrypt.compareSync(args.currentPassword, currentUser.password)) {
-          args.password = hashPassword(args.newPassword)
+        if ('currentPassword' in args && args.currentPassword && 'newPassword' in args && args.newPassword) {
+          if (bcrypt.compareSync(args.currentPassword, currentUser.password)) {
+            args.password = hashPassword(args.newPassword)
+          }
+        } else if ('newPassword' in args && args.newPassword && args.newPassword.trim()) {
+          args.password = hashPassword(args.newPassword.trim())
         }
 
         delete args.currentPassword
         delete args.newPassword
 
-        const update = prepareUpdate(args)
+        const employeeList = Array.isArray(args.employees) && args.employees.length > 0
+          ? args.employees
+          : (args.employee ? [args.employee] : [])
+        const primaryEmployee = employeeList[0] || args.employee
+
+        const paramUser = { ...args }
+        delete paramUser.employee
+        delete paramUser.employees
+
+        if (primaryEmployee) {
+          if (primaryEmployee.roleId) {
+            paramUser.roleId = primaryEmployee.roleId
+          }
+          if (primaryEmployee.employeeID) {
+            paramUser.employeeID = primaryEmployee.employeeID
+          }
+          if (primaryEmployee.phone) {
+            paramUser.phone = primaryEmployee.phone
+            paramUser.mobileNumber = primaryEmployee.phone
+          }
+        }
+
+        const update = prepareUpdate(paramUser)
         const obj = await mongo.User.updateOne(
           { _id: ObjectId(id) },
           { $set: update },
           { returnOriginal: false }
         )
+
+        if (Array.isArray(args.employees) && args.employees.length > 0) {
+          await mongo.Employee.updateMany(
+            { userId: { $in: [ObjectId(id), String(id)] }, deletedAt: null },
+            { $set: { deletedAt: Date.now() } }
+          )
+          for (let i = 0; i < args.employees.length; i++) {
+            const empItem = args.employees[i]
+            let paramEmployee = {
+              userId: ObjectId(id),
+              ...empItem,
+            }
+            if (!paramEmployee.email && paramEmployee.emailEmployee) {
+              paramEmployee.email = paramEmployee.emailEmployee
+            }
+            paramEmployee = prepareCreate(paramEmployee)
+            await mongoCreate('Employee', paramEmployee, context)
+          }
+        }
+
         const lastUser = await mongo.User.findOne({ _id: ObjectId(id) })
 
         if (obj.matchedCount) {
@@ -510,7 +708,6 @@ export default {
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
       const deletedUser = await mongo.User.findOne({ _id: ObjectId(args.id), deletedAt: null })
       if (!!currentUser && !!deletedUser && !!getRoles(currentUser).isAdmin) {
-        // await mongo.User.updateOne({ _id: ObjectId(args.id) }, { $set: { deletedAt: new Date().getTime() } })
         const rs = await mongoDelete('User', args, context)
 
         pubsub.publish(process.env.APP_NAME + '-' + process.env.APP_ENV + '-User', {
@@ -520,8 +717,6 @@ export default {
             node: deletedUser
           }
         })
-
-
 
         return {
           success: true,
