@@ -12,10 +12,13 @@ type CashRequest {
   jobs: [cashJobObject]
   otherCash: Float
   sparePartCash: Float
+  roundingCash: Float
   requestTotal: Float
   jobSettlement: Float
   sparePartSettlement: Float
   otherSettlement: Float
+  driverSettlement: Float
+  loloSettlement: Float
   returnTotal: Float
   isDraft: Boolean
   statusOperation: statusOperationKasbonEnum
@@ -63,6 +66,17 @@ type cashDestinationObject {
   driverId: String
   policeNo: String
   driver: String
+  departureDate: Date
+  transferDate: Date
+  kasbon: Float
+  settlementDate: Date
+  addCostSettlement: Float
+  totalSettlement: Float
+  ujlNote: String
+  kasbonDiff: Float
+  kasbonDiffNote: String
+  uploadUrl: String
+  isUploaded: Boolean
 }
 
 input cashDestinationObjectInput {
@@ -78,6 +92,17 @@ input cashDestinationObjectInput {
   driverId: String
   policeNo: String
   driver: String
+  departureDate: Date
+  transferDate: Date
+  kasbon: Float
+  settlementDate: Date
+  addCostSettlement: Float
+  totalSettlement: Float
+  ujlNote: String
+  kasbonDiff: Float
+  kasbonDiffNote: String
+  uploadUrl: String
+  isUploaded: Boolean
 }
 
 enum bondTypeEnum {
@@ -167,10 +192,13 @@ input CashRequestInput {
   jobs: [cashJobObjectInput]
   otherCash: Float
   sparePartCash: Float
+  roundingCash: Float
   requestTotal: Float
   jobSettlement: Float
   sparePartSettlement: Float
   otherSettlement: Float
+  driverSettlement: Float
+  loloSettlement: Float
   returnTotal: Float
   isDraft: Boolean
   statusOperation: StatusOperationEnum
