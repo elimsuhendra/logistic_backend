@@ -56,6 +56,7 @@ input cashJobObjectInput {
 type cashUjlDetailObject {
   costId: String
   biaya: String
+  isCost: Boolean
   nominal: Float
   uploadUrl: String
   isUploaded: Boolean
@@ -67,6 +68,7 @@ type cashUjlDetailObject {
 input cashUjlDetailObjectInput {
   costId: String
   biaya: String
+  isCost: Boolean
   nominal: Float
   uploadUrl: String
   isUploaded: Boolean

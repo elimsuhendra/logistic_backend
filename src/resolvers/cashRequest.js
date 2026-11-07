@@ -8,6 +8,21 @@ import { withFilter } from 'graphql-subscriptions'
 import { mongoCreate, mongoUpdate, mongoDelete, mongoMultiDelete } from 'utils/crud'
 import { sanitizeRegex } from 'utils/common'
 
+function normalizeUjlDetails(list) {
+  if (!Array.isArray(list)) return []
+  return list.map(u => ({
+    costId: (u && u.costId) || '',
+    biaya: (u && u.biaya) || '',
+    isCost: u && u.isCost !== undefined && u.isCost !== null ? Boolean(u.isCost) : true,
+    nominal: u && u.nominal !== undefined && u.nominal !== null ? parseFloat(u.nominal) || 0 : 0,
+    uploadUrl: (u && u.uploadUrl) || '',
+    isUploaded: Boolean((u && u.isUploaded) || (u && u.uploadUrl)),
+    paymentDate: (u && u.paymentDate) || null,
+    account: (u && u.account) || '',
+    memo: (u && u.memo) || '',
+  }))
+}
+
 function normalizeDestinationItem(item, fallbackJob) {
   const fb = fallbackJob || {}
   if (typeof item === 'string') {
@@ -24,8 +39,31 @@ function normalizeDestinationItem(item, fallbackJob) {
       driverId: null,
       policeNo: '',
       driver: '',
+      departureDate: null,
+      transferDate: null,
+      kasbon: 0,
+      settlementDate: null,
+      addCostSettlement: 0,
+      totalSettlement: 0,
+      ujlNote: '',
+      ujlDetails: [],
+      kasbonDiff: 0,
+      kasbonDiffNote: '',
+      uploadUrl: '',
+      isUploaded: false,
     }
   }
+  const kasbon =
+    item && item.kasbon !== undefined && item.kasbon !== null ? parseFloat(item.kasbon) || 0 : 0
+  const totalSettlement =
+    item && item.totalSettlement !== undefined && item.totalSettlement !== null
+      ? parseFloat(item.totalSettlement) || 0
+      : 0
+  const kasbonDiff =
+    item && item.kasbonDiff !== undefined && item.kasbonDiff !== null
+      ? parseFloat(item.kasbonDiff) || 0
+      : kasbon - totalSettlement
+
   return {
     jobPlanningId: (item && item.jobPlanningId) || fb.jobPlanningId || null,
     customerId: (item && item.customerId) || fb.customerId || null,
@@ -39,6 +77,21 @@ function normalizeDestinationItem(item, fallbackJob) {
     driverId: (item && item.driverId) || null,
     policeNo: (item && item.policeNo) || '',
     driver: (item && item.driver) || '',
+    departureDate: (item && item.departureDate) || null,
+    transferDate: (item && item.transferDate) || null,
+    kasbon,
+    settlementDate: (item && item.settlementDate) || null,
+    addCostSettlement:
+      item && item.addCostSettlement !== undefined && item.addCostSettlement !== null
+        ? parseFloat(item.addCostSettlement) || 0
+        : 0,
+    totalSettlement,
+    ujlNote: (item && item.ujlNote) || '',
+    ujlDetails: normalizeUjlDetails(item && item.ujlDetails),
+    kasbonDiff,
+    kasbonDiffNote: (item && item.kasbonDiffNote) || '',
+    uploadUrl: (item && item.uploadUrl) || '',
+    isUploaded: Boolean((item && item.isUploaded) || (item && item.uploadUrl)),
   }
 }
 
@@ -148,18 +201,18 @@ export default {
     },
     destinations: parent => {
       if (!parent) return []
-      let list = parent.destinations || parent.destination
-      if (!list && Array.isArray(parent.jobs)) {
-        list = []
+      if (Array.isArray(parent.jobs) && parent.jobs.length > 0) {
+        const listFromJobs = []
         parent.jobs.forEach(job => {
           if (job && Array.isArray(job.destinations)) {
             job.destinations.forEach(d => {
-              list.push(normalizeDestinationItem(d, job))
+              listFromJobs.push(normalizeDestinationItem(d, job))
             })
           }
         })
-        return list
+        if (listFromJobs.length > 0) return listFromJobs
       }
+      let list = parent.destinations || parent.destination
       if (!list) return []
       if (typeof list === 'string') {
         try {
@@ -361,17 +414,16 @@ export default {
           if (!input.jobPlanningId && firstJob.jobPlanningId) input.jobPlanningId = firstJob.jobPlanningId
           if (!input.customerId && firstJob.customerId) input.customerId = firstJob.customerId
           if (!input.consigneeId && firstJob.consigneeId) input.consigneeId = firstJob.consigneeId
-          if (!input.destinations) {
-            const flatDests = []
-            input.jobs.forEach(job => {
-              if (job && Array.isArray(job.destinations)) {
-                job.destinations.forEach(d => {
-                  flatDests.push(normalizeDestinationItem(d, job))
-                })
-              }
-            })
-            input.destinations = flatDests
-          }
+          const flatDests = []
+          input.jobs.forEach(job => {
+            if (job && Array.isArray(job.destinations)) {
+              job.destinations = job.destinations.map(d => normalizeDestinationItem(d, job))
+              job.destinations.forEach(d => {
+                flatDests.push(d)
+              })
+            }
+          })
+          input.destinations = flatDests
         }
         if (!input.destination && Array.isArray(input.destinations)) {
           input.destination = input.destinations.map(d => (d && d.destination) || '').filter(Boolean)
@@ -406,17 +458,16 @@ export default {
           if (!input.jobPlanningId && firstJob.jobPlanningId) input.jobPlanningId = firstJob.jobPlanningId
           if (!input.customerId && firstJob.customerId) input.customerId = firstJob.customerId
           if (!input.consigneeId && firstJob.consigneeId) input.consigneeId = firstJob.consigneeId
-          if (!input.destinations) {
-            const flatDests = []
-            input.jobs.forEach(job => {
-              if (job && Array.isArray(job.destinations)) {
-                job.destinations.forEach(d => {
-                  flatDests.push(normalizeDestinationItem(d, job))
-                })
-              }
-            })
-            input.destinations = flatDests
-          }
+          const flatDests = []
+          input.jobs.forEach(job => {
+            if (job && Array.isArray(job.destinations)) {
+              job.destinations = job.destinations.map(d => normalizeDestinationItem(d, job))
+              job.destinations.forEach(d => {
+                flatDests.push(d)
+              })
+            }
+          })
+          input.destinations = flatDests
         }
         if (!input.destination && Array.isArray(input.destinations)) {
           input.destination = input.destinations.map(d => (d && d.destination) || '').filter(Boolean)
