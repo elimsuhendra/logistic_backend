@@ -3,6 +3,8 @@ type CashRequest {
   jobPlanningId: String
   customerId: String
   consigneeId: String
+  userId: String
+  accountId: String
   employeeId: String
   requestDate: Date
   cashType: bondTypeEnum
@@ -22,13 +24,18 @@ type CashRequest {
   returnTotal: Float
   isDraft: Boolean
   statusOperation: statusOperationKasbonEnum
+  lastApprovalStatus: approvalEnum
   createdAt: Date
   updatedAt: Date
+  cashRequestDetails: [JSON]
+  settlementDriverDetails: [JSON]
+  settlementLoloDetails: [JSON]
 
   # relations
   jobPlanning: JobPlanning
   customer: Customer
   consignee: Customer
+  user: User
   employee: User
 }
 
@@ -102,6 +109,12 @@ type cashDestinationObject {
   kasbonDiffNote: String
   uploadUrl: String
   isUploaded: Boolean
+  aju: String
+  containerNo: String
+  loloRepairAdm: Float
+  adminDepoTrf: Float
+  loloRounding: Float
+  loloTotalCost: Float
 }
 
 input cashDestinationObjectInput {
@@ -129,6 +142,12 @@ input cashDestinationObjectInput {
   kasbonDiffNote: String
   uploadUrl: String
   isUploaded: Boolean
+  aju: String
+  containerNo: String
+  loloRepairAdm: Float
+  adminDepoTrf: Float
+  loloRounding: Float
+  loloTotalCost: Float
 }
 
 enum bondTypeEnum {
@@ -165,6 +184,8 @@ input CashRequestFilter {
   jobPlanningId: String
   customerId: String
   consigneeId: String
+  userId: String
+  accountId: String
   employeeId: String
   cashType: bondTypeEnum
   isDraft: Boolean
@@ -209,6 +230,8 @@ input CashRequestInput {
   jobPlanningId: String
   customerId: String
   consigneeId: String
+  userId: String
+  accountId: String
   employeeId: String
   requestDate: Date
   cashType: bondTypeEnum

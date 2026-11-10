@@ -51,6 +51,12 @@ function normalizeDestinationItem(item, fallbackJob) {
       kasbonDiffNote: '',
       uploadUrl: '',
       isUploaded: false,
+      aju: '',
+      containerNo: '',
+      loloRepairAdm: 0,
+      adminDepoTrf: 0,
+      loloRounding: 0,
+      loloTotalCost: 0,
     }
   }
   const kasbon =
@@ -63,6 +69,22 @@ function normalizeDestinationItem(item, fallbackJob) {
     item && item.kasbonDiff !== undefined && item.kasbonDiff !== null
       ? parseFloat(item.kasbonDiff) || 0
       : kasbon - totalSettlement
+  const loloRepairAdm =
+    item && item.loloRepairAdm !== undefined && item.loloRepairAdm !== null
+      ? parseFloat(item.loloRepairAdm) || 0
+      : 0
+  const adminDepoTrf =
+    item && item.adminDepoTrf !== undefined && item.adminDepoTrf !== null
+      ? parseFloat(item.adminDepoTrf) || 0
+      : 0
+  const loloRounding =
+    item && item.loloRounding !== undefined && item.loloRounding !== null
+      ? parseFloat(item.loloRounding) || 0
+      : 0
+  const loloTotalCost =
+    item && item.loloTotalCost !== undefined && item.loloTotalCost !== null
+      ? parseFloat(item.loloTotalCost) || 0
+      : loloRepairAdm + adminDepoTrf + loloRounding
 
   return {
     jobPlanningId: (item && item.jobPlanningId) || fb.jobPlanningId || null,
@@ -92,6 +114,12 @@ function normalizeDestinationItem(item, fallbackJob) {
     kasbonDiffNote: (item && item.kasbonDiffNote) || '',
     uploadUrl: (item && item.uploadUrl) || '',
     isUploaded: Boolean((item && item.isUploaded) || (item && item.uploadUrl)),
+    aju: (item && item.aju) || '',
+    containerNo: (item && item.containerNo) || '',
+    loloRepairAdm,
+    adminDepoTrf,
+    loloRounding,
+    loloTotalCost,
   }
 }
 
@@ -185,10 +213,26 @@ export default {
         ? await dataloaders.get('customerByIdLoader').load(consigneeId)
         : null
     },
-    employee: async ({ employeeId }, args, { dataloaders }) => {
-      return employeeId && ObjectId.isValid(employeeId)
-        ? await dataloaders.get('userByIdLoader').load(employeeId)
-        : null
+    userId: parent => parent.userId || parent.employeeId || null,
+    employeeId: parent => parent.employeeId || parent.userId || null,
+    accountId: parent => parent.accountId || null,
+    user: async (parent, args, { dataloaders }) => {
+      const uid = parent.userId || parent.employeeId
+      if (!uid || !ObjectId.isValid(uid)) return null
+      const userObj = await dataloaders.get('userByIdLoader').load(uid)
+      if (userObj && parent.accountId) {
+        return Object.assign({}, userObj, { accountId: parent.accountId })
+      }
+      return userObj
+    },
+    employee: async (parent, args, { dataloaders }) => {
+      const uid = parent.userId || parent.employeeId
+      if (!uid || !ObjectId.isValid(uid)) return null
+      const userObj = await dataloaders.get('userByIdLoader').load(uid)
+      if (userObj && parent.accountId) {
+        return Object.assign({}, userObj, { accountId: parent.accountId })
+      }
+      return userObj
     },
     destination: parent => {
       if (parent && Array.isArray(parent.destination)) {
@@ -334,7 +378,7 @@ export default {
               { destination: { $regex: regexStr, $options: 'i' } },
               { 'destinations.destination': { $regex: regexStr, $options: 'i' } },
               ...(jobIds.length > 0 ? [{ jobPlanningId: { $in: jobIds } }, { 'jobs.jobPlanningId': { $in: jobIds } }] : []),
-              ...(userIds.length > 0 ? [{ employeeId: { $in: userIds } }] : []),
+              ...(userIds.length > 0 ? [{ userId: { $in: userIds } }, { employeeId: { $in: userIds } }] : []),
               ...(customerIds.length > 0 ? [{ customerId: { $in: customerIds } }, { 'jobs.customerId': { $in: customerIds } }] : []),
             ]
           }
@@ -381,7 +425,7 @@ export default {
               { destination: { $regex: regexStr, $options: 'i' } },
               { 'destinations.destination': { $regex: regexStr, $options: 'i' } },
               ...(jobIds.length > 0 ? [{ jobPlanningId: { $in: jobIds } }, { 'jobs.jobPlanningId': { $in: jobIds } }] : []),
-              ...(userIds.length > 0 ? [{ employeeId: { $in: userIds } }] : []),
+              ...(userIds.length > 0 ? [{ userId: { $in: userIds } }, { employeeId: { $in: userIds } }] : []),
               ...(customerIds.length > 0 ? [{ customerId: { $in: customerIds } }, { 'jobs.customerId': { $in: customerIds } }] : []),
             ]
           }

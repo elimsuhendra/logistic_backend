@@ -57,13 +57,10 @@ export default {
       const current = await mongo.UserSalary.findOne({ userId: _id, year: parseInt(currentYear), deletedAt: null })
       return current || null
     },
-    account: async ({ _id }, args, { mongo }) => {
-      const emp = await mongo.Employee.findOne({ userId: { $in: [ObjectId(_id), String(_id)] }, deletedAt: null })
-      if (emp && emp.accountId && ObjectId.isValid(String(emp.accountId))) {
-        const empAccount = await mongo.Account.findOne({ _id: ObjectId(String(emp.accountId)), deletedAt: null })
-        if (empAccount) return empAccount
-      }
-      const account = await mongo.Account.findOne({ userIds: { $in: [ObjectId(_id), String(_id)] }, deletedAt: null })
+    account: async ({ _id, accountId }, args, { mongo }) => {
+      if(!accountId) return null;
+      const account = await mongo.Account.findOne({ _id: ObjectId(accountId) , deletedAt: null })
+      console.log({account})
       return account
     },
     accounts: async ({ _id }, args, { mongo }) => {
@@ -79,12 +76,13 @@ export default {
       const accounts = await mongo.Account.find({ userIds: { $in: [ObjectId(_id), String(_id)] }, deletedAt: null }).toArray()
       return accounts || []
     },
-    roleData: async ({ roleId, role }, args, { mongo }) => {
+    roleData: async ({ roleId, role, _id, accountId }, args, { mongo }) => {
       let roleObj = null
-      if(roleId){
-        roleObj = await mongo.Role.findOne({ _id: ObjectId(roleId), deletedAt: null })
-      }else if(role){
-        roleObj = await mongo.Role.findOne({ code: { $regex: `^${_.escapeRegExp(String(role).trim())}$`, $options: 'i' }, deletedAt: null })
+      if (_id && accountId && ObjectId.isValid(String(accountId))) {
+        const employee = await mongo.Employee.findOne({ userId: ObjectId(_id), accountId: ObjectId(accountId) , deletedAt: null })
+        if(employee && employee.roleId){
+          roleObj = await mongo.Role.findOne({ _id: ObjectId(employee.roleId), deletedAt: null })
+        }
       }
 
       return roleObj
@@ -98,7 +96,12 @@ export default {
         userId: item.userId ? String(item.userId) : null,
         roleId: item.roleId ? String(item.roleId) : null,
       }))
-    }
+    },
+    employee: async ({ _id, accountId }, args, { mongo }) => {
+      if (!_id || !accountId || !ObjectId.isValid(String(accountId))) return null
+      const employee = await mongo.Employee.findOne({ userId: ObjectId(_id), accountId: ObjectId(accountId) , deletedAt: null })
+      return employee
+    },
   },
   Subscription: {
     User: {
@@ -201,6 +204,9 @@ export default {
     me: requiresAuth.createResolver(async (parent, args, { mongo, user }) => {
       if (!user) return null
       const userObj = await mongo.User.findOne({ _id: ObjectId(user._id) })
+      if (userObj && args && args.accountId) {
+        userObj.accountId = args.accountId
+      }
       return userObj
     })
   },

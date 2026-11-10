@@ -37,6 +37,7 @@ type User {
   accounts: [Account]
   roleData: Role
   employees: [Employee]
+  employee: Employee
 }
 
 enum RoleType {
@@ -84,7 +85,7 @@ input UserFilter {
 }
 
 type Query {
-  me: User
+  me(accountId: String): User
   allUsers(allowAdmin: Boolean, filter: UserFilter, first: Int, skip: Int, orderBy: UserOrder): [User]
   _allUsersMeta(allowAdmin: Boolean, filter: UserFilter): ObjectMeta
   getUser(id: String): User
