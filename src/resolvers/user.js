@@ -18,6 +18,25 @@ import { isEmptyObject, isBlankString } from "utils/validate"
 import { mongoCreate, mongoUpdate, mongoDelete } from "utils/crud"
 import { createLog } from '../utils/crud'
 
+// Restrict a User mongo filter to users that have an active employee record in the given account
+const applyAccountEmployeeFilter = async (mongo, filters, accountId) => {
+  if (!accountId) return filters
+  if (!ObjectId.isValid(String(accountId))) return { ...filters, _id: { $in: [] } }
+  const employees = await mongo.Employee.find({
+    accountId: { $in: [ObjectId(String(accountId)), String(accountId)] },
+    inactive: { $ne: true },
+    deletedAt: null,
+  }).project({ userId: 1 }).toArray()
+  const userIds = _.uniqBy(
+    (employees || [])
+      .map(e => e.userId)
+      .filter(id => id && ObjectId.isValid(String(id)))
+      .map(id => ObjectId(String(id))),
+    id => String(id)
+  )
+  return { $and: [filters, { _id: { $in: userIds } }] }
+}
+
 export default {
   Employee: {
     id: parent => (parent && (parent._id || parent.id)) ? String(parent._id || parent.id) : null,
@@ -151,7 +170,8 @@ export default {
         if (!allowAdmin) {
           filter._id_ne = currentUser._id.toString()
         }
-        const filters = buildMongoFilters(filter)
+        const { accountId: filterAccountId, ...restFilter } = filter || {}
+        const filters = await applyAccountEmployeeFilter(mongo, buildMongoFilters(restFilter), filterAccountId)
         // console.log({filters})
         const obj = await mongo.User.find(filters)
           .sort(orderBy ? buildMongoOrders(orderBy) : { createdAt: -1 })
@@ -165,6 +185,8 @@ export default {
 
         for (let i = 0; i < obj.length; i++) {
           let currUser = obj[i]
+          // expose account context so `employee` / `roleData` resolve for this account
+          if (filterAccountId) currUser.accountId = filterAccountId
           let readyGroups2 = readyGroups.filter(group =>
             group.managerId.toString() === currUser._id.toString() ||
             group.teamLeaderId.toString() === currUser._id.toString() ||
@@ -193,7 +215,8 @@ export default {
           filter._id_ne = currentUser._id.toString()
         }
         if (currentUser) {
-          const filters = buildMongoFilters(filter)
+          const { accountId: filterAccountId, ...restFilter } = filter || {}
+          const filters = await applyAccountEmployeeFilter(mongo, buildMongoFilters(restFilter), filterAccountId)
           const count = await mongo.User.countDocuments(filters)
 
           return { count }

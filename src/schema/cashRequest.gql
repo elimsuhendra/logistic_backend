@@ -28,8 +28,11 @@ type CashRequest {
   createdAt: Date
   updatedAt: Date
   cashRequestDetails: [JSON]
-  settlementDriverDetails: [JSON]
-  settlementLoloDetails: [JSON]
+  settlements: [settlementObject]
+  totalPengajuan: Float
+  rounding: Float
+  totalAfterRounding: Float
+  details: [JSON]
 
   # relations
   jobPlanning: JobPlanning
@@ -37,6 +40,18 @@ type CashRequest {
   consignee: Customer
   user: User
   employee: User
+}
+
+type cashRequestDetailObject {
+  cashRequestId: String
+  jobPlanningId: String
+}
+
+type settlementObject {
+  settlementId: String
+  settlementType: settlementTypeEnum
+  total: Float
+  details: [JSON]
 }
 
 type cashJobObject {
@@ -150,6 +165,13 @@ input cashDestinationObjectInput {
   loloTotalCost: Float
 }
 
+enum settlementTypeEnum {
+  Driver
+  Lolo
+  SparePart
+  Other
+}
+
 enum bondTypeEnum {
   PJ
   SP
@@ -251,6 +273,7 @@ input CashRequestInput {
   returnTotal: Float
   isDraft: Boolean
   statusOperation: StatusOperationEnum
+  cashRequestDetails: [JSON]
 }
 
 type Mutation {

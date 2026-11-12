@@ -14,6 +14,7 @@
     "db:seed:accounts": "babel-node ./src/seeder/index.js accounts",
     "db:seed:users": "babel-node ./src/seeder/index.js users",
     "db:seed:menuPermissions": "babel-node ./src/seeder/index.js menuPermissions",
+    "db:seed:employees": "babel-node ./src/seeder/index.js employees",
     "import:company": "babel-node ./src/imports/importCompanies.js",
     "import:customer": "babel-node ./src/imports/importMtcCustomers.js",
     "import:postal": "babel-node ./src/imports/importPostal.js"

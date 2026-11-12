@@ -82,6 +82,8 @@ input UserFilter {
   _id_nin: [String]
   _id_in: [String]
   approved: Boolean
+  # Only users having an active (inactive != true) employee record in this account
+  accountId: String
 }
 
 type Query {

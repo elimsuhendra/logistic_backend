@@ -310,6 +310,39 @@ export default {
       }
       return []
     },
+    cashRequestDetails: parent => {
+      if (!parent) return []
+      if (Array.isArray(parent.cashRequestDetails) && parent.cashRequestDetails.length > 0) {
+        return parent.cashRequestDetails
+      }
+      if (typeof parent.cashRequestDetails === 'string') {
+        try {
+          const parsed = JSON.parse(parent.cashRequestDetails)
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed
+        } catch (_) {}
+      }
+      if (Array.isArray(parent.jobs) && parent.jobs.length > 0) {
+        return parent.jobs.map(job => {
+          const dests = Array.isArray(job.destinations)
+            ? job.destinations.map(d => normalizeDestinationItem(d, job))
+            : []
+          const total =
+            job.total !== undefined && job.total !== null
+              ? parseFloat(job.total)
+              : dests.reduce((sum, d) => sum + (parseFloat(d.nominal) || 0), 0)
+          return {
+            jobPlanningId: job.jobPlanningId || null,
+            customerId: job.customerId || null,
+            consigneeId: job.consigneeId || null,
+            destinations: dests,
+            details: dests,
+            total,
+            totalPengajuan: total,
+          }
+        })
+      }
+      return []
+    },
   },
   Subscription: {
     CashRequest: {
@@ -453,6 +486,33 @@ export default {
         }
 
         input.isDraft = typeof input.isDraft === 'boolean' ? input.isDraft : false
+        if (
+          (!Array.isArray(input.jobs) || input.jobs.length === 0) &&
+          Array.isArray(input.cashRequestDetails) &&
+          input.cashRequestDetails.length > 0
+        ) {
+          input.jobs = input.cashRequestDetails.map(detail => {
+            const rawDests = Array.isArray(detail.destinations)
+              ? detail.destinations
+              : Array.isArray(detail.details)
+              ? detail.details
+              : []
+            const normalizedDests = rawDests.map(d => normalizeDestinationItem(d, detail))
+            const total =
+              detail.total !== undefined && detail.total !== null
+                ? parseFloat(detail.total)
+                : detail.totalPengajuan !== undefined && detail.totalPengajuan !== null
+                ? parseFloat(detail.totalPengajuan)
+                : normalizedDests.reduce((sum, d) => sum + (parseFloat(d.nominal) || 0), 0)
+            return {
+              jobPlanningId: detail.jobPlanningId || null,
+              customerId: detail.customerId || null,
+              consigneeId: detail.consigneeId || null,
+              destinations: normalizedDests,
+              total,
+            }
+          })
+        }
         if (Array.isArray(input.jobs) && input.jobs.length > 0) {
           const firstJob = input.jobs[0]
           if (!input.jobPlanningId && firstJob.jobPlanningId) input.jobPlanningId = firstJob.jobPlanningId
@@ -468,6 +528,24 @@ export default {
             }
           })
           input.destinations = flatDests
+          if (!Array.isArray(input.cashRequestDetails) || input.cashRequestDetails.length === 0) {
+            input.cashRequestDetails = input.jobs.map(job => {
+              const dests = Array.isArray(job.destinations) ? job.destinations : []
+              const total =
+                job.total !== undefined && job.total !== null
+                  ? parseFloat(job.total)
+                  : dests.reduce((sum, d) => sum + (parseFloat(d.nominal) || 0), 0)
+              return {
+                jobPlanningId: job.jobPlanningId || null,
+                customerId: job.customerId || null,
+                consigneeId: job.consigneeId || null,
+                destinations: dests,
+                details: dests,
+                total,
+                totalPengajuan: total,
+              }
+            })
+          }
         }
         if (!input.destination && Array.isArray(input.destinations)) {
           input.destination = input.destinations.map(d => (d && d.destination) || '').filter(Boolean)
@@ -497,6 +575,33 @@ export default {
         if (id) {
           input.id = id
         }
+        if (
+          (!Array.isArray(input.jobs) || input.jobs.length === 0) &&
+          Array.isArray(input.cashRequestDetails) &&
+          input.cashRequestDetails.length > 0
+        ) {
+          input.jobs = input.cashRequestDetails.map(detail => {
+            const rawDests = Array.isArray(detail.destinations)
+              ? detail.destinations
+              : Array.isArray(detail.details)
+              ? detail.details
+              : []
+            const normalizedDests = rawDests.map(d => normalizeDestinationItem(d, detail))
+            const total =
+              detail.total !== undefined && detail.total !== null
+                ? parseFloat(detail.total)
+                : detail.totalPengajuan !== undefined && detail.totalPengajuan !== null
+                ? parseFloat(detail.totalPengajuan)
+                : normalizedDests.reduce((sum, d) => sum + (parseFloat(d.nominal) || 0), 0)
+            return {
+              jobPlanningId: detail.jobPlanningId || null,
+              customerId: detail.customerId || null,
+              consigneeId: detail.consigneeId || null,
+              destinations: normalizedDests,
+              total,
+            }
+          })
+        }
         if (Array.isArray(input.jobs) && input.jobs.length > 0) {
           const firstJob = input.jobs[0]
           if (!input.jobPlanningId && firstJob.jobPlanningId) input.jobPlanningId = firstJob.jobPlanningId
@@ -512,6 +617,24 @@ export default {
             }
           })
           input.destinations = flatDests
+          if (!Array.isArray(input.cashRequestDetails) || input.cashRequestDetails.length === 0) {
+            input.cashRequestDetails = input.jobs.map(job => {
+              const dests = Array.isArray(job.destinations) ? job.destinations : []
+              const total =
+                job.total !== undefined && job.total !== null
+                  ? parseFloat(job.total)
+                  : dests.reduce((sum, d) => sum + (parseFloat(d.nominal) || 0), 0)
+              return {
+                jobPlanningId: job.jobPlanningId || null,
+                customerId: job.customerId || null,
+                consigneeId: job.consigneeId || null,
+                destinations: dests,
+                details: dests,
+                total,
+                totalPengajuan: total,
+              }
+            })
+          }
         }
         if (!input.destination && Array.isArray(input.destinations)) {
           input.destination = input.destinations.map(d => (d && d.destination) || '').filter(Boolean)
