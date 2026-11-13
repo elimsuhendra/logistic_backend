@@ -79,7 +79,6 @@ export default {
     account: async ({ _id, accountId }, args, { mongo }) => {
       if(!accountId) return null;
       const account = await mongo.Account.findOne({ _id: ObjectId(accountId) , deletedAt: null })
-      console.log({account})
       return account
     },
     accounts: async ({ _id }, args, { mongo }) => {
@@ -172,7 +171,6 @@ export default {
         }
         const { accountId: filterAccountId, ...restFilter } = filter || {}
         const filters = await applyAccountEmployeeFilter(mongo, buildMongoFilters(restFilter), filterAccountId)
-        // console.log({filters})
         const obj = await mongo.User.find(filters)
           .sort(orderBy ? buildMongoOrders(orderBy) : { createdAt: -1 })
           .skip(offset)
@@ -513,7 +511,6 @@ export default {
       }
     },
     updateUser: async (parent, args, context) => {
-      console.log("updateUser")
       // Update data
       await checkPermissions(checkUserAuth)({ context })
       const { mongo, user } = context
@@ -562,7 +559,6 @@ export default {
           const lastUser = await mongo.User.findOne({ _id: ObjectId(id) })
 
           // check user in employee
-          console.log({ currentUser })
           const targetUserId = ObjectId.isValid(id) ? ObjectId(id) : (currentUser && currentUser._id)
           if (Array.isArray(input.employees) && input.employees.length > 0) {
             await mongo.Employee.updateMany(
@@ -586,9 +582,8 @@ export default {
             if (!employee && currentUser && currentUser._id) {
               employee = await mongo.Employee.findOne({ userId: ObjectId(currentUser._id), deletedAt: null })
             }
-            console.log({ employee })
+
             if (!employee && input.employee) {
-              console.log("insert employee")
               let paramEmployee = {
                 userId: targetUserId,
                 ...input.employee,

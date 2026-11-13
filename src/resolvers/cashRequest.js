@@ -123,41 +123,154 @@ function normalizeDestinationItem(item, fallbackJob) {
   }
 }
 
+function isSet(value) {
+  return value !== undefined && value !== null && value !== ''
+}
+
+function sumNominal(destinations) {
+  return (destinations || []).reduce((sum, d) => sum + (parseFloat(d && d.nominal) || 0), 0)
+}
+
+function findJobPlanning(mongo, jobPlanningId) {
+  if (!jobPlanningId) return null
+  const query = ObjectId.isValid(jobPlanningId)
+    ? { _id: ObjectId(jobPlanningId), deletedAt: null }
+    : { jobPlanningNo: jobPlanningId, deletedAt: null }
+  return mongo.JobPlanning.findOne(query)
+}
+
+// Shapes any stored/incoming detail into a cashRequestDetailObject.
+// Accepts legacy keys (details, totalPengajuan, jobPlannnigNo) for old records.
+function normalizeCashRequestDetail(detail, cashRequestId) {
+  const d = detail || {}
+  const rawDests = Array.isArray(d.destinations)
+    ? d.destinations
+    : Array.isArray(d.details)
+    ? d.details
+    : []
+  const destinations = rawDests.map(item => normalizeDestinationItem(item, d))
+  const total = isSet(d.total)
+    ? parseFloat(d.total) || 0
+    : isSet(d.totalPengajuan)
+    ? parseFloat(d.totalPengajuan) || 0
+    : isSet(d.subTotal)
+    ? parseFloat(d.subTotal) || 0
+    : isSet(d.nominal)
+    ? parseFloat(d.nominal) || 0
+    : sumNominal(destinations)
+  // subTotal replaces the old detail-level `nominal`; legacy records may still carry `nominal`
+  const subTotal = isSet(d.subTotal)
+    ? parseFloat(d.subTotal) || 0
+    : isSet(d.nominal)
+    ? parseFloat(d.nominal) || 0
+    : total
+  return {
+    cashRequestId: d.cashRequestId || (cashRequestId ? String(cashRequestId) : null),
+    jobPlanningId: d.jobPlanningId || null,
+    jobPlanningNo: d.jobPlanningNo || d.jobPlannnigNo || null,
+    customerId: d.customerId || null,
+    consigneeId: d.consigneeId || null,
+    destinations,
+    subTotal,
+    total,
+  }
+}
+
+function jobFromDetail(detail) {
+  return {
+    jobPlanningId: detail.jobPlanningId,
+    customerId: detail.customerId,
+    consigneeId: detail.consigneeId,
+    destinations: detail.destinations,
+    total: detail.total,
+  }
+}
+
+// Normalizes a create/update input so cashRequestDetails is stored as
+// [cashRequestDetailObject] and the legacy jobs/destinations fields stay in sync.
+async function prepareCashRequestInput(input, cashRequestId, mongo) {
+  const hasDetails = Array.isArray(input.cashRequestDetails) && input.cashRequestDetails.length > 0
+  const hasJobs = Array.isArray(input.jobs) && input.jobs.length > 0
+
+  if (hasDetails) {
+    input.cashRequestDetails = input.cashRequestDetails.map(d =>
+      normalizeCashRequestDetail(d, cashRequestId)
+    )
+    if (!hasJobs) input.jobs = input.cashRequestDetails.map(jobFromDetail)
+  } else if (hasJobs) {
+    input.cashRequestDetails = input.jobs.map(job =>
+      normalizeCashRequestDetail(job, cashRequestId)
+    )
+  }
+
+  if (Array.isArray(input.jobs) && input.jobs.length > 0) {
+    const firstJob = input.jobs[0]
+    if (!input.jobPlanningId && firstJob.jobPlanningId) input.jobPlanningId = firstJob.jobPlanningId
+    if (!input.customerId && firstJob.customerId) input.customerId = firstJob.customerId
+    if (!input.consigneeId && firstJob.consigneeId) input.consigneeId = firstJob.consigneeId
+    const flatDests = []
+    input.jobs.forEach(job => {
+      if (job && Array.isArray(job.destinations)) {
+        job.destinations = job.destinations.map(d => normalizeDestinationItem(d, job))
+        flatDests.push(...job.destinations)
+      }
+    })
+    input.destinations = flatDests
+  }
+
+  if (Array.isArray(input.cashRequestDetails)) {
+    await Promise.all(
+      input.cashRequestDetails.map(async detail => {
+        if (detail.jobPlanningNo || !detail.jobPlanningId) return
+        const jp = await findJobPlanning(mongo, detail.jobPlanningId)
+        detail.jobPlanningNo = jp ? jp.jobPlanningNo || null : null
+      })
+    )
+  }
+
+  if (!input.destination && Array.isArray(input.destinations)) {
+    input.destination = input.destinations.map(d => (d && d.destination) || '').filter(Boolean)
+  }
+  return input
+}
+
+const jobRelationResolvers = {
+  jobPlanning: async ({ jobPlanningId }, args, { mongo }) => {
+    return await findJobPlanning(mongo, jobPlanningId)
+  },
+  customer: async (parent, args, { dataloaders, mongo }) => {
+    let customerId = parent.customerId
+    if (!customerId && parent.jobPlanningId) {
+      const jp = await findJobPlanning(mongo, parent.jobPlanningId)
+      customerId = jp ? jp.customerId : null
+    }
+    return customerId && ObjectId.isValid(customerId)
+      ? await dataloaders.get('customerByIdLoader').load(customerId)
+      : null
+  },
+  consignee: async (parent, args, { dataloaders, mongo }) => {
+    let consigneeId = parent.consigneeId
+    if (!consigneeId && parent.jobPlanningId) {
+      const jp = await findJobPlanning(mongo, parent.jobPlanningId)
+      consigneeId = jp ? jp.consigneeId : null
+    }
+    return consigneeId && ObjectId.isValid(consigneeId)
+      ? await dataloaders.get('customerByIdLoader').load(consigneeId)
+      : null
+  },
+}
+
 export default {
+  cashRequestDetailObject: {
+    ...jobRelationResolvers,
+    jobPlanningNo: async (parent, args, { mongo }) => {
+      if (parent.jobPlanningNo) return parent.jobPlanningNo
+      const jp = await findJobPlanning(mongo, parent.jobPlanningId)
+      return jp ? jp.jobPlanningNo || null : null
+    },
+  },
   cashJobObject: {
-    jobPlanning: async ({ jobPlanningId }, args, { mongo }) => {
-      if (!jobPlanningId) return null
-      const query = ObjectId.isValid(jobPlanningId)
-        ? { _id: ObjectId(jobPlanningId), deletedAt: null }
-        : { jobPlanningNo: jobPlanningId, deletedAt: null }
-      return await mongo.JobPlanning.findOne(query)
-    },
-    customer: async (parent, args, { dataloaders, mongo }) => {
-      let customerId = parent.customerId
-      if (!customerId && parent.jobPlanningId) {
-        const query = ObjectId.isValid(parent.jobPlanningId)
-          ? { _id: ObjectId(parent.jobPlanningId), deletedAt: null }
-          : { jobPlanningNo: parent.jobPlanningId, deletedAt: null }
-        const jp = await mongo.JobPlanning.findOne(query)
-        customerId = jp ? jp.customerId : null
-      }
-      return customerId && ObjectId.isValid(customerId)
-        ? await dataloaders.get('customerByIdLoader').load(customerId)
-        : null
-    },
-    consignee: async (parent, args, { dataloaders, mongo }) => {
-      let consigneeId = parent.consigneeId
-      if (!consigneeId && parent.jobPlanningId) {
-        const query = ObjectId.isValid(parent.jobPlanningId)
-          ? { _id: ObjectId(parent.jobPlanningId), deletedAt: null }
-          : { jobPlanningNo: parent.jobPlanningId, deletedAt: null }
-        const jp = await mongo.JobPlanning.findOne(query)
-        consigneeId = jp ? jp.consigneeId : null
-      }
-      return consigneeId && ObjectId.isValid(consigneeId)
-        ? await dataloaders.get('customerByIdLoader').load(consigneeId)
-        : null
-    },
+    ...jobRelationResolvers,
   },
   CashRequest: {
     id: parent => parent._id || parent.id,
@@ -312,36 +425,19 @@ export default {
     },
     cashRequestDetails: parent => {
       if (!parent) return []
-      if (Array.isArray(parent.cashRequestDetails) && parent.cashRequestDetails.length > 0) {
-        return parent.cashRequestDetails
-      }
-      if (typeof parent.cashRequestDetails === 'string') {
+      const cashRequestId = parent._id || parent.id
+      let list = parent.cashRequestDetails
+      if (typeof list === 'string') {
         try {
-          const parsed = JSON.parse(parent.cashRequestDetails)
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed
-        } catch (_) {}
+          list = JSON.parse(list)
+        } catch (_) {
+          list = null
+        }
       }
-      if (Array.isArray(parent.jobs) && parent.jobs.length > 0) {
-        return parent.jobs.map(job => {
-          const dests = Array.isArray(job.destinations)
-            ? job.destinations.map(d => normalizeDestinationItem(d, job))
-            : []
-          const total =
-            job.total !== undefined && job.total !== null
-              ? parseFloat(job.total)
-              : dests.reduce((sum, d) => sum + (parseFloat(d.nominal) || 0), 0)
-          return {
-            jobPlanningId: job.jobPlanningId || null,
-            customerId: job.customerId || null,
-            consigneeId: job.consigneeId || null,
-            destinations: dests,
-            details: dests,
-            total,
-            totalPengajuan: total,
-          }
-        })
+      if (!Array.isArray(list) || list.length === 0) {
+        list = Array.isArray(parent.jobs) ? parent.jobs : []
       }
-      return []
+      return list.map(d => normalizeCashRequestDetail(d, cashRequestId))
     },
   },
   Subscription: {
@@ -486,70 +582,7 @@ export default {
         }
 
         input.isDraft = typeof input.isDraft === 'boolean' ? input.isDraft : false
-        if (
-          (!Array.isArray(input.jobs) || input.jobs.length === 0) &&
-          Array.isArray(input.cashRequestDetails) &&
-          input.cashRequestDetails.length > 0
-        ) {
-          input.jobs = input.cashRequestDetails.map(detail => {
-            const rawDests = Array.isArray(detail.destinations)
-              ? detail.destinations
-              : Array.isArray(detail.details)
-              ? detail.details
-              : []
-            const normalizedDests = rawDests.map(d => normalizeDestinationItem(d, detail))
-            const total =
-              detail.total !== undefined && detail.total !== null
-                ? parseFloat(detail.total)
-                : detail.totalPengajuan !== undefined && detail.totalPengajuan !== null
-                ? parseFloat(detail.totalPengajuan)
-                : normalizedDests.reduce((sum, d) => sum + (parseFloat(d.nominal) || 0), 0)
-            return {
-              jobPlanningId: detail.jobPlanningId || null,
-              customerId: detail.customerId || null,
-              consigneeId: detail.consigneeId || null,
-              destinations: normalizedDests,
-              total,
-            }
-          })
-        }
-        if (Array.isArray(input.jobs) && input.jobs.length > 0) {
-          const firstJob = input.jobs[0]
-          if (!input.jobPlanningId && firstJob.jobPlanningId) input.jobPlanningId = firstJob.jobPlanningId
-          if (!input.customerId && firstJob.customerId) input.customerId = firstJob.customerId
-          if (!input.consigneeId && firstJob.consigneeId) input.consigneeId = firstJob.consigneeId
-          const flatDests = []
-          input.jobs.forEach(job => {
-            if (job && Array.isArray(job.destinations)) {
-              job.destinations = job.destinations.map(d => normalizeDestinationItem(d, job))
-              job.destinations.forEach(d => {
-                flatDests.push(d)
-              })
-            }
-          })
-          input.destinations = flatDests
-          if (!Array.isArray(input.cashRequestDetails) || input.cashRequestDetails.length === 0) {
-            input.cashRequestDetails = input.jobs.map(job => {
-              const dests = Array.isArray(job.destinations) ? job.destinations : []
-              const total =
-                job.total !== undefined && job.total !== null
-                  ? parseFloat(job.total)
-                  : dests.reduce((sum, d) => sum + (parseFloat(d.nominal) || 0), 0)
-              return {
-                jobPlanningId: job.jobPlanningId || null,
-                customerId: job.customerId || null,
-                consigneeId: job.consigneeId || null,
-                destinations: dests,
-                details: dests,
-                total,
-                totalPengajuan: total,
-              }
-            })
-          }
-        }
-        if (!input.destination && Array.isArray(input.destinations)) {
-          input.destination = input.destinations.map(d => (d && d.destination) || '').filter(Boolean)
-        }
+        await prepareCashRequestInput(input, null, mongo)
         const cashRequest = await mongoCreate('CashRequest', input, context)
         return {
           success: true,
@@ -575,70 +608,7 @@ export default {
         if (id) {
           input.id = id
         }
-        if (
-          (!Array.isArray(input.jobs) || input.jobs.length === 0) &&
-          Array.isArray(input.cashRequestDetails) &&
-          input.cashRequestDetails.length > 0
-        ) {
-          input.jobs = input.cashRequestDetails.map(detail => {
-            const rawDests = Array.isArray(detail.destinations)
-              ? detail.destinations
-              : Array.isArray(detail.details)
-              ? detail.details
-              : []
-            const normalizedDests = rawDests.map(d => normalizeDestinationItem(d, detail))
-            const total =
-              detail.total !== undefined && detail.total !== null
-                ? parseFloat(detail.total)
-                : detail.totalPengajuan !== undefined && detail.totalPengajuan !== null
-                ? parseFloat(detail.totalPengajuan)
-                : normalizedDests.reduce((sum, d) => sum + (parseFloat(d.nominal) || 0), 0)
-            return {
-              jobPlanningId: detail.jobPlanningId || null,
-              customerId: detail.customerId || null,
-              consigneeId: detail.consigneeId || null,
-              destinations: normalizedDests,
-              total,
-            }
-          })
-        }
-        if (Array.isArray(input.jobs) && input.jobs.length > 0) {
-          const firstJob = input.jobs[0]
-          if (!input.jobPlanningId && firstJob.jobPlanningId) input.jobPlanningId = firstJob.jobPlanningId
-          if (!input.customerId && firstJob.customerId) input.customerId = firstJob.customerId
-          if (!input.consigneeId && firstJob.consigneeId) input.consigneeId = firstJob.consigneeId
-          const flatDests = []
-          input.jobs.forEach(job => {
-            if (job && Array.isArray(job.destinations)) {
-              job.destinations = job.destinations.map(d => normalizeDestinationItem(d, job))
-              job.destinations.forEach(d => {
-                flatDests.push(d)
-              })
-            }
-          })
-          input.destinations = flatDests
-          if (!Array.isArray(input.cashRequestDetails) || input.cashRequestDetails.length === 0) {
-            input.cashRequestDetails = input.jobs.map(job => {
-              const dests = Array.isArray(job.destinations) ? job.destinations : []
-              const total =
-                job.total !== undefined && job.total !== null
-                  ? parseFloat(job.total)
-                  : dests.reduce((sum, d) => sum + (parseFloat(d.nominal) || 0), 0)
-              return {
-                jobPlanningId: job.jobPlanningId || null,
-                customerId: job.customerId || null,
-                consigneeId: job.consigneeId || null,
-                destinations: dests,
-                details: dests,
-                total,
-                totalPengajuan: total,
-              }
-            })
-          }
-        }
-        if (!input.destination && Array.isArray(input.destinations)) {
-          input.destination = input.destinations.map(d => (d && d.destination) || '').filter(Boolean)
-        }
+        await prepareCashRequestInput(input, id, mongo)
         input["updatedAt"] = new Date().getTime()
         await mongoUpdate('CashRequest', input, context)
         const cashRequestResponse = await mongo.CashRequest.findOne({ _id: ObjectId(input.id), deletedAt: null })

@@ -79,6 +79,9 @@ input JobPlanningFilter {
   sizeMeasurement: String
   reffNo: String
   isDraft: Boolean
+  statusOperation: StatusOperationEnum
+  statusOperation_in: [StatusOperationEnum]
+  statusOperation_nin: [StatusOperationEnum]
   search: String
   createdAt_gte: Date
   createdAt_lte: Date

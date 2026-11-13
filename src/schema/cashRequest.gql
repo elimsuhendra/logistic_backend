@@ -27,7 +27,7 @@ type CashRequest {
   lastApprovalStatus: approvalEnum
   createdAt: Date
   updatedAt: Date
-  cashRequestDetails: [JSON]
+  cashRequestDetails: [cashRequestDetailObject]
   settlements: [settlementObject]
   totalPengajuan: Float
   rounding: Float
@@ -45,6 +45,28 @@ type CashRequest {
 type cashRequestDetailObject {
   cashRequestId: String
   jobPlanningId: String
+  jobPlanningNo: String
+  customerId: String
+  consigneeId: String
+  subTotal: Float
+  total: Float
+  destinations: [cashDestinationObject]
+
+  # relations
+  jobPlanning: JobPlanning
+  customer: Customer
+  consignee: Customer
+}
+
+input cashRequestDetailObjectInput {
+  cashRequestId: String
+  jobPlanningId: String
+  jobPlanningNo: String
+  customerId: String
+  consigneeId: String
+  subTotal: Float
+  total: Float
+  destinations: [cashDestinationObjectInput]
 }
 
 type settlementObject {
@@ -249,31 +271,29 @@ type Query {
 }
 
 input CashRequestInput {
-  jobPlanningId: String
-  customerId: String
-  consigneeId: String
   userId: String
   accountId: String
-  employeeId: String
   requestDate: Date
   cashType: bondTypeEnum
   cashNo: String
-  destination: [String]
-  destinations: [cashDestinationObjectInput]
-  jobs: [cashJobObjectInput]
+
+  cashRequestDetails: [cashRequestDetailObjectInput]
+
   otherCash: Float
   sparePartCash: Float
   roundingCash: Float
   requestTotal: Float
+  
   jobSettlement: Float
   sparePartSettlement: Float
   otherSettlement: Float
   driverSettlement: Float
   loloSettlement: Float
+  
   returnTotal: Float
   isDraft: Boolean
   statusOperation: StatusOperationEnum
-  cashRequestDetails: [JSON]
+  
 }
 
 type Mutation {
