@@ -7,6 +7,7 @@ import importTenant from './tenant'
 import { ObjectId } from "mongodb"
 import importAccounts from "./accounts"
 import importMenuPermissions from "./menuPermissions"
+import importEmployee from "./employee"
 
 const loadSeeds = async () => {
   try {
@@ -41,6 +42,11 @@ const loadSeeds = async () => {
         }
       }))
       console.log('Seeder Accounts Updated.')
+      console.log('\n')
+
+      console.log('Importing Employees.')
+      await importEmployee(context)
+      console.log('Employees Imported.')
       console.log('\n')
 
       console.log('Importing Menu Permissions.')

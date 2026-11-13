@@ -18,6 +18,25 @@ import { isEmptyObject, isBlankString } from "utils/validate"
 import { mongoCreate, mongoUpdate, mongoDelete } from "utils/crud"
 import { createLog } from '../utils/crud'
 
+// Restrict a User mongo filter to users that have an active employee record in the given account
+const applyAccountEmployeeFilter = async (mongo, filters, accountId) => {
+  if (!accountId) return filters
+  if (!ObjectId.isValid(String(accountId))) return { ...filters, _id: { $in: [] } }
+  const employees = await mongo.Employee.find({
+    accountId: { $in: [ObjectId(String(accountId)), String(accountId)] },
+    inactive: { $ne: true },
+    deletedAt: null,
+  }).project({ userId: 1 }).toArray()
+  const userIds = _.uniqBy(
+    (employees || [])
+      .map(e => e.userId)
+      .filter(id => id && ObjectId.isValid(String(id)))
+      .map(id => ObjectId(String(id))),
+    id => String(id)
+  )
+  return { $and: [filters, { _id: { $in: userIds } }] }
+}
+
 export default {
   Employee: {
     id: parent => (parent && (parent._id || parent.id)) ? String(parent._id || parent.id) : null,
@@ -57,13 +76,9 @@ export default {
       const current = await mongo.UserSalary.findOne({ userId: _id, year: parseInt(currentYear), deletedAt: null })
       return current || null
     },
-    account: async ({ _id }, args, { mongo }) => {
-      const emp = await mongo.Employee.findOne({ userId: { $in: [ObjectId(_id), String(_id)] }, deletedAt: null })
-      if (emp && emp.accountId && ObjectId.isValid(String(emp.accountId))) {
-        const empAccount = await mongo.Account.findOne({ _id: ObjectId(String(emp.accountId)), deletedAt: null })
-        if (empAccount) return empAccount
-      }
-      const account = await mongo.Account.findOne({ userIds: { $in: [ObjectId(_id), String(_id)] }, deletedAt: null })
+    account: async ({ _id, accountId }, args, { mongo }) => {
+      if(!accountId) return null;
+      const account = await mongo.Account.findOne({ _id: ObjectId(accountId) , deletedAt: null })
       return account
     },
     accounts: async ({ _id }, args, { mongo }) => {
@@ -79,12 +94,13 @@ export default {
       const accounts = await mongo.Account.find({ userIds: { $in: [ObjectId(_id), String(_id)] }, deletedAt: null }).toArray()
       return accounts || []
     },
-    roleData: async ({ roleId, role }, args, { mongo }) => {
+    roleData: async ({ roleId, role, _id, accountId }, args, { mongo }) => {
       let roleObj = null
-      if(roleId){
-        roleObj = await mongo.Role.findOne({ _id: ObjectId(roleId), deletedAt: null })
-      }else if(role){
-        roleObj = await mongo.Role.findOne({ code: { $regex: `^${_.escapeRegExp(String(role).trim())}$`, $options: 'i' }, deletedAt: null })
+      if (_id && accountId && ObjectId.isValid(String(accountId))) {
+        const employee = await mongo.Employee.findOne({ userId: ObjectId(_id), accountId: ObjectId(accountId) , deletedAt: null })
+        if(employee && employee.roleId){
+          roleObj = await mongo.Role.findOne({ _id: ObjectId(employee.roleId), deletedAt: null })
+        }
       }
 
       return roleObj
@@ -98,7 +114,12 @@ export default {
         userId: item.userId ? String(item.userId) : null,
         roleId: item.roleId ? String(item.roleId) : null,
       }))
-    }
+    },
+    employee: async ({ _id, accountId }, args, { mongo }) => {
+      if (!_id || !accountId || !ObjectId.isValid(String(accountId))) return null
+      const employee = await mongo.Employee.findOne({ userId: ObjectId(_id), accountId: ObjectId(accountId) , deletedAt: null })
+      return employee
+    },
   },
   Subscription: {
     User: {
@@ -148,8 +169,8 @@ export default {
         if (!allowAdmin) {
           filter._id_ne = currentUser._id.toString()
         }
-        const filters = buildMongoFilters(filter)
-        // console.log({filters})
+        const { accountId: filterAccountId, ...restFilter } = filter || {}
+        const filters = await applyAccountEmployeeFilter(mongo, buildMongoFilters(restFilter), filterAccountId)
         const obj = await mongo.User.find(filters)
           .sort(orderBy ? buildMongoOrders(orderBy) : { createdAt: -1 })
           .skip(offset)
@@ -162,6 +183,8 @@ export default {
 
         for (let i = 0; i < obj.length; i++) {
           let currUser = obj[i]
+          // expose account context so `employee` / `roleData` resolve for this account
+          if (filterAccountId) currUser.accountId = filterAccountId
           let readyGroups2 = readyGroups.filter(group =>
             group.managerId.toString() === currUser._id.toString() ||
             group.teamLeaderId.toString() === currUser._id.toString() ||
@@ -190,7 +213,8 @@ export default {
           filter._id_ne = currentUser._id.toString()
         }
         if (currentUser) {
-          const filters = buildMongoFilters(filter)
+          const { accountId: filterAccountId, ...restFilter } = filter || {}
+          const filters = await applyAccountEmployeeFilter(mongo, buildMongoFilters(restFilter), filterAccountId)
           const count = await mongo.User.countDocuments(filters)
 
           return { count }
@@ -201,6 +225,9 @@ export default {
     me: requiresAuth.createResolver(async (parent, args, { mongo, user }) => {
       if (!user) return null
       const userObj = await mongo.User.findOne({ _id: ObjectId(user._id) })
+      if (userObj && args && args.accountId) {
+        userObj.accountId = args.accountId
+      }
       return userObj
     })
   },
@@ -484,7 +511,6 @@ export default {
       }
     },
     updateUser: async (parent, args, context) => {
-      console.log("updateUser")
       // Update data
       await checkPermissions(checkUserAuth)({ context })
       const { mongo, user } = context
@@ -533,7 +559,6 @@ export default {
           const lastUser = await mongo.User.findOne({ _id: ObjectId(id) })
 
           // check user in employee
-          console.log({ currentUser })
           const targetUserId = ObjectId.isValid(id) ? ObjectId(id) : (currentUser && currentUser._id)
           if (Array.isArray(input.employees) && input.employees.length > 0) {
             await mongo.Employee.updateMany(
@@ -557,9 +582,8 @@ export default {
             if (!employee && currentUser && currentUser._id) {
               employee = await mongo.Employee.findOne({ userId: ObjectId(currentUser._id), deletedAt: null })
             }
-            console.log({ employee })
+
             if (!employee && input.employee) {
-              console.log("insert employee")
               let paramEmployee = {
                 userId: targetUserId,
                 ...input.employee,

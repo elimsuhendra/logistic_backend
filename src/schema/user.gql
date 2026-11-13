@@ -37,6 +37,7 @@ type User {
   accounts: [Account]
   roleData: Role
   employees: [Employee]
+  employee: Employee
 }
 
 enum RoleType {
@@ -81,10 +82,12 @@ input UserFilter {
   _id_nin: [String]
   _id_in: [String]
   approved: Boolean
+  # Only users having an active (inactive != true) employee record in this account
+  accountId: String
 }
 
 type Query {
-  me: User
+  me(accountId: String): User
   allUsers(allowAdmin: Boolean, filter: UserFilter, first: Int, skip: Int, orderBy: UserOrder): [User]
   _allUsersMeta(allowAdmin: Boolean, filter: UserFilter): ObjectMeta
   getUser(id: String): User

@@ -1,0 +1,321 @@
+type CashRequest {
+  id: String!
+  jobPlanningId: String
+  customerId: String
+  consigneeId: String
+  userId: String
+  accountId: String
+  employeeId: String
+  requestDate: Date
+  cashType: bondTypeEnum
+  cashNo: String
+  destination: [String]
+  destinations: [cashDestinationObject]
+  jobs: [cashJobObject]
+  otherCash: Float
+  sparePartCash: Float
+  roundingCash: Float
+  requestTotal: Float
+  jobSettlement: Float
+  sparePartSettlement: Float
+  otherSettlement: Float
+  driverSettlement: Float
+  loloSettlement: Float
+  returnTotal: Float
+  isDraft: Boolean
+  statusOperation: statusOperationKasbonEnum
+  lastApprovalStatus: approvalEnum
+  createdAt: Date
+  updatedAt: Date
+  cashRequestDetails: [cashRequestDetailObject]
+  settlements: [settlementObject]
+  totalPengajuan: Float
+  rounding: Float
+  totalAfterRounding: Float
+  details: [JSON]
+
+  # relations
+  jobPlanning: JobPlanning
+  customer: Customer
+  consignee: Customer
+  user: User
+  employee: User
+}
+
+type cashRequestDetailObject {
+  cashRequestId: String
+  jobPlanningId: String
+  jobPlanningNo: String
+  customerId: String
+  consigneeId: String
+  subTotal: Float
+  total: Float
+  destinations: [cashDestinationObject]
+
+  # relations
+  jobPlanning: JobPlanning
+  customer: Customer
+  consignee: Customer
+}
+
+input cashRequestDetailObjectInput {
+  cashRequestId: String
+  jobPlanningId: String
+  jobPlanningNo: String
+  customerId: String
+  consigneeId: String
+  subTotal: Float
+  total: Float
+  destinations: [cashDestinationObjectInput]
+}
+
+type settlementObject {
+  settlementId: String
+  settlementType: settlementTypeEnum
+  total: Float
+  details: [JSON]
+}
+
+type cashJobObject {
+  jobPlanningId: String
+  customerId: String
+  consigneeId: String
+  destinations: [cashDestinationObject]
+  total: Float
+
+  # relations
+  jobPlanning: JobPlanning
+  customer: Customer
+  consignee: Customer
+}
+
+input cashJobObjectInput {
+  jobPlanningId: String
+  customerId: String
+  consigneeId: String
+  destinations: [cashDestinationObjectInput]
+  total: Float
+}
+
+type cashUjlDetailObject {
+  costId: String
+  biaya: String
+  isCost: Boolean
+  nominal: Float
+  uploadUrl: String
+  isUploaded: Boolean
+  paymentDate: Date
+  account: String
+  memo: String
+}
+
+input cashUjlDetailObjectInput {
+  costId: String
+  biaya: String
+  isCost: Boolean
+  nominal: Float
+  uploadUrl: String
+  isUploaded: Boolean
+  paymentDate: Date
+  account: String
+  memo: String
+}
+
+type cashDestinationObject {
+  jobPlanningId: String
+  customerId: String
+  consigneeId: String
+  destination: String
+  nominal: Float
+  qty: Int
+  size: Float
+  sizeMeasurement: String
+  vehicleId: String
+  driverId: String
+  policeNo: String
+  driver: String
+  departureDate: Date
+  transferDate: Date
+  kasbon: Float
+  settlementDate: Date
+  addCostSettlement: Float
+  totalSettlement: Float
+  ujlNote: String
+  ujlDetails: [cashUjlDetailObject]
+  kasbonDiff: Float
+  kasbonDiffNote: String
+  uploadUrl: String
+  isUploaded: Boolean
+  aju: String
+  containerNo: String
+  loloRepairAdm: Float
+  adminDepoTrf: Float
+  loloRounding: Float
+  loloTotalCost: Float
+}
+
+input cashDestinationObjectInput {
+  jobPlanningId: String
+  customerId: String
+  consigneeId: String
+  destination: String
+  nominal: Float
+  qty: Int
+  size: Float
+  sizeMeasurement: String
+  vehicleId: String
+  driverId: String
+  policeNo: String
+  driver: String
+  departureDate: Date
+  transferDate: Date
+  kasbon: Float
+  settlementDate: Date
+  addCostSettlement: Float
+  totalSettlement: Float
+  ujlNote: String
+  ujlDetails: [cashUjlDetailObjectInput]
+  kasbonDiff: Float
+  kasbonDiffNote: String
+  uploadUrl: String
+  isUploaded: Boolean
+  aju: String
+  containerNo: String
+  loloRepairAdm: Float
+  adminDepoTrf: Float
+  loloRounding: Float
+  loloTotalCost: Float
+}
+
+enum settlementTypeEnum {
+  Driver
+  Lolo
+  SparePart
+  Other
+}
+
+enum bondTypeEnum {
+  PJ
+  SP
+  KG
+}
+
+enum CashRequestOrder {
+  cashNo_DESC
+  cashNo_ASC
+  requestDate_DESC
+  requestDate_ASC
+  createdAt_DESC
+  createdAt_ASC
+}
+
+enum statusOperationKasbonEnum {
+  Draft
+  Pending
+  Cancel
+  Due_3_Days
+  Due_5_Days
+  Finish
+}
+
+input CashRequestFilter {
+  OR: [CashRequestFilter!]
+  AND: [CashRequestFilter!]
+  _id_in: [String]
+  _id_nin: [String]
+  cashNo: String
+  cashNo_regex: String
+  jobPlanningId: String
+  customerId: String
+  consigneeId: String
+  userId: String
+  accountId: String
+  employeeId: String
+  cashType: bondTypeEnum
+  isDraft: Boolean
+  statusOperation: statusOperationKasbonEnum
+  search: String
+  requestDate_gte: Date
+  requestDate_lte: Date
+  createdAt_gte: Date
+  createdAt_lte: Date
+}
+
+type CreateCashRequestResponse {
+  success: Boolean!
+  message: String
+  cashRequest: CashRequest
+}
+
+type UpdateCashRequestResponse {
+  success: Boolean!
+  message: String
+  cashRequest: CashRequest
+}
+
+type DeleteCashRequestResponse {
+  success: Boolean!
+  message: String
+}
+
+type Query {
+  allCashRequests(
+    filter: CashRequestFilter
+    first: Int
+    skip: Int
+    orderBy: CashRequestOrder
+  ): [CashRequest]
+  _allCashRequestsMeta(filter: CashRequestFilter): ObjectMeta
+  getCashRequest(id: String): CashRequest
+  getLastCashRequest(prefixCashNo: String): CashRequest
+}
+
+input CashRequestInput {
+  userId: String
+  accountId: String
+  requestDate: Date
+  cashType: bondTypeEnum
+  cashNo: String
+
+  cashRequestDetails: [cashRequestDetailObjectInput]
+
+  otherCash: Float
+  sparePartCash: Float
+  roundingCash: Float
+  requestTotal: Float
+  
+  jobSettlement: Float
+  sparePartSettlement: Float
+  otherSettlement: Float
+  driverSettlement: Float
+  loloSettlement: Float
+  
+  returnTotal: Float
+  isDraft: Boolean
+  statusOperation: StatusOperationEnum
+  
+}
+
+type Mutation {
+  createCashRequest(
+    input: CashRequestInput!
+  ): CreateCashRequestResponse
+
+  updateCashRequest(
+    id: String!
+    input: CashRequestInput!
+  ): UpdateCashRequestResponse
+
+  deleteCashRequest(id: String!): DeleteCashRequestResponse
+  deleteCashRequests(ids: [String!]!): DeleteCashRequestResponse
+}
+
+type CashRequestSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: CashRequest
+  previousValues: CashRequest
+}
+
+type Subscription {
+  CashRequest(filter: SubscriptionFilter, dataFilter: CashRequestFilter): CashRequestSubscriptionPayload
+}
