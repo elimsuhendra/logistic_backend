@@ -42,31 +42,43 @@ type CashRequest {
   employee: User
 }
 
+# One table row (one No. Job)
 type cashRequestDetailObject {
-  cashRequestId: String
-  jobPlanningId: String
-  jobPlanningNo: String
-  customerId: String
-  consigneeId: String
-  subTotal: Float
-  total: Float
-  destinations: [cashDestinationObject]
+  jobPlanningId: String          # No. Job (picker)
+  jobPlanningNo: String          # SA/SO/2610/0002-1
+  customerId: String             # Cust
+  items: [cashRequestItemObject] # the stacked Qty / Daerah / Nominal lines
+  total: Float                   # Total = sum of items[].nominal
 
   # relations
   jobPlanning: JobPlanning
   customer: Customer
-  consignee: Customer
 }
 
+# One line inside a row
+type cashRequestItemObject {
+  qty: Int                       # "2" in "2x35 (cbm)"
+  size: Float                    # "35"
+  sizeMeasurement: String        # "cbm"
+  daerah: String                 # Daerah (required)
+  nominal: Float                 # Nominal
+}
+
+input cashRequestItemObjectInput {
+  qty: Int
+  size: Float
+  sizeMeasurement: String
+  daerah: String!
+  nominal: Float
+}
+
+
 input cashRequestDetailObjectInput {
-  cashRequestId: String
-  jobPlanningId: String
+  jobPlanningId: String!
   jobPlanningNo: String
   customerId: String
-  consigneeId: String
-  subTotal: Float
+  items: [cashRequestItemObjectInput]
   total: Float
-  destinations: [cashDestinationObjectInput]
 }
 
 type settlementObject {

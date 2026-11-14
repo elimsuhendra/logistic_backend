@@ -139,67 +139,110 @@ function findJobPlanning(mongo, jobPlanningId) {
   return mongo.JobPlanning.findOne(query)
 }
 
-// Shapes any stored/incoming detail into a cashRequestDetailObject.
-// Accepts legacy keys (details, totalPengajuan, jobPlannnigNo) for old records.
-function normalizeCashRequestDetail(detail, cashRequestId) {
+// Shapes any stored/incoming line into a cashRequestItemObject.
+// Accepts legacy destination rows ({ destination, nominal, ... }) for old records.
+function normalizeCashRequestItem(item) {
+  const it = typeof item === 'string' ? { daerah: item } : item || {}
+  return {
+    qty: isSet(it.qty) ? parseInt(it.qty, 10) || null : null,
+    size: isSet(it.size) ? parseFloat(it.size) || null : null,
+    sizeMeasurement: it.sizeMeasurement || it.sizeMeasurment || '',
+    daerah: it.daerah || it.destination || it.value || it.name || '',
+    nominal: isSet(it.nominal) ? parseFloat(it.nominal) || 0 : 0,
+  }
+}
+
+// Shapes any stored/incoming detail into a cashRequestDetailObject
+// (one row per No. Job, with its stacked Qty / Daerah / Nominal items).
+// Accepts legacy keys (destinations, details, subTotal, totalPengajuan, jobPlannnigNo).
+function normalizeCashRequestDetail(detail) {
   const d = detail || {}
-  const rawDests = Array.isArray(d.destinations)
+  const rawItems = Array.isArray(d.items)
+    ? d.items
+    : Array.isArray(d.destinations)
     ? d.destinations
     : Array.isArray(d.details)
     ? d.details
     : []
-  const destinations = rawDests.map(item => normalizeDestinationItem(item, d))
-  const total = isSet(d.total)
-    ? parseFloat(d.total) || 0
-    : isSet(d.totalPengajuan)
-    ? parseFloat(d.totalPengajuan) || 0
-    : isSet(d.subTotal)
-    ? parseFloat(d.subTotal) || 0
-    : isSet(d.nominal)
-    ? parseFloat(d.nominal) || 0
-    : sumNominal(destinations)
-  // subTotal replaces the old detail-level `nominal`; legacy records may still carry `nominal`
-  const subTotal = isSet(d.subTotal)
-    ? parseFloat(d.subTotal) || 0
-    : isSet(d.nominal)
-    ? parseFloat(d.nominal) || 0
-    : total
+  const items = rawItems.map(normalizeCashRequestItem)
+  const legacyTotal = [d.total, d.subTotal, d.totalPengajuan, d.nominal].find(isSet)
+  // Total = sum of items[].nominal
+  const total = items.length > 0 ? sumNominal(items) : parseFloat(legacyTotal) || 0
   return {
-    cashRequestId: d.cashRequestId || (cashRequestId ? String(cashRequestId) : null),
     jobPlanningId: d.jobPlanningId || null,
     jobPlanningNo: d.jobPlanningNo || d.jobPlannnigNo || null,
     customerId: d.customerId || null,
-    consigneeId: d.consigneeId || null,
-    destinations,
-    subTotal,
+    items,
     total,
   }
 }
 
-function jobFromDetail(detail) {
+// Legacy records stored one detail per destination row; merge them back into one row per job.
+function mergeDetailsByJob(details) {
+  const merged = []
+  details.forEach(detail => {
+    const existing = detail.jobPlanningId
+      ? merged.find(m => m.jobPlanningId === detail.jobPlanningId)
+      : null
+    if (existing) {
+      existing.items = existing.items.concat(detail.items)
+      existing.total += detail.total
+      existing.jobPlanningNo = existing.jobPlanningNo || detail.jobPlanningNo
+      existing.customerId = existing.customerId || detail.customerId
+    } else {
+      merged.push({ ...detail, items: [...detail.items] })
+    }
+  })
+  return merged
+}
+
+// Builds the legacy `jobs` entry (used by the settlement tables) from a detail row.
+// Settlement fields already saved on the same job/line are kept.
+function jobFromDetail(detail, existingJobs) {
+  const prevJob =
+    (existingJobs || []).find(j => j && detail.jobPlanningId && j.jobPlanningId === detail.jobPlanningId) || {}
+  const prevDests = Array.isArray(prevJob.destinations) ? prevJob.destinations : []
   return {
     jobPlanningId: detail.jobPlanningId,
     customerId: detail.customerId,
-    consigneeId: detail.consigneeId,
-    destinations: detail.destinations,
+    consigneeId: detail.consigneeId || prevJob.consigneeId || null,
+    destinations: detail.items.map((item, idx) => ({
+      ...(prevDests[idx] && typeof prevDests[idx] === 'object' ? prevDests[idx] : {}),
+      jobPlanningId: detail.jobPlanningId,
+      customerId: detail.customerId,
+      destination: item.daerah,
+      nominal: item.nominal,
+      qty: item.qty,
+      size: item.size,
+      sizeMeasurement: item.sizeMeasurement,
+    })),
     total: detail.total,
   }
 }
 
 // Normalizes a create/update input so cashRequestDetails is stored as
 // [cashRequestDetailObject] and the legacy jobs/destinations fields stay in sync.
-async function prepareCashRequestInput(input, cashRequestId, mongo) {
-  const hasDetails = Array.isArray(input.cashRequestDetails) && input.cashRequestDetails.length > 0
-  const hasJobs = Array.isArray(input.jobs) && input.jobs.length > 0
+async function prepareCashRequestInput(input, existing, mongo) {
+  if (Array.isArray(input.cashRequestDetails)) {
+    const details = input.cashRequestDetails.map(normalizeCashRequestDetail)
 
-  if (hasDetails) {
-    input.cashRequestDetails = input.cashRequestDetails.map(d =>
-      normalizeCashRequestDetail(d, cashRequestId)
+    // Fill jobPlanningNo / customerId from the job planning when not sent
+    const consigneeByJob = {}
+    await Promise.all(
+      details.map(async detail => {
+        if (!detail.jobPlanningId) return
+        const jp = await findJobPlanning(mongo, detail.jobPlanningId)
+        if (!jp) return
+        if (!detail.jobPlanningNo) detail.jobPlanningNo = jp.jobPlanningNo || null
+        if (!detail.customerId) detail.customerId = jp.customerId || null
+        consigneeByJob[detail.jobPlanningId] = jp.consigneeId || null
+      })
     )
-    if (!hasJobs) input.jobs = input.cashRequestDetails.map(jobFromDetail)
-  } else if (hasJobs) {
-    input.cashRequestDetails = input.jobs.map(job =>
-      normalizeCashRequestDetail(job, cashRequestId)
+
+    input.cashRequestDetails = details
+    const existingJobs = existing && Array.isArray(existing.jobs) ? existing.jobs : []
+    input.jobs = details.map(detail =>
+      jobFromDetail({ ...detail, consigneeId: consigneeByJob[detail.jobPlanningId] }, existingJobs)
     )
   }
 
@@ -216,16 +259,6 @@ async function prepareCashRequestInput(input, cashRequestId, mongo) {
       }
     })
     input.destinations = flatDests
-  }
-
-  if (Array.isArray(input.cashRequestDetails)) {
-    await Promise.all(
-      input.cashRequestDetails.map(async detail => {
-        if (detail.jobPlanningNo || !detail.jobPlanningId) return
-        const jp = await findJobPlanning(mongo, detail.jobPlanningId)
-        detail.jobPlanningNo = jp ? jp.jobPlanningNo || null : null
-      })
-    )
   }
 
   if (!input.destination && Array.isArray(input.destinations)) {
@@ -262,7 +295,9 @@ const jobRelationResolvers = {
 
 export default {
   cashRequestDetailObject: {
-    ...jobRelationResolvers,
+    // cashRequestDetailObject has no consignee in the schema
+    jobPlanning: jobRelationResolvers.jobPlanning,
+    customer: jobRelationResolvers.customer,
     jobPlanningNo: async (parent, args, { mongo }) => {
       if (parent.jobPlanningNo) return parent.jobPlanningNo
       const jp = await findJobPlanning(mongo, parent.jobPlanningId)
@@ -276,6 +311,7 @@ export default {
     id: parent => parent._id || parent.id,
     statusOperation: parent => parent.statusOperation,
     jobPlanning: async (parent, args, { mongo }) => {
+      console.log('jobPlanning')
       const firstJobId =
         parent.jobPlanningId ||
         (Array.isArray(parent.jobs) && parent.jobs[0] && parent.jobs[0].jobPlanningId) ||
@@ -347,15 +383,15 @@ export default {
       }
       return userObj
     },
-    destination: parent => {
-      if (parent && Array.isArray(parent.destination)) {
-        return parent.destination.map(d => (typeof d === 'string' ? d : (d && d.destination) || ''))
-      }
-      if (parent && Array.isArray(parent.destinations)) {
-        return parent.destinations.map(d => (typeof d === 'string' ? d : (d && d.destination) || '')).filter(Boolean)
-      }
-      return []
-    },
+    // destination: parent => {
+    //   if (parent && Array.isArray(parent.destination)) {
+    //     return parent.destination.map(d => (typeof d === 'string' ? d : (d && d.destination) || ''))
+    //   }
+    //   if (parent && Array.isArray(parent.destinations)) {
+    //     return parent.destinations.map(d => (typeof d === 'string' ? d : (d && d.destination) || '')).filter(Boolean)
+    //   }
+    //   return []
+    // },
     destinations: parent => {
       if (!parent) return []
       if (Array.isArray(parent.jobs) && parent.jobs.length > 0) {
@@ -425,7 +461,6 @@ export default {
     },
     cashRequestDetails: parent => {
       if (!parent) return []
-      const cashRequestId = parent._id || parent.id
       let list = parent.cashRequestDetails
       if (typeof list === 'string') {
         try {
@@ -434,10 +469,12 @@ export default {
           list = null
         }
       }
-      if (!Array.isArray(list) || list.length === 0) {
-        list = Array.isArray(parent.jobs) ? parent.jobs : []
-      }
-      return list.map(d => normalizeCashRequestDetail(d, cashRequestId))
+      if (!Array.isArray(list)) list = []
+      const hasItems = list.some(d => d && Array.isArray(d.items))
+      const jobs = Array.isArray(parent.jobs) ? parent.jobs : []
+      // Legacy records (no items yet): rebuild the rows from the synced jobs when available
+      if (!hasItems && jobs.length > 0) list = jobs
+      return mergeDetailsByJob(list.map(normalizeCashRequestDetail))
     },
   },
   Subscription: {
@@ -599,6 +636,7 @@ export default {
       }
     }),
     updateCashRequest: requiresAuth.createResolver(async (parent, args, context) => {
+      console.log('updateCashRequest')
       await checkPermissions(checkUserAuth)({ context })
       const { mongo, user } = context
       const { id, input } = args
@@ -608,7 +646,10 @@ export default {
         if (id) {
           input.id = id
         }
-        await prepareCashRequestInput(input, id, mongo)
+        const existing = ObjectId.isValid(id)
+          ? await mongo.CashRequest.findOne({ _id: ObjectId(id), deletedAt: null })
+          : null
+        await prepareCashRequestInput(input, existing, mongo)
         input["updatedAt"] = new Date().getTime()
         await mongoUpdate('CashRequest', input, context)
         const cashRequestResponse = await mongo.CashRequest.findOne({ _id: ObjectId(input.id), deletedAt: null })
