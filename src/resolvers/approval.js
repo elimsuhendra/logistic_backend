@@ -12,6 +12,7 @@ import _ from 'lodash'
 export default {
   Approval: {
     id: parent => parent._id || parent.id,
+    accountId: parent => (parent && parent.accountId) ? String(parent.accountId) : null,
     reffId: parent => (parent && parent.reffId) ? String(parent.reffId) : null,
     userId: parent => (parent && parent.userId) ? String(parent.userId) : null,
     user: async ({ userId }, args, { dataloaders }) => {
@@ -105,15 +106,37 @@ export default {
     createApproval: requiresAuth.createResolver(async (parent, args, context) => {
       await checkPermissions(checkUserAuth)({ context })
       const { mongo, user } = context
-      const input = { ...(args.input || {}), ..._.omit(args, ['input']) }
+      // input is [ApprovalInput]: one Approval document per entry
+      const inputs = (Array.isArray(args.input) ? args.input : [args.input]).filter(Boolean)
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
 
       if (!!currentUser) {
-        const approval = await mongoCreate('Approval', input, context)
+        if (inputs.length === 0) {
+          return { success: false, message: "No approval to create." }
+        }
+
+        const approvals = []
+        for (const input of inputs) {
+          // mongoCreate returns (not throws) an Error on failure
+          const approval = await mongoCreate('Approval', { ...input }, context)
+          if (approval instanceof Error) {
+            return {
+              success: false,
+              message: approval.message,
+              approval: approvals[0] || null,
+              approvals,
+            }
+          }
+          approvals.push(approval)
+        }
+
         return {
           success: true,
-          message: "Approval has been created successfully!",
-          approval,
+          message: approvals.length > 1
+            ? "Approvals have been created successfully!"
+            : "Approval has been created successfully!",
+          approval: approvals[0],
+          approvals,
         }
       }
 
@@ -125,22 +148,51 @@ export default {
     updateApproval: requiresAuth.createResolver(async (parent, args, context) => {
       await checkPermissions(checkUserAuth)({ context })
       const { mongo, user } = context
-      const { id } = args
-      const input = { ...(args.input || {}), ..._.omit(args, ['input']) }
+      // Replaces the approvals of a record: (1) the current approvals with this reffId are
+      // retired (inactive: true, deletedAt: now), then (2) input: [ApprovalInput] is inserted.
+      const entries = (Array.isArray(args.input) ? args.input : [args.input]).filter(Boolean)
+      const reffId = args.reffId || (entries.find(e => e.reffId) || {}).reffId || null
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
 
       if (!!currentUser) {
-        if (id) {
-          input.id = id
+        if (!reffId) {
+          return { success: false, message: "reffId is required." }
         }
-        input["updatedAt"] = new Date().getTime()
-        await mongoUpdate('Approval', input, context)
-        const approvalResponse = await mongo.Approval.findOne({ _id: ObjectId(input.id), deletedAt: null })
+
+        const now = new Date().getTime()
+        // reffId may be stored as ObjectId or string
+        const reffIdMatch = ObjectId.isValid(String(reffId))
+          ? { $in: [ObjectId(String(reffId)), String(reffId)] }
+          : String(reffId)
+
+        // 1. retire the old approvals of this record
+        await mongo.Approval.updateMany(
+          { reffId: reffIdMatch, deletedAt: null },
+          { $set: { inactive: true, deletedAt: now, updatedAt: now } }
+        )
+
+        // 2. insert the new approvals (a passed id is ignored: these are new documents)
+        const approvals = []
+        for (const entry of entries) {
+          const { id, ...rest } = entry
+          // mongoCreate returns (not throws) an Error on failure
+          const approval = await mongoCreate('Approval', { ...rest, reffId: String(reffId) }, context)
+          if (approval instanceof Error) {
+            return {
+              success: false,
+              message: approval.message,
+              approval: approvals[0] || null,
+              approvals,
+            }
+          }
+          approvals.push(approval)
+        }
 
         return {
           success: true,
-          message: "Approval has been updated successfully!",
-          approval: approvalResponse,
+          message: "Approvals have been updated successfully!",
+          approval: approvals[0] || null,
+          approvals,
         }
       }
 
