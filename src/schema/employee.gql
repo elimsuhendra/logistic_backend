@@ -17,6 +17,19 @@ type Employee {
   salary: UserSalary
   account: Account
   roleData: Role
+  user: User
+}
+
+input EmployeeFilter {
+  id_ne: String
+  accountId: String
+  userId: String
+  # false matches employees not marked inactive (field false or missing)
+  inactive: Boolean
+}
+
+type Query {
+  allEmployees(filter: EmployeeFilter, first: Int, skip: Int): [Employee]
 }
 
 input EmployeeInput{

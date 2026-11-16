@@ -51,6 +51,12 @@ export default {
       if (!parent || !parent.roleId || !ObjectId.isValid(String(parent.roleId))) return null
       return await mongo.Role.findOne({ _id: ObjectId(String(parent.roleId)), deletedAt: null })
     },
+    user: async (parent, args, { mongo }) => {
+      if (!parent || !parent.userId || !ObjectId.isValid(String(parent.userId))) return null
+      const theUser = await mongo.User.findOne({ _id: ObjectId(String(parent.userId)), deletedAt: null })
+      // expose the employee's account so User.roleData resolves for this account
+      return theUser ? { ...theUser, accountId: parent.accountId } : null
+    },
   },
   User: {
     id: parent => parent._id || parent.id,
@@ -135,6 +141,24 @@ export default {
     }
   },
   Query: {
+    allEmployees: requiresAuth.createResolver(async (parent, { filter, first, skip }, { mongo }) => {
+      const { id_ne, accountId, userId, inactive } = filter || {}
+      // ids may be stored as ObjectId or string
+      const idMatch = (id) =>
+        ObjectId.isValid(String(id)) ? { $in: [ObjectId(String(id)), String(id)] } : String(id)
+
+      const filters = { deletedAt: null }
+      if (accountId) filters.accountId = idMatch(accountId)
+      if (userId) filters.userId = idMatch(userId)
+      if (inactive === true) filters.inactive = true
+      if (inactive === false) filters.inactive = { $ne: true }
+      if (id_ne && ObjectId.isValid(String(id_ne))) filters._id = { $ne: ObjectId(String(id_ne)) }
+
+      const obj = mongo.Employee.find(filters).sort({ createdAt: 1 })
+      if (skip) obj.skip(skip)
+      if (first) obj.limit(first)
+      return await obj.toArray()
+    }),
     getUser: async (parent, args, context) => {
       if (!args.id) return null
 

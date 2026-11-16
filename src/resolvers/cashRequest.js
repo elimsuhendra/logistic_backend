@@ -8,6 +8,58 @@ import { withFilter } from 'graphql-subscriptions'
 import { mongoCreate, mongoUpdate, mongoDelete, mongoMultiDelete } from 'utils/crud'
 import { sanitizeRegex } from 'utils/common'
 
+// ids may be stored as ObjectId or string
+const idMatch = id =>
+  ObjectId.isValid(String(id)) ? { $in: [ObjectId(String(id)), String(id)] } : String(id)
+
+// Cash requests of the given account that the given user either created
+// (userId / employeeId) or is an approver of (Approval.userId + accountId)
+async function buildAccessFilter(mongo, accountId, userId) {
+  if (!userId || !accountId) return { _id: { $in: [] } }
+
+  const approvals = await mongo.Approval.find({
+    userId: idMatch(userId),
+    accountId: idMatch(accountId),
+    deletedAt: null,
+  }).project({ reffId: 1 }).toArray()
+  const approvalReffIds = (approvals || [])
+    .map(a => a.reffId)
+    .filter(id => id && ObjectId.isValid(String(id)))
+    .map(id => ObjectId(String(id)))
+
+  return {
+    accountId: idMatch(accountId),
+    $or: [
+      { userId: idMatch(userId) },
+      { employeeId: idMatch(userId) },
+      // as an approver: only cash requests that are no longer a draft (a missing
+      // statusOperation counts as Draft, as in the list); the creator still sees drafts
+      ...(approvalReffIds.length > 0
+        ? [{
+            _id: { $in: approvalReffIds },
+            statusOperation: { $nin: ['Draft', null] },
+            isDraft: { $ne: true },
+          }]
+        : []),
+    ],
+  }
+}
+
+// Base mongo filter for allCashRequests / _allCashRequestsMeta (without search).
+// userId + accountId together → cash requests of that account the user created or
+// approves; either one alone keeps the plain field filter.
+async function buildCashRequestFilters(mongo, filter) {
+  const { search, userId, accountId, ...restFilter } = filter || {}
+  if (userId && accountId) {
+    return { $and: [buildMongoFilters(restFilter) || {}, await buildAccessFilter(mongo, accountId, userId)] }
+  }
+  return buildMongoFilters({
+    ...restFilter,
+    ...(userId ? { userId } : {}),
+    ...(accountId ? { accountId } : {}),
+  }) || {}
+}
+
 function normalizeUjlDetails(list) {
   if (!Array.isArray(list)) return []
   return list.map(u => ({
@@ -241,29 +293,29 @@ async function prepareCashRequestInput(input, existing, mongo) {
 
     input.cashRequestDetails = details
     const existingJobs = existing && Array.isArray(existing.jobs) ? existing.jobs : []
-    input.jobs = details.map(detail =>
-      jobFromDetail({ ...detail, consigneeId: consigneeByJob[detail.jobPlanningId] }, existingJobs)
-    )
+    // input.jobs = details.map(detail =>
+    //   jobFromDetail({ ...detail, consigneeId: consigneeByJob[detail.jobPlanningId] }, existingJobs)
+    // )
   }
 
-  if (Array.isArray(input.jobs) && input.jobs.length > 0) {
-    const firstJob = input.jobs[0]
-    if (!input.jobPlanningId && firstJob.jobPlanningId) input.jobPlanningId = firstJob.jobPlanningId
-    if (!input.customerId && firstJob.customerId) input.customerId = firstJob.customerId
-    if (!input.consigneeId && firstJob.consigneeId) input.consigneeId = firstJob.consigneeId
-    const flatDests = []
-    input.jobs.forEach(job => {
-      if (job && Array.isArray(job.destinations)) {
-        job.destinations = job.destinations.map(d => normalizeDestinationItem(d, job))
-        flatDests.push(...job.destinations)
-      }
-    })
-    input.destinations = flatDests
-  }
+  // if (Array.isArray(input.jobs) && input.jobs.length > 0) {
+  //   const firstJob = input.jobs[0]
+  //   if (!input.jobPlanningId && firstJob.jobPlanningId) input.jobPlanningId = firstJob.jobPlanningId
+  //   if (!input.customerId && firstJob.customerId) input.customerId = firstJob.customerId
+  //   if (!input.consigneeId && firstJob.consigneeId) input.consigneeId = firstJob.consigneeId
+  //   const flatDests = []
+  //   input.jobs.forEach(job => {
+  //     if (job && Array.isArray(job.destinations)) {
+  //       job.destinations = job.destinations.map(d => normalizeDestinationItem(d, job))
+  //       flatDests.push(...job.destinations)
+  //     }
+  //   })
+  //   input.destinations = flatDests
+  // }
 
-  if (!input.destination && Array.isArray(input.destinations)) {
-    input.destination = input.destinations.map(d => (d && d.destination) || '').filter(Boolean)
-  }
+  // if (!input.destination && Array.isArray(input.destinations)) {
+  //   input.destination = input.destinations.map(d => (d && d.destination) || '').filter(Boolean)
+  // }
   return input
 }
 
@@ -310,6 +362,24 @@ export default {
   CashRequest: {
     id: parent => parent._id || parent.id,
     statusOperation: parent => parent.statusOperation,
+    // Latest approval of this record (reffId) whose status is Approved, Rejected,
+    // Pending or Cancelled; approvals still Waiting are ignored
+    lastApprovalStatus: async (parent, args, { mongo }) => {
+      const id = parent && (parent._id || parent.id)
+      if (!id) return null
+      const reffId = ObjectId.isValid(String(id))
+        ? { $in: [ObjectId(String(id)), String(id)] }
+        : String(id)
+      const approval = await mongo.Approval.findOne(
+        {
+          reffId,
+          deletedAt: null,
+          approval: { $in: ['Approved', 'Rejected', 'Pending', 'Cancelled'] },
+        },
+        { sort: { updatedAt: -1, createdAt: -1 } }
+      )
+      return approval ? approval.approval : null
+    },
     jobPlanning: async (parent, args, { mongo }) => {
       console.log('jobPlanning')
       const firstJobId =
@@ -516,8 +586,8 @@ export default {
       async (parent, { filter, first, skip, orderBy }, { mongo }) => {
         const limit = first || 20
         const offset = skip || 0
-        const { search, ...restFilter } = filter || {}
-        let filters = buildMongoFilters(restFilter) || {}
+        const search = filter && filter.search
+        let filters = await buildCashRequestFilters(mongo, filter)
 
         if (search) {
           const regexStr = sanitizeRegex(search.trim())
@@ -563,8 +633,8 @@ export default {
     ),
     _allCashRequestsMeta: requiresAuth.createResolver(
       async (parent, { filter }, { mongo }) => {
-        const { search, ...restFilter } = filter || {}
-        let filters = buildMongoFilters(restFilter) || {}
+        const search = filter && filter.search
+        let filters = await buildCashRequestFilters(mongo, filter)
 
         if (search) {
           const regexStr = sanitizeRegex(search.trim())
