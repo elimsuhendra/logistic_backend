@@ -60,119 +60,38 @@ async function buildCashRequestFilters(mongo, filter) {
   }) || {}
 }
 
-function normalizeUjlDetails(list) {
-  if (!Array.isArray(list)) return []
-  return list.map(u => ({
-    costId: (u && u.costId) || '',
-    biaya: (u && u.biaya) || '',
-    isCost: u && u.isCost !== undefined && u.isCost !== null ? Boolean(u.isCost) : true,
-    nominal: u && u.nominal !== undefined && u.nominal !== null ? parseFloat(u.nominal) || 0 : 0,
-    uploadUrl: (u && u.uploadUrl) || '',
-    isUploaded: Boolean((u && u.isUploaded) || (u && u.uploadUrl)),
-    paymentDate: (u && u.paymentDate) || null,
-    account: (u && u.account) || '',
-    memo: (u && u.memo) || '',
-  }))
-}
-
+// Legacy line (cash request part only). Settlement data lives in the Settlement collection.
 function normalizeDestinationItem(item, fallbackJob) {
   const fb = fallbackJob || {}
-  if (typeof item === 'string') {
-    return {
-      jobPlanningId: fb.jobPlanningId || null,
-      customerId: fb.customerId || null,
-      consigneeId: fb.consigneeId || null,
-      destination: item,
-      nominal: 0,
-      qty: null,
-      size: null,
-      sizeMeasurement: '',
-      vehicleId: null,
-      driverId: null,
-      policeNo: '',
-      driver: '',
-      departureDate: null,
-      transferDate: null,
-      kasbon: 0,
-      settlementDate: null,
-      addCostSettlement: 0,
-      totalSettlement: 0,
-      ujlNote: '',
-      ujlDetails: [],
-      kasbonDiff: 0,
-      kasbonDiffNote: '',
-      uploadUrl: '',
-      isUploaded: false,
-      aju: '',
-      containerNo: '',
-      loloRepairAdm: 0,
-      adminDepoTrf: 0,
-      loloRounding: 0,
-      loloTotalCost: 0,
-    }
-  }
-  const kasbon =
-    item && item.kasbon !== undefined && item.kasbon !== null ? parseFloat(item.kasbon) || 0 : 0
-  const totalSettlement =
-    item && item.totalSettlement !== undefined && item.totalSettlement !== null
-      ? parseFloat(item.totalSettlement) || 0
-      : 0
-  const kasbonDiff =
-    item && item.kasbonDiff !== undefined && item.kasbonDiff !== null
-      ? parseFloat(item.kasbonDiff) || 0
-      : kasbon - totalSettlement
-  const loloRepairAdm =
-    item && item.loloRepairAdm !== undefined && item.loloRepairAdm !== null
-      ? parseFloat(item.loloRepairAdm) || 0
-      : 0
-  const adminDepoTrf =
-    item && item.adminDepoTrf !== undefined && item.adminDepoTrf !== null
-      ? parseFloat(item.adminDepoTrf) || 0
-      : 0
-  const loloRounding =
-    item && item.loloRounding !== undefined && item.loloRounding !== null
-      ? parseFloat(item.loloRounding) || 0
-      : 0
-  const loloTotalCost =
-    item && item.loloTotalCost !== undefined && item.loloTotalCost !== null
-      ? parseFloat(item.loloTotalCost) || 0
-      : loloRepairAdm + adminDepoTrf + loloRounding
-
+  const it = typeof item === 'string' ? { destination: item } : item || {}
   return {
-    jobPlanningId: (item && item.jobPlanningId) || fb.jobPlanningId || null,
-    customerId: (item && item.customerId) || fb.customerId || null,
-    consigneeId: (item && item.consigneeId) || fb.consigneeId || null,
-    destination: (item && (item.destination || item.value || item.name)) || '',
-    nominal: (item && item.nominal !== undefined && item.nominal !== null) ? parseFloat(item.nominal) : 0,
-    qty: (item && item.qty) ? parseInt(item.qty, 10) : null,
-    size: (item && item.size) ? parseFloat(item.size) : null,
-    sizeMeasurement: (item && (item.sizeMeasurement || item.sizeMeasurment)) || '',
-    vehicleId: (item && item.vehicleId) || null,
-    driverId: (item && item.driverId) || null,
-    policeNo: (item && item.policeNo) || '',
-    driver: (item && item.driver) || '',
-    departureDate: (item && item.departureDate) || null,
-    transferDate: (item && item.transferDate) || null,
-    kasbon,
-    settlementDate: (item && item.settlementDate) || null,
-    addCostSettlement:
-      item && item.addCostSettlement !== undefined && item.addCostSettlement !== null
-        ? parseFloat(item.addCostSettlement) || 0
-        : 0,
-    totalSettlement,
-    ujlNote: (item && item.ujlNote) || '',
-    ujlDetails: normalizeUjlDetails(item && item.ujlDetails),
-    kasbonDiff,
-    kasbonDiffNote: (item && item.kasbonDiffNote) || '',
-    uploadUrl: (item && item.uploadUrl) || '',
-    isUploaded: Boolean((item && item.isUploaded) || (item && item.uploadUrl)),
-    aju: (item && item.aju) || '',
-    containerNo: (item && item.containerNo) || '',
-    loloRepairAdm,
-    adminDepoTrf,
-    loloRounding,
-    loloTotalCost,
+    jobPlanningId: it.jobPlanningId || fb.jobPlanningId || null,
+    customerId: it.customerId || fb.customerId || null,
+    consigneeId: it.consigneeId || fb.consigneeId || null,
+    destination: it.destination || it.value || it.name || '',
+    nominal: it.nominal !== undefined && it.nominal !== null ? parseFloat(it.nominal) || 0 : 0,
+    qty: it.qty ? parseInt(it.qty, 10) : null,
+    size: it.size ? parseFloat(it.size) : null,
+    sizeMeasurement: it.sizeMeasurement || it.sizeMeasurment || '',
   }
+}
+
+// Settlement totals that used to be stored on the cash request itself
+const LEGACY_SETTLEMENT_KEYS = [
+  'jobSettlement',
+  'sparePartSettlement',
+  'otherSettlement',
+  'driverSettlement',
+  'loloSettlement',
+]
+
+async function softDeleteSettlements(mongo, cashRequestIds) {
+  const ids = (cashRequestIds || []).filter(Boolean).map(String)
+  if (ids.length === 0) return
+  await mongo.Settlement.updateMany(
+    { cashRequestId: { $in: ids }, deletedAt: null },
+    { $set: { deletedAt: new Date().getTime() } }
+  )
 }
 
 function isSet(value) {
@@ -275,6 +194,9 @@ function jobFromDetail(detail, existingJobs) {
 // Normalizes a create/update input so cashRequestDetails is stored as
 // [cashRequestDetailObject] and the legacy jobs/destinations fields stay in sync.
 async function prepareCashRequestInput(input, existing, mongo) {
+  // Settlement totals are saved through saveSettlements, never on the cash request
+  LEGACY_SETTLEMENT_KEYS.forEach(key => delete input[key])
+
   if (Array.isArray(input.cashRequestDetails)) {
     const details = input.cashRequestDetails.map(normalizeCashRequestDetail)
 
@@ -546,6 +468,13 @@ export default {
       if (!hasItems && jobs.length > 0) list = jobs
       return mergeDetailsByJob(list.map(normalizeCashRequestDetail))
     },
+    settlements: async (parent, args, { mongo }) => {
+      const id = parent && (parent._id || parent.id)
+      if (!id) return []
+      return mongo.Settlement.find({ cashRequestId: String(id), deletedAt: null })
+        .sort({ createdAt: 1 })
+        .toArray()
+    },
   },
   Subscription: {
     CashRequest: {
@@ -745,6 +674,7 @@ export default {
 
       if (!!currentUser) {
         await mongoDelete('CashRequest', args, context)
+        await softDeleteSettlements(mongo, [args.id])
         return {
           success: true,
           message: "Cash request has been deleted successfully!"
@@ -763,6 +693,7 @@ export default {
 
       if (!!currentUser) {
         await mongoMultiDelete('CashRequest', args, context)
+        await softDeleteSettlements(mongo, args.ids)
         return {
           success: true,
           message: "Cash requests have been deleted successfully!"

@@ -1,0 +1,199 @@
+# Settlement (penyelesaian) of a cash request.
+# One document per cash request + settlementType (Driver, Lolo, Job, SparePart, Other).
+type Settlement {
+  id: String!
+  accountId: String
+  cashRequestId: String
+  cashNo: String
+  settlementType: settlementTypeEnum
+  items: [settlementItemObject]  # per-row data (Penyelesaian Supir / Lolo tables)
+  total: Float                   # settlement total of this type
+  note: String
+  createdAt: Date
+  updatedAt: Date
+
+  # relations
+  cashRequest: CashRequest
+}
+
+# One row of a settlement table, linked to a cash request line by
+# jobPlanningId + lineIndex (position inside cashRequestDetails[].items).
+type settlementItemObject {
+  jobPlanningId: String
+  lineIndex: Int
+  customerId: String
+  consigneeId: String
+  destination: String
+  qty: Int
+  size: Float
+  sizeMeasurement: String
+  # Penyelesaian Supir
+  vehicleId: String
+  driverId: String
+  policeNo: String
+  driver: String
+  departureDate: Date
+  transferDate: Date
+  kasbon: Float
+  settlementDate: Date
+  addCostSettlement: Float
+  totalSettlement: Float
+  ujlNote: String
+  ujlDetails: [cashUjlDetailObject]
+  kasbonDiff: Float
+  kasbonDiffNote: String
+  uploadUrl: String
+  isUploaded: Boolean
+  # Penyelesaian Lolo
+  aju: String
+  containerNo: String
+  loloRepairAdm: Float
+  adminDepoTrf: Float
+  loloRounding: Float
+  loloTotalCost: Float
+
+  # relations
+  jobPlanning: JobPlanning
+  customer: Customer
+}
+
+input settlementItemObjectInput {
+  jobPlanningId: String
+  lineIndex: Int
+  customerId: String
+  consigneeId: String
+  destination: String
+  qty: Int
+  size: Float
+  sizeMeasurement: String
+  vehicleId: String
+  driverId: String
+  policeNo: String
+  driver: String
+  departureDate: Date
+  transferDate: Date
+  kasbon: Float
+  settlementDate: Date
+  addCostSettlement: Float
+  totalSettlement: Float
+  ujlNote: String
+  ujlDetails: [cashUjlDetailObjectInput]
+  kasbonDiff: Float
+  kasbonDiffNote: String
+  uploadUrl: String
+  isUploaded: Boolean
+  aju: String
+  containerNo: String
+  loloRepairAdm: Float
+  adminDepoTrf: Float
+  loloRounding: Float
+  loloTotalCost: Float
+}
+
+# Add Cost Peny. / Ket. UJL line
+type cashUjlDetailObject {
+  costId: String
+  biaya: String
+  isCost: Boolean
+  nominal: Float
+  uploadUrl: String
+  isUploaded: Boolean
+  paymentDate: Date
+  account: String
+  memo: String
+}
+
+input cashUjlDetailObjectInput {
+  costId: String
+  biaya: String
+  isCost: Boolean
+  nominal: Float
+  uploadUrl: String
+  isUploaded: Boolean
+  paymentDate: Date
+  account: String
+  memo: String
+}
+
+enum settlementTypeEnum {
+  Driver
+  Lolo
+  Job
+  SparePart
+  Other
+}
+
+enum SettlementOrder {
+  cashNo_DESC
+  cashNo_ASC
+  createdAt_DESC
+  createdAt_ASC
+  updatedAt_DESC
+  updatedAt_ASC
+}
+
+input SettlementFilter {
+  OR: [SettlementFilter!]
+  AND: [SettlementFilter!]
+  _id_in: [String]
+  _id_nin: [String]
+  accountId: String
+  cashRequestId: String
+  cashRequestId_in: [String]
+  cashNo: String
+  cashNo_regex: String
+  settlementType: settlementTypeEnum
+  createdAt_gte: Date
+  createdAt_lte: Date
+}
+
+# settlementType identifies the document to create/replace for the cash request
+input SettlementInput {
+  settlementType: settlementTypeEnum!
+  items: [settlementItemObjectInput]
+  total: Float
+  note: String
+}
+
+type SaveSettlementsResponse {
+  success: Boolean!
+  message: String
+  settlements: [Settlement]
+}
+
+type DeleteSettlementResponse {
+  success: Boolean!
+  message: String
+}
+
+type Query {
+  allSettlements(
+    filter: SettlementFilter
+    first: Int
+    skip: Int
+    orderBy: SettlementOrder
+  ): [Settlement]
+  _allSettlementsMeta(filter: SettlementFilter): ObjectMeta
+  getSettlement(id: String, cashRequestId: String, settlementType: settlementTypeEnum): Settlement
+}
+
+type Mutation {
+  # Upserts one Settlement per input.settlementType for the cash request;
+  # types not sent are left untouched.
+  saveSettlements(
+    cashRequestId: String!
+    input: [SettlementInput!]!
+  ): SaveSettlementsResponse
+
+  deleteSettlement(id: String!): DeleteSettlementResponse
+}
+
+type SettlementSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Settlement
+  previousValues: Settlement
+}
+
+type Subscription {
+  Settlement(filter: SubscriptionFilter, dataFilter: SettlementFilter): SettlementSubscriptionPayload
+}

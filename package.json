@@ -10,6 +10,7 @@
     "db:index": "babel-node ./src/migrations/indexing/index.js",
     "db:modification": "babel-node ./src/migrations/modification/index.js",
     "db:index:reset": "babel-node ./src/migrations/indexing/reset.js",
+    "db:migrate:settlements": "babel-node ./src/migrations/modification/moveCashRequestSettlements.js",
     "db:seed": "babel-node ./src/seeder/index.js",
     "db:seed:accounts": "babel-node ./src/seeder/index.js accounts",
     "db:seed:users": "babel-node ./src/seeder/index.js users",
