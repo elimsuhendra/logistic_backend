@@ -6,13 +6,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [1.3.8] - 2026-11-17 - Voucher Accounts and Automatic Voucher Numbers
+## [1.3.11] - 2026-11-17 - Voucher Accounts and Automatic Voucher Numbers
 
 ### Added
 
 - **Voucher Accounts**: Added a list of payment accounts (such as Kas BCA Aya, Uang Cash Aya, Kasbonan Supir, and Kasbonan Operasional) that can be chosen when recording a voucher. Accounts can be shared by every business account or belong to a single one, and inactive accounts are hidden from the choices.
 - **Voucher Account Setup Script**: Added a setup command (`yarn db:seed:categories`) that loads the standard voucher accounts on its own, without touching any other data. Running it again updates the existing accounts instead of creating duplicates.
 - **Automatic Voucher Numbers**: Voucher numbers are now generated automatically in the format `[account initial]/VKK-K/[year][month]/[0001]`, for example `PJT/VKK-K/2611/0001`. The number continues from the last voucher of the same business account and starts again from 0001 at the beginning of each month, based on Indonesian time (WIB).
+
+
+## [1.3.10] - 2026-11-17 - Separate Settlement Records for Cash Requests
+
+### Changed
+
+- **Settlements Stored Separately**: Settlements (Penyelesaian) of a cash request are now kept as their own records, one for each type: Driver, Lolo, Job, Spare Part, and Other. Each record holds the rows of its settlement table and its own total, so settlements can be saved and reviewed without changing the cash request itself.
+
+### Added
+
+- **Settlement Data Move**: Added a one-time command (`yarn db:migrate:settlements`) that moves the settlement totals and Penyelesaian Supir / Lolo rows already saved on cash requests into the new settlement records. Running it again does not create duplicates.
+
+
+## [1.3.9] - 2026-11-16 - Cash Requests with Approvals
+
+### Added
+
+- **Cash Requests**: Added support for creating, viewing, updating, and removing cash requests, including removing several at once. Each request has a type (PJ, SP, or KG), a request date, and one row per job with its quantity, area, and amount, plus other, spare part, and rounding amounts and the request total.
+- **Automatic Bond Numbers**: The bond number (Cash No.) continues from the last request with the same business account, type, and month.
+- **Driver and Lolo Settlements**: Cash requests can record Penyelesaian Supir (vehicle, driver, departure and transfer dates, cash advance, additional costs, and the difference from the advance) and Penyelesaian Lolo (AJU, container number, repair and admin fees, rounding, and total cost).
+- **Cash Request Approvals**: Added approvals for cash requests. Each approver's decision is recorded as Waiting, Pending, Approved, Rejected, or Cancelled, together with a note.
+- **Employee Setup Script**: Added a setup command (`yarn db:seed:employees`) that loads the standard employee records.
+
+### Changed
+
+- **Cash Request Access**: Users now only see the cash requests of their business account that they created or are asked to approve.
+
+
+## [1.3.8] - 2026-11-02 - Account Contact Numbers and One Login for Many Accounts
+
+### Added
+
+- **Business Account Contact Number**: Business accounts can now store a contact number, and the list of accounts can be searched by it.
+- **One Login for Many Accounts**: A single user login can now belong to several business accounts, with a separate employee record for each one (employee ID, work email, phone, and role). Users can switch between their accounts without signing in again.
 
 
 ## [1.3.7] - 2026-10-26 - Role Management with Menu Access Control
