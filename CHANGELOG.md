@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.3.8] - 2026-11-17 - Voucher Accounts and Automatic Voucher Numbers
+
+### Added
+
+- **Voucher Accounts**: Added a list of payment accounts (such as Kas BCA Aya, Uang Cash Aya, Kasbonan Supir, and Kasbonan Operasional) that can be chosen when recording a voucher. Accounts can be shared by every business account or belong to a single one, and inactive accounts are hidden from the choices.
+- **Voucher Account Setup Script**: Added a setup command (`yarn db:seed:categories`) that loads the standard voucher accounts on its own, without touching any other data. Running it again updates the existing accounts instead of creating duplicates.
+- **Automatic Voucher Numbers**: Voucher numbers are now generated automatically in the format `[account initial]/VKK-K/[year][month]/[0001]`, for example `PJT/VKK-K/2611/0001`. The number continues from the last voucher of the same business account and starts again from 0001 at the beginning of each month, based on Indonesian time (WIB).
+
+
 ## [1.3.7] - 2026-10-26 - Role Management with Menu Access Control
 
 ### Added
