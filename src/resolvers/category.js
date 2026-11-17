@@ -3,9 +3,17 @@ import { ObjectId } from 'mongodb'
 import buildMongoOrders from 'src/utils/buildMongoOrders'
 import { sanitizeRegex } from 'src/utils/common'
 
+// ids may be stored as ObjectId or string
+const idMatch = id =>
+  ObjectId.isValid(String(id)) ? { $in: [ObjectId(String(id)), String(id)] } : String(id)
+
 function buildCategoryFilter(filter = {}) {
-  const { OR, AND, _id_in, type, type_in, name, label_regex, inactive } = filter || {}
+  const { OR, AND, _id_in, accountId, type, type_in, name, label_regex, inactive } = filter || {}
   const out = { deletedAt: null }
+  const and = []
+
+  // rows of the given account plus shared rows (no accountId, e.g. seeded ones)
+  if (accountId) and.push({ $or: [{ accountId: idMatch(accountId) }, { accountId: null }] })
 
   if (_id_in) out._id = { $in: _id_in.filter(id => ObjectId.isValid(id)).map(id => ObjectId(id)) }
   if (type) out.type = type
@@ -16,7 +24,8 @@ function buildCategoryFilter(filter = {}) {
   if (inactive === true) out.inactive = true
   if (inactive === false) out.inactive = { $ne: true }
   if (Array.isArray(OR) && OR.length) out.$or = OR.map(buildCategoryFilter)
-  if (Array.isArray(AND) && AND.length) out.$and = AND.map(buildCategoryFilter)
+  if (Array.isArray(AND) && AND.length) and.push(...AND.map(buildCategoryFilter))
+  if (and.length) out.$and = and
 
   return out
 }
@@ -24,6 +33,7 @@ function buildCategoryFilter(filter = {}) {
 export default {
   Category: {
     id: parent => String(parent._id || parent.id),
+    accountId: parent => (parent.accountId ? String(parent.accountId) : null),
     inactive: parent => Boolean(parent.inactive),
   },
   Query: {

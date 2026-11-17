@@ -3,8 +3,8 @@ import voucherAccounts from "./data/voucherAccounts"
 const TYPE = "voucher-account"
 
 // Upserts the voucher accounts into the Category collection.
-// Keyed on type + name, so re-running the seeder is safe; accountId left by
-// earlier runs is removed.
+// Seeded rows are shared (no accountId). Keyed on type + name, so re-running
+// the seeder is safe; accountId left by earlier runs is removed.
 const importCategories = async (context) => {
   const { mongo } = context
   const now = Date.now()

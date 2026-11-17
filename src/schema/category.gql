@@ -1,6 +1,7 @@
 # Master data grouped by type, e.g. type "voucher-account" = Account select of a voucher.
 type Category {
   id: String!
+  accountId: String        # empty = shared by every account
   seeder: Boolean
   type: String
   name: String
@@ -25,6 +26,7 @@ input CategoryFilter {
   OR: [CategoryFilter!]
   AND: [CategoryFilter!]
   _id_in: [String]
+  accountId: String        # also matches rows without accountId (shared)
   type: String
   type_in: [String]
   name: String
