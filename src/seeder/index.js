@@ -8,6 +8,7 @@ import { ObjectId } from "mongodb"
 import importAccounts from "./accounts"
 import importMenuPermissions from "./menuPermissions"
 import importEmployee from "./employee"
+import importCategories from "./categories"
 
 const loadSeeds = async () => {
   try {
@@ -27,6 +28,10 @@ const loadSeeds = async () => {
       console.log('Importing Parameter Types.')
       const parameterTypes = await importParameterTypes(context)
       console.log('Parameter Types Imported')
+
+      console.log('Importing Categories.')
+      await importCategories(context)
+      console.log('Categories Imported')
 
       console.log("Importing Users.")
       const users = await importUsers(context)
