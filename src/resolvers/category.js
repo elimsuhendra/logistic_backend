@@ -3,16 +3,11 @@ import { ObjectId } from 'mongodb'
 import buildMongoOrders from 'src/utils/buildMongoOrders'
 import { sanitizeRegex } from 'src/utils/common'
 
-// ids may be stored as ObjectId or string
-const idMatch = id =>
-  ObjectId.isValid(String(id)) ? { $in: [ObjectId(String(id)), String(id)] } : String(id)
-
 function buildCategoryFilter(filter = {}) {
-  const { OR, AND, _id_in, accountId, type, type_in, name, label_regex, inactive } = filter || {}
+  const { OR, AND, _id_in, type, type_in, name, label_regex, inactive } = filter || {}
   const out = { deletedAt: null }
 
   if (_id_in) out._id = { $in: _id_in.filter(id => ObjectId.isValid(id)).map(id => ObjectId(id)) }
-  if (accountId) out.accountId = idMatch(accountId)
   if (type) out.type = type
   if (type_in) out.type = { $in: type_in }
   if (name) out.name = name
@@ -29,7 +24,6 @@ function buildCategoryFilter(filter = {}) {
 export default {
   Category: {
     id: parent => String(parent._id || parent.id),
-    accountId: parent => (parent.accountId ? String(parent.accountId) : null),
     inactive: parent => Boolean(parent.inactive),
   },
   Query: {
