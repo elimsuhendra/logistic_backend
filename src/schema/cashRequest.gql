@@ -16,11 +16,6 @@ type CashRequest {
   sparePartCash: Float
   roundingCash: Float
   requestTotal: Float
-  jobSettlement: Float
-  sparePartSettlement: Float
-  otherSettlement: Float
-  driverSettlement: Float
-  loloSettlement: Float
   returnTotal: Float
   isDraft: Boolean
   statusOperation: statusOperationKasbonEnum
@@ -28,7 +23,8 @@ type CashRequest {
   createdAt: Date
   updatedAt: Date
   cashRequestDetails: [cashRequestDetailObject]
-  settlements: [settlementObject]
+  # Penyelesaian (Driver, Lolo, Job, SparePart, Other) live in the Settlement collection
+  settlements: [Settlement]
   totalPengajuan: Float
   rounding: Float
   totalAfterRounding: Float
@@ -81,13 +77,6 @@ input cashRequestDetailObjectInput {
   total: Float
 }
 
-type settlementObject {
-  settlementId: String
-  settlementType: settlementTypeEnum
-  total: Float
-  details: [JSON]
-}
-
 type cashJobObject {
   jobPlanningId: String
   customerId: String
@@ -109,30 +98,7 @@ input cashJobObjectInput {
   total: Float
 }
 
-type cashUjlDetailObject {
-  costId: String
-  biaya: String
-  isCost: Boolean
-  nominal: Float
-  uploadUrl: String
-  isUploaded: Boolean
-  paymentDate: Date
-  account: String
-  memo: String
-}
-
-input cashUjlDetailObjectInput {
-  costId: String
-  biaya: String
-  isCost: Boolean
-  nominal: Float
-  uploadUrl: String
-  isUploaded: Boolean
-  paymentDate: Date
-  account: String
-  memo: String
-}
-
+# Legacy line shape (cash request part only); settlement fields moved to settlementItemObject
 type cashDestinationObject {
   jobPlanningId: String
   customerId: String
@@ -142,28 +108,6 @@ type cashDestinationObject {
   qty: Int
   size: Float
   sizeMeasurement: String
-  vehicleId: String
-  driverId: String
-  policeNo: String
-  driver: String
-  departureDate: Date
-  transferDate: Date
-  kasbon: Float
-  settlementDate: Date
-  addCostSettlement: Float
-  totalSettlement: Float
-  ujlNote: String
-  ujlDetails: [cashUjlDetailObject]
-  kasbonDiff: Float
-  kasbonDiffNote: String
-  uploadUrl: String
-  isUploaded: Boolean
-  aju: String
-  containerNo: String
-  loloRepairAdm: Float
-  adminDepoTrf: Float
-  loloRounding: Float
-  loloTotalCost: Float
 }
 
 input cashDestinationObjectInput {
@@ -175,35 +119,6 @@ input cashDestinationObjectInput {
   qty: Int
   size: Float
   sizeMeasurement: String
-  vehicleId: String
-  driverId: String
-  policeNo: String
-  driver: String
-  departureDate: Date
-  transferDate: Date
-  kasbon: Float
-  settlementDate: Date
-  addCostSettlement: Float
-  totalSettlement: Float
-  ujlNote: String
-  ujlDetails: [cashUjlDetailObjectInput]
-  kasbonDiff: Float
-  kasbonDiffNote: String
-  uploadUrl: String
-  isUploaded: Boolean
-  aju: String
-  containerNo: String
-  loloRepairAdm: Float
-  adminDepoTrf: Float
-  loloRounding: Float
-  loloTotalCost: Float
-}
-
-enum settlementTypeEnum {
-  Driver
-  Lolo
-  SparePart
-  Other
 }
 
 enum bondTypeEnum {
@@ -295,13 +210,6 @@ input CashRequestInput {
   sparePartCash: Float
   roundingCash: Float
   requestTotal: Float
-  
-  jobSettlement: Float
-  sparePartSettlement: Float
-  otherSettlement: Float
-  driverSettlement: Float
-  loloSettlement: Float
-  
   returnTotal: Float
   isDraft: Boolean
   statusOperation: StatusOperationEnum
