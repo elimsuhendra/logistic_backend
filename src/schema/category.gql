@@ -6,6 +6,7 @@ type Category {
   type: String
   name: String
   label: String
+  isCost: Boolean          # type "cost-revenue": true = Cost, false = Revenue
   inactive: Boolean
   createdBy: String
   updatedBy: String
@@ -31,6 +32,7 @@ input CategoryFilter {
   type_in: [String]
   name: String
   label_regex: String
+  isCost: Boolean          # type "cost-revenue" only
   inactive: Boolean        # false also matches rows without the field
 }
 
