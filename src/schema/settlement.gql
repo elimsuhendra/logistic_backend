@@ -81,6 +81,8 @@ input settlementItemObjectInput {
   transferDate: Date
   kasbon: Float
   settlementDate: Date
+  voucherId: String                # voucher of the row's Add Cost Penyelesaian
+  voucherNo: String
   addCostSettlement: Float
   totalSettlement: Float
   ujlNote: String
