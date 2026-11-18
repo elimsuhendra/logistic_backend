@@ -3,16 +3,23 @@
 type Settlement {
   id: String!
   accountId: String
-  cashRequestId: String
-  cashNo: String
+  settlementNo: String
   settlementType: settlementTypeEnum
+  reffId: String
+  reffNo: String
+  reffCollectionName: String
+  # cashNo: String
+  # jobPlanningId: String
+  # jobPlanningNo: String
   items: [settlementItemObject]  # per-row data (Penyelesaian Supir / Lolo tables)
+  # settlementDetails: [settlementItemObject]  # per-row data (Penyelesaian Supir / Lolo tables)
   total: Float                   # settlement total of this type
   note: String
   createdAt: Date
   updatedAt: Date
 
   # relations
+  jobPlanning: JobPlanning
   cashRequest: CashRequest
 }
 
@@ -20,6 +27,7 @@ type Settlement {
 # jobPlanningId + lineIndex (position inside cashRequestDetails[].items).
 type settlementItemObject {
   jobPlanningId: String
+  jobPlanningNo: String
   lineIndex: Int
   customerId: String
   consigneeId: String
@@ -36,10 +44,9 @@ type settlementItemObject {
   transferDate: Date
   kasbon: Float
   settlementDate: Date
-  addCostSettlement: Float
-  totalSettlement: Float
-  ujlNote: String
-  ujlDetails: [cashUjlDetailObject]
+  # change addCostSettlement to voucher
+  voucherId: String
+  voucherNo: String
   kasbonDiff: Float
   kasbonDiffNote: String
   uploadUrl: String
@@ -124,8 +131,8 @@ enum settlementTypeEnum {
 }
 
 enum SettlementOrder {
-  cashNo_DESC
-  cashNo_ASC
+  # cashNo_DESC
+  # cashNo_ASC
   createdAt_DESC
   createdAt_ASC
   updatedAt_DESC
@@ -140,8 +147,8 @@ input SettlementFilter {
   accountId: String
   cashRequestId: String
   cashRequestId_in: [String]
-  cashNo: String
-  cashNo_regex: String
+  # cashNo: String
+  # cashNo_regex: String
   settlementType: settlementTypeEnum
   createdAt_gte: Date
   createdAt_lte: Date
