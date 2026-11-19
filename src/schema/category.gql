@@ -6,12 +6,12 @@ type Category {
   type: String
   name: String
   label: String
-  isCost: Boolean          # type "cost-revenue": true = Cost, false = Revenue
   inactive: Boolean
-  createdBy: String
-  updatedBy: String
+  createdBy: String        # userId of the creator
+  updatedBy: String        # userId of the last updater
   createdAt: Date
   updatedAt: Date
+  additionalInfo: [additionalInfoObject]
 }
 
 enum CategoryOrder {
@@ -21,6 +21,11 @@ enum CategoryOrder {
   name_DESC
   createdAt_ASC
   createdAt_DESC
+}
+
+type additionalInfoObject {
+  key: String
+  value: JSON              # any JSON value (scalar JSON = graphql-type-json), e.g. isCost: true
 }
 
 input CategoryFilter {

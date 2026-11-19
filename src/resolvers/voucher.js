@@ -14,14 +14,14 @@ const num = v => {
   return Number.isFinite(n) ? n : 0
 }
 
+// voucherItemObject; vouchers saved before the rename may still hold costId / biaya
 function normalizeItems(items) {
   return (Array.isArray(items) ? items : []).map(i => ({
-    costId: i.costId || '',
-    biaya: i.biaya || '',
+    categoryIdCostRevenue: i.categoryIdCostRevenue || i.costId || '',
+    categoryNameCostRevenue: i.categoryNameCostRevenue || i.biaya || '',
     isCost: i.isCost !== undefined && i.isCost !== null ? Boolean(i.isCost) : true,
     nominal: num(i.nominal),
     uploadUrl: i.uploadUrl || '',
-    isUploaded: Boolean(i.isUploaded || i.uploadUrl),
   }))
 }
 
@@ -38,10 +38,8 @@ function buildVoucherFilters(filter) {
   if (f._id_in) out._id = { $in: f._id_in.filter(id => ObjectId.isValid(id)).map(id => ObjectId(id)) }
   if (f.accountId) out.accountId = idMatch(f.accountId)
   if (f.voucherNo_regex) out.voucherNo = { $regex: sanitizeRegex(f.voucherNo_regex), $options: 'i' }
-  if (f.reffId) out.reffId = idMatch(f.reffId)
-  if (f.cashRequestId) out.cashRequestId = idMatch(f.cashRequestId)
   if (f.jobPlanningId) out.jobPlanningId = idMatch(f.jobPlanningId)
-  if (f.cashAccountId) out.cashAccountId = f.cashAccountId
+  if (f.categoryIdVoucherAccount) out.categoryIdVoucherAccount = f.categoryIdVoucherAccount
   if (f.paymentDate_gte || f.paymentDate_lte) {
     out.paymentDate = {
       ...(f.paymentDate_gte ? { $gte: new Date(f.paymentDate_gte).valueOf() } : {}),
@@ -59,27 +57,35 @@ const findById = (collection, id) =>
     : null
 
 // Fields shared by create and update, taken from VoucherInput
-async function buildVoucherDoc(mongo, input) {
+// (accountId, createdBy and voucherNo are handled by create / update)
+function buildVoucherDoc(input) {
   const items = normalizeItems(input.items)
-  const doc = {
+  return {
     paymentDate: input.paymentDate ? new Date(input.paymentDate).valueOf() : null,
-    cashAccountId: input.cashAccountId || '',
-    cashAccountName: input.cashAccountName || input.cashAccountId || '',
+    categoryIdVoucherAccount: input.categoryIdVoucherAccount || '',
     memo: (input.memo || '').trim(),
     items,
     ...computeTotals(items),
-    cashRequestId: input.cashRequestId || null,
-    jobPlanningId: input.jobPlanningId || null,
-    lineIndex: Number.isInteger(input.lineIndex) ? input.lineIndex : null,
     isDraft: Boolean(input.isDraft),
   }
-  if (input.reffId) {
-    const settlement = await findById(mongo.Settlement, input.reffId)
-    doc.reffId = String(input.reffId)
-    doc.reffNo = settlement ? settlement.settlementNo || null : null
-    doc.reffCollectionName = 'settlements'
+}
+
+const VOUCHER_REFF_JOB_PLANNING = 'jobPlannings'
+
+// Record the voucher belongs to (reffId / reffNo / reffCollectionName). Detail Add
+// Cost Penyelesaian sends its No. Job: reffId = jobPlanningId, reffNo =
+// jobPlanningNo, reffCollectionName = "jobPlannings". The collection defaults to
+// jobPlannings and an empty reffNo is looked up. Without reffId nothing changes.
+async function buildReff(mongo, input) {
+  if (!input || !input.reffId) return {}
+  const reffId = String(input.reffId)
+  const reffCollectionName = input.reffCollectionName || VOUCHER_REFF_JOB_PLANNING
+  let reffNo = input.reffNo || null
+  if (!reffNo && reffCollectionName === VOUCHER_REFF_JOB_PLANNING) {
+    const jobPlanning = await findById(mongo.JobPlanning, reffId)
+    reffNo = (jobPlanning && jobPlanning.jobPlanningNo) || null
   }
-  return doc
+  return { reffId, reffNo, reffCollectionName }
 }
 
 async function getCurrentUser(context) {
@@ -92,9 +98,14 @@ export default {
   Voucher: {
     id: parent => parent._id || parent.id,
     items: parent => normalizeItems(parent.items),
-    settlement: (parent, args, { mongo }) => findById(mongo.Settlement, parent.reffId),
+    settlement: (parent, args, { mongo }) =>
+      parent.reffCollectionName === 'settlements' ? findById(mongo.Settlement, parent.reffId) : null,
     cashRequest: (parent, args, { mongo }) => findById(mongo.CashRequest, parent.cashRequestId),
-    jobPlanning: (parent, args, { mongo }) => findById(mongo.JobPlanning, parent.jobPlanningId),
+    jobPlanning: (parent, args, { mongo }) =>
+      findById(
+        mongo.JobPlanning,
+        parent.reffCollectionName === VOUCHER_REFF_JOB_PLANNING ? parent.reffId : parent.jobPlanningId
+      ),
     user: (parent, args, { mongo }) => findById(mongo.User, parent.createdBy),
   },
   Query: {
@@ -111,15 +122,10 @@ export default {
       const count = await mongo.Voucher.countDocuments(buildVoucherFilters(filter))
       return { count }
     }),
-    // by id, or by the settlement row it belongs to (reffId + lineIndex)
-    getVoucher: requiresAuth.createResolver(async (parent, { id, reffId, lineIndex }, { mongo }) => {
-      if (id) return findById(mongo.Voucher, id)
-      if (!reffId) return null
-      return mongo.Voucher.findOne({
-        reffId: idMatch(reffId),
-        ...(Number.isInteger(lineIndex) ? { lineIndex } : {}),
-        deletedAt: null,
-      })
+    // by id (the dashboard takes it from settlement.items[].voucherId)
+    getVoucher: requiresAuth.createResolver(async (parent, { id }, { mongo }) => {
+      const result = findById(mongo.Voucher, id)
+      return result
     }),
     // Preview of the number the next voucher of the account gets; createVoucher
     // calls generateVoucherNo again when saving, in case another voucher took it.
@@ -137,11 +143,12 @@ export default {
 
       try {
         const accountId = input.accountId || currentUser.accountId || null
-        const doc = await buildVoucherDoc(mongo, input)
+        // reffId = jobPlanningId, reffNo = jobPlanningNo, reffCollectionName = "jobPlannings"
+        const doc = { ...input, ...(await buildReff(mongo, input)) }
         // numbered when saved, so a preview number taken meanwhile is not reused
         const voucherNo =
           input.voucherNo || (await generateVoucherNo(mongo, { accountId, date: doc.paymentDate }))
-
+        console.log('doc', JSON.stringify(doc))
         const created = await mongoCreate(
           'Voucher',
           {
@@ -170,7 +177,8 @@ export default {
       if (!existing) return { success: false, message: 'Voucher not found.' }
 
       try {
-        const doc = await buildVoucherDoc(mongo, input)
+        // reffId = jobPlanningId, reffNo = jobPlanningNo, reffCollectionName = "jobPlannings"
+        const doc = { ...input, ...(await buildReff(mongo, input)) }
         // accountId, voucherNo and createdBy stay as created
         const updated = await mongoUpdate(
           'Voucher',

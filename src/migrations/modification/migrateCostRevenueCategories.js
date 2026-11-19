@@ -27,7 +27,12 @@ const migrateCostRevenueCategories = async (context) => {
           type: COST_REVENUE_TYPE,
           name: item.value,
           label: item.label,
-          isCost: Boolean(item.isCost),
+          additionalInfo: [
+            {
+              key: "isCost",
+              value: Boolean(item.isCost)
+            }
+          ],
           updatedBy: "system",
           updatedAt: now,
         },
