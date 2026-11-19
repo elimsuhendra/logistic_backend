@@ -38,6 +38,15 @@ function buildVoucherFilters(filter) {
   if (f._id_in) out._id = { $in: f._id_in.filter(id => ObjectId.isValid(id)).map(id => ObjectId(id)) }
   if (f.accountId) out.accountId = idMatch(f.accountId)
   if (f.voucherNo_regex) out.voucherNo = { $regex: sanitizeRegex(f.voucherNo_regex), $options: 'i' }
+  if (f.reffId) out.reffId = idMatch(f.reffId)
+  // reffId stored as string or ObjectId: match both forms of every id
+  if (Array.isArray(f.reffId_in)) {
+    const ids = f.reffId_in.filter(Boolean).map(String)
+    out.reffId = {
+      $in: [...ids, ...ids.filter(id => ObjectId.isValid(id)).map(id => ObjectId(id))],
+    }
+  }
+  if (f.reffCollectionName) out.reffCollectionName = f.reffCollectionName
   if (f.jobPlanningId) out.jobPlanningId = idMatch(f.jobPlanningId)
   if (f.categoryIdVoucherAccount) out.categoryIdVoucherAccount = f.categoryIdVoucherAccount
   if (f.paymentDate_gte || f.paymentDate_lte) {
@@ -148,7 +157,6 @@ export default {
         // numbered when saved, so a preview number taken meanwhile is not reused
         const voucherNo =
           input.voucherNo || (await generateVoucherNo(mongo, { accountId, date: doc.paymentDate }))
-        console.log('doc', JSON.stringify(doc))
         const created = await mongoCreate(
           'Voucher',
           {
