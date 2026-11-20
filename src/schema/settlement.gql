@@ -9,8 +9,8 @@ type Settlement {
   reffNo: String
   reffCollectionName: String
   # cashNo: String
-  # jobPlanningId: String
-  # jobPlanningNo: String
+  jobPlanningId: String
+  jobPlanningNo: String
   items: [settlementItemObject]  # per-row data (Penyelesaian Supir / Lolo tables)
   # settlementDetails: [settlementItemObject]  # per-row data (Penyelesaian Supir / Lolo tables)
   total: Float                   # settlement total of this type
@@ -81,6 +81,8 @@ input settlementItemObjectInput {
   transferDate: Date
   kasbon: Float
   settlementDate: Date
+  voucherId: String                # voucher of the row's Add Cost Penyelesaian
+  voucherNo: String
   addCostSettlement: Float
   totalSettlement: Float
   ujlNote: String

@@ -7,10 +7,11 @@ type Category {
   name: String
   label: String
   inactive: Boolean
-  createdBy: String
-  updatedBy: String
+  createdBy: String        # userId of the creator
+  updatedBy: String        # userId of the last updater
   createdAt: Date
   updatedAt: Date
+  additionalInfo: [additionalInfoObject]
 }
 
 enum CategoryOrder {
@@ -22,6 +23,11 @@ enum CategoryOrder {
   createdAt_DESC
 }
 
+type additionalInfoObject {
+  key: String
+  value: JSON              # any JSON value (scalar JSON = graphql-type-json), e.g. isCost: true
+}
+
 input CategoryFilter {
   OR: [CategoryFilter!]
   AND: [CategoryFilter!]
@@ -31,6 +37,7 @@ input CategoryFilter {
   type_in: [String]
   name: String
   label_regex: String
+  isCost: Boolean          # type "cost-revenue" only
   inactive: Boolean        # false also matches rows without the field
 }
 

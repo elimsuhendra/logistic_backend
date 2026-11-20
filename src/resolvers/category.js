@@ -8,7 +8,8 @@ const idMatch = id =>
   ObjectId.isValid(String(id)) ? { $in: [ObjectId(String(id)), String(id)] } : String(id)
 
 function buildCategoryFilter(filter = {}) {
-  const { OR, AND, _id_in, accountId, type, type_in, name, label_regex, inactive } = filter || {}
+  const { OR, AND, _id_in, accountId, type, type_in, name, label_regex, isCost, inactive } =
+    filter || {}
   const out = { deletedAt: null }
   const and = []
 
@@ -20,6 +21,7 @@ function buildCategoryFilter(filter = {}) {
   if (type_in) out.type = { $in: type_in }
   if (name) out.name = name
   if (label_regex) out.label = { $regex: sanitizeRegex(label_regex), $options: 'i' }
+  if (isCost === true || isCost === false) out.isCost = isCost
   // seeded / older rows may not have the field, so false means "not true"
   if (inactive === true) out.inactive = true
   if (inactive === false) out.inactive = { $ne: true }

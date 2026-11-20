@@ -51,6 +51,8 @@ export function normalizeSettlementItem(item, lineIndex) {
     transferDate: it.transferDate || null,
     kasbon,
     settlementDate: it.settlementDate || null,
+    voucherId: it.voucherId || null,
+    voucherNo: it.voucherNo || '',
     addCostSettlement: ujlDetails.length > 0 ? totalSettlement : num(it.addCostSettlement),
     totalSettlement,
     ujlNote: it.ujlNote || '',
