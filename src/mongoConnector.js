@@ -61,6 +61,7 @@ export default async () => {
       JobPlanning: db.collection("jobPlannings"),
       CashRequest: db.collection("cashRequests"),
       Settlement: db.collection("settlements"),
+      CashRequestSettlement: db.collection("cashRequestSettlements"),
       Category: db.collection("categories"),
       Voucher: db.collection("vouchers"),
       Workflow: db.collection("workflows"),
