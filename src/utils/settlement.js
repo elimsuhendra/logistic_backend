@@ -70,6 +70,40 @@ export function normalizeSettlementItem(item, lineIndex) {
   }
 }
 
+// Vouchers of a cash request settlement row: [{ voucherId, voucherNo, voucherTotal }]
+export function normalizeSettlementVouchers(list) {
+  if (!Array.isArray(list)) return []
+  return list
+    .filter(v => v && (v.voucherId || v.voucherNo))
+    .map(v => ({
+      voucherId: v.voucherId ? String(v.voucherId) : null,
+      voucherNo: v.voucherNo || '',
+      voucherTotal: num(v.voucherTotal),
+    }))
+}
+
+// Row of a CashRequestSettlement: the Settlement row without ujlNote / ujlDetails,
+// with vouchers. The row's total is the sum of its vouchers' voucherTotal (the
+// row's own totalSettlement when it has no vouchers); kasbonDiff = kasbon - total.
+export function normalizeCashRequestSettlementItem(item, lineIndex) {
+  const it = item || {}
+  // eslint-disable-next-line no-unused-vars
+  const { ujlNote, ujlDetails, ...base } = normalizeSettlementItem(
+    { ...it, ujlNote: undefined, ujlDetails: undefined },
+    lineIndex
+  )
+  const vouchers = normalizeSettlementVouchers(it.vouchers)
+  const totalSettlement =
+    vouchers.length > 0 ? vouchers.reduce((sum, v) => sum + v.voucherTotal, 0) : base.totalSettlement
+  return {
+    ...base,
+    vouchers,
+    addCostSettlement: vouchers.length > 0 ? totalSettlement : base.addCostSettlement,
+    totalSettlement,
+    kasbonDiff: base.kasbon - totalSettlement,
+  }
+}
+
 // True when a cash request line carries any Penyelesaian Supir data
 export function hasDriverSettlementData(d) {
   if (!d || typeof d !== 'object') return false

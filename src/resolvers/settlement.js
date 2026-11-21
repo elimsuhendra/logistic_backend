@@ -97,9 +97,25 @@ export default {
         })
       }
     ),
+    // Settlement with the highest settlementNo starting with the prefix; the
+    // dashboard increments its number for the next settlement
+    getLastSettlement: requiresAuth.createResolver(
+      async (parent, { prefixSettlementNo }, { mongo }) => {
+        if (!prefixSettlementNo) return null
+        const prefix = sanitizeRegex(prefixSettlementNo.trim())
+        const [settlement] = await mongo.Settlement.find({
+          settlementNo: { $regex: `^${prefix}`, $options: 'i' },
+          deletedAt: null,
+        })
+          .sort({ settlementNo: -1 })
+          .limit(1)
+          .toArray()
+        return settlement || null
+      }
+    ),
   },
   Mutation: {
-    saveSettlements: requiresAuth.createResolver(async (parent, args, context) => {
+    createSettlement: requiresAuth.createResolver(async (parent, args, context) => {
       await checkPermissions(checkUserAuth)({ context })
       const { mongo, user } = context
       const { cashRequestId, input } = args
@@ -123,20 +139,22 @@ export default {
             : s.settlementType === 'Lolo'
             ? items.reduce((sum, i) => sum + i.loloTotalCost, 0)
             : items.reduce((sum, i) => sum + i.totalSettlement, 0)
-        const doc = {
-          accountId: cashRequest.accountId || null,
-          cashRequestId: crId,
-          cashNo: cashRequest.cashNo || null,
-          settlementType: s.settlementType,
-          items,
-          total,
-          note: s.note || '',
-        }
         const existing = await mongo.Settlement.findOne({
           cashRequestId: crId,
           settlementType: s.settlementType,
           deletedAt: null,
         })
+        const doc = {
+          accountId: cashRequest.accountId || null,
+          cashRequestId: crId,
+          cashNo: cashRequest.cashNo || null,
+          // a settlement keeps its number; a new one takes the number sent
+          settlementNo: (existing && existing.settlementNo) || s.settlementNo || null,
+          settlementType: s.settlementType,
+          items,
+          total,
+          note: s.note || '',
+        }
         if (existing) {
           await mongoUpdate(
             'Settlement',

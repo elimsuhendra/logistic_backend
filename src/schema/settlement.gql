@@ -159,12 +159,15 @@ input SettlementFilter {
 # settlementType identifies the document to create/replace for the cash request
 input SettlementInput {
   settlementType: settlementTypeEnum!
+  # e.g. PJT/STL/2611/0001 (numbered by the dashboard after getLastSettlement);
+  # a settlement that already has a number keeps it
+  settlementNo: String
   items: [settlementItemObjectInput]
   total: Float
   note: String
 }
 
-type SaveSettlementsResponse {
+type CreateSettlementResponse {
   success: Boolean!
   message: String
   settlements: [Settlement]
@@ -184,15 +187,17 @@ type Query {
   ): [Settlement]
   _allSettlementsMeta(filter: SettlementFilter): ObjectMeta
   getSettlement(id: String, cashRequestId: String, settlementType: settlementTypeEnum): Settlement
+  # settlement with the highest settlementNo starting with the prefix (e.g. "PJT/STL/2611")
+  getLastSettlement(prefixSettlementNo: String): Settlement
 }
 
 type Mutation {
   # Upserts one Settlement per input.settlementType for the cash request;
   # types not sent are left untouched.
-  saveSettlements(
+  createSettlement(
     cashRequestId: String!
     input: [SettlementInput!]!
-  ): SaveSettlementsResponse
+  ): CreateSettlementResponse
 
   deleteSettlement(id: String!): DeleteSettlementResponse
 }

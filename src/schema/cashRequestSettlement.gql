@@ -1,0 +1,209 @@
+# CashRequestSettlement: settlement (penyelesaian) of a cash request, same shape
+# as Settlement (settlement.gql), stored in the cashRequestSettlements collection.
+# One document per cash request + settlementType (Driver, Lolo, Job, SparePart, Other).
+type CashRequestSettlement {
+  id: String!
+  accountId: String
+  settlementNo: String
+  settlementType: settlementTypeEnum
+  reffId: String
+  reffNo: String
+  reffCollectionName: String
+  # cashNo: String
+  jobPlanningId: String
+  jobPlanningNo: String
+  items: [cashRequestSettlementItemObject]  # per-row data (Penyelesaian Supir / Lolo tables)
+  # settlementDetails: [settlementItemObject]  # per-row data (Penyelesaian Supir / Lolo tables)
+  total: Float                   # settlement total of this type
+  note: String
+  createdAt: Date
+  updatedAt: Date
+
+  # relations
+  jobPlanning: JobPlanning
+  cashRequest: CashRequest
+}
+
+# One row of a cash request settlement table: the Settlement row
+# (settlementItemObject) without ujlNote / ujlDetails, with the row's vouchers.
+# Linked to a cash request line by jobPlanningId + lineIndex.
+type cashRequestSettlementItemObject {
+  jobPlanningId: String
+  jobPlanningNo: String
+  lineIndex: Int
+  customerId: String
+  consigneeId: String
+  destination: String
+  qty: Int
+  size: Float
+  sizeMeasurement: String
+  # Penyelesaian Supir
+  vehicleId: String
+  driverId: String
+  policeNo: String
+  driver: String
+  departureDate: Date
+  transferDate: Date
+  kasbon: Float
+  settlementDate: Date
+  # change addCostSettlement to voucher
+  voucherId: String
+  voucherNo: String
+  kasbonDiff: Float
+  kasbonDiffNote: String
+  uploadUrl: String
+  isUploaded: Boolean
+  # Penyelesaian Lolo
+  aju: String
+  containerNo: String
+  loloRepairAdm: Float
+  adminDepoTrf: Float
+  loloRounding: Float
+  loloTotalCost: Float
+
+  vouchers: [cashRequestSettlementVoucherObject]  # vouchers of the row
+
+  # relations
+  jobPlanning: JobPlanning
+  customer: Customer
+}
+
+input cashRequestSettlementItemObjectInput {
+  jobPlanningId: String
+  lineIndex: Int
+  customerId: String
+  consigneeId: String
+  destination: String
+  qty: Int
+  size: Float
+  sizeMeasurement: String
+  vehicleId: String
+  driverId: String
+  policeNo: String
+  driver: String
+  departureDate: Date
+  transferDate: Date
+  kasbon: Float
+  settlementDate: Date
+  voucherId: String                # voucher of the row's Add Cost Penyelesaian
+  voucherNo: String
+  addCostSettlement: Float
+  totalSettlement: Float
+  kasbonDiff: Float
+  kasbonDiffNote: String
+  uploadUrl: String
+  isUploaded: Boolean
+  aju: String
+  containerNo: String
+  loloRepairAdm: Float
+  adminDepoTrf: Float
+  loloRounding: Float
+  loloTotalCost: Float
+  vouchers: [cashRequestSettlementVoucherObjectInput]  # vouchers of the row
+}
+
+# A voucher of a cash request settlement row
+type cashRequestSettlementVoucherObject {
+  voucherId: String
+  voucherNo: String
+  voucherTotal: Float              # the voucher's total (cost - revenue)
+}
+
+input cashRequestSettlementVoucherObjectInput {
+  voucherId: String
+  voucherNo: String
+  voucherTotal: Float
+}
+
+enum CashRequestSettlementOrder {
+  # cashNo_DESC
+  # cashNo_ASC
+  createdAt_DESC
+  createdAt_ASC
+  updatedAt_DESC
+  updatedAt_ASC
+}
+
+input CashRequestSettlementFilter {
+  OR: [CashRequestSettlementFilter!]
+  AND: [CashRequestSettlementFilter!]
+  _id_in: [String]
+  _id_nin: [String]
+  accountId: String
+  cashRequestId: String
+  cashRequestId_in: [String]
+  # cashNo: String
+  # cashNo_regex: String
+  settlementType: settlementTypeEnum
+  createdAt_gte: Date
+  createdAt_lte: Date
+}
+
+# settlementType identifies the document to create/replace for the cash request
+input CashRequestSettlementInput {
+  settlementType: settlementTypeEnum!
+  # e.g. PJT/STL/2611/0001 (numbered by the dashboard after getLastCashRequestSettlement);
+  # a settlement that already has a number keeps it
+  settlementNo: String
+  items: [cashRequestSettlementItemObjectInput]
+  total: Float
+  note: String
+}
+
+type CreateCashRequestSettlementResponse {
+  success: Boolean!
+  message: String
+  cashRequestSettlements: [CashRequestSettlement]
+}
+
+type UpdateCashRequestSettlementResponse {
+  success: Boolean!
+  message: String
+  cashRequestSettlement: CashRequestSettlement
+}
+
+type DeleteCashRequestSettlementResponse {
+  success: Boolean!
+  message: String
+}
+
+type Query {
+  allCashRequestSettlements(
+    filter: CashRequestSettlementFilter
+    first: Int
+    skip: Int
+    orderBy: CashRequestSettlementOrder
+  ): [CashRequestSettlement]
+  _allCashRequestSettlementsMeta(filter: CashRequestSettlementFilter): ObjectMeta
+  getCashRequestSettlement(id: String, cashRequestId: String, settlementType: settlementTypeEnum): CashRequestSettlement
+  # settlement with the highest settlementNo starting with the prefix (e.g. "PJT/STL/2611")
+  getLastCashRequestSettlement(prefixSettlementNo: String): CashRequestSettlement
+}
+
+type Mutation {
+  # Upserts one CashRequestSettlement per input.settlementType for the cash request;
+  # types not sent are left untouched.
+  createCashRequestSettlement(
+    cashRequestId: String!
+    input: [CashRequestSettlementInput!]!
+  ): CreateCashRequestSettlementResponse
+
+  # Updates an existing cash request settlement (e.g. the one getCashRequestSettlement
+  # returned). Its settlementNo is kept; the settlementType must stay the same.
+  updateCashRequestSettlement(
+    id: String!
+    input: CashRequestSettlementInput!
+  ): UpdateCashRequestSettlementResponse
+
+  deleteCashRequestSettlement(id: String!): DeleteCashRequestSettlementResponse
+}
+
+type CashRequestSettlementSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: CashRequestSettlement
+  previousValues: CashRequestSettlement
+}
+
+type Subscription {
+  CashRequestSettlement(filter: SubscriptionFilter, dataFilter: CashRequestSettlementFilter): CashRequestSettlementSubscriptionPayload
+}

@@ -85,13 +85,15 @@ const LEGACY_SETTLEMENT_KEYS = [
   'loloSettlement',
 ]
 
+// Soft-deletes the settlements of deleted cash requests: the CashRequestSettlement
+// collection, and the older Settlement collection so no orphans stay behind there
 async function softDeleteSettlements(mongo, cashRequestIds) {
   const ids = (cashRequestIds || []).filter(Boolean).map(String)
   if (ids.length === 0) return
-  await mongo.Settlement.updateMany(
-    { cashRequestId: { $in: ids }, deletedAt: null },
-    { $set: { deletedAt: new Date().getTime() } }
-  )
+  const filter = { cashRequestId: { $in: ids }, deletedAt: null }
+  const update = { $set: { deletedAt: new Date().getTime() } }
+  await mongo.CashRequestSettlement.updateMany(filter, update)
+  await mongo.Settlement.updateMany(filter, update)
 }
 
 function isSet(value) {
@@ -194,7 +196,7 @@ function jobFromDetail(detail, existingJobs) {
 // Normalizes a create/update input so cashRequestDetails is stored as
 // [cashRequestDetailObject] and the legacy jobs/destinations fields stay in sync.
 async function prepareCashRequestInput(input, existing, mongo) {
-  // Settlement totals are saved through saveSettlements, never on the cash request
+  // Settlement totals are saved through createCashRequestSettlement, never on the cash request
   LEGACY_SETTLEMENT_KEYS.forEach(key => delete input[key])
 
   if (Array.isArray(input.cashRequestDetails)) {
@@ -468,10 +470,10 @@ export default {
       if (!hasItems && jobs.length > 0) list = jobs
       return mergeDetailsByJob(list.map(normalizeCashRequestDetail))
     },
-    settlements: async (parent, args, { mongo }) => {
+    cashRequestSettlements: async (parent, args, { mongo }) => {
       const id = parent && (parent._id || parent.id)
       if (!id) return []
-      return mongo.Settlement.find({ cashRequestId: String(id), deletedAt: null })
+      return mongo.CashRequestSettlement.find({ cashRequestId: String(id), deletedAt: null })
         .sort({ createdAt: 1 })
         .toArray()
     },

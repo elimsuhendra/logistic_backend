@@ -23,8 +23,9 @@ type CashRequest {
   createdAt: Date
   updatedAt: Date
   cashRequestDetails: [cashRequestDetailObject]
-  # Penyelesaian (Driver, Lolo, Job, SparePart, Other) live in the Settlement collection
-  settlements: [Settlement]
+  # Penyelesaian (Driver, Lolo, Job, SparePart, Other) live in the
+  # CashRequestSettlement collection (cashRequestSettlements)
+  cashRequestSettlements: [CashRequestSettlement]
   totalPengajuan: Float
   rounding: Float
   totalAfterRounding: Float

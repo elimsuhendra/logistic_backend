@@ -34,21 +34,25 @@ type Voucher {
 
 # One row of the Cost / Revenue table
 type voucherItemObject {
+  id: String                       # item id (set by the server when missing)
   categoryIdCostRevenue: String                   # "Cost / Revenue" select
   categoryNameCostRevenue: String                    # label snapshot of the selected cost
   isCost: Boolean                  # true = Cost, false = Revenue
   nominal: Float                   # "Nominal"
   uploadUrl: String                # "Upload"
+  inactive: Boolean                # removed tag (kept on the voucher, left out of the totals)
 #   isUploaded: Boolean
 }
 
 input voucherItemObjectInput {
+  id: String                       # send it to keep the item id on update
   categoryIdCostRevenue: String
   categoryNameCostRevenue: String
   isCost: Boolean
   nominal: Float
   uploadUrl: String
 #   isUploaded: Boolean
+  inactive: Boolean
 }
 
 input VoucherInput {
@@ -91,6 +95,11 @@ input VoucherFilter {
   paymentDate_lte: Date
 }
 
+input UpdateVoucherItemInput {
+  id: String!                      # voucherItemObject.id
+  inactive: Boolean
+}
+
 type VoucherResponse {
   success: Boolean!
   message: String
@@ -109,5 +118,8 @@ type Query {
 type Mutation {
   createVoucher(input: VoucherInput!): VoucherResponse
   updateVoucher(id: String!, input: VoucherInput!): VoucherResponse
+  # Changes one item of a voucher (input.id = the item id), e.g. { id, inactive: true }
+  # when its Add Cost Peny. tag is removed; the totals leave inactive items out
+  updateVoucherItem(id: String!, input: UpdateVoucherItemInput!): VoucherResponse
   deleteVoucher(id: String!): VoucherResponse
 }

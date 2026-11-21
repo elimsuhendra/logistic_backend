@@ -15,20 +15,32 @@ const num = v => {
 }
 
 // voucherItemObject; vouchers saved before the rename may still hold costId / biaya
+// Every voucher item has an id: kept when the input sends one, otherwise a new one
+function withItemIds(items) {
+  return (Array.isArray(items) ? items : []).map(i => ({
+    ...i,
+    id: i && i.id ? String(i.id) : new ObjectId().toString(),
+  }))
+}
+
 function normalizeItems(items) {
   return (Array.isArray(items) ? items : []).map(i => ({
+    id: i.id ? String(i.id) : null, // null on items saved before item ids
     categoryIdCostRevenue: i.categoryIdCostRevenue || i.costId || '',
     categoryNameCostRevenue: i.categoryNameCostRevenue || i.biaya || '',
     isCost: i.isCost !== undefined && i.isCost !== null ? Boolean(i.isCost) : true,
     nominal: num(i.nominal),
     uploadUrl: i.uploadUrl || '',
+    inactive: Boolean(i.inactive),
   }))
 }
 
-// totalCost / totalRevenue / total (= cost - revenue) of the Cost / Revenue table
+// totalCost / totalRevenue / total (= cost - revenue) of the Cost / Revenue table;
+// inactive items (removed tags) are left out
 function computeTotals(items) {
-  const totalCost = items.filter(i => i.isCost).reduce((sum, i) => sum + i.nominal, 0)
-  const totalRevenue = items.filter(i => !i.isCost).reduce((sum, i) => sum + i.nominal, 0)
+  const active = items.filter(i => !i.inactive)
+  const totalCost = active.filter(i => i.isCost).reduce((sum, i) => sum + i.nominal, 0)
+  const totalRevenue = active.filter(i => !i.isCost).reduce((sum, i) => sum + i.nominal, 0)
   return { totalCost, totalRevenue, total: totalCost - totalRevenue }
 }
 
@@ -153,7 +165,7 @@ export default {
       try {
         const accountId = input.accountId || currentUser.accountId || null
         // reffId = jobPlanningId, reffNo = jobPlanningNo, reffCollectionName = "jobPlannings"
-        const doc = { ...input, ...(await buildReff(mongo, input)) }
+        const doc = { ...input, items: withItemIds(input.items), ...(await buildReff(mongo, input)) }
         // numbered when saved, so a preview number taken meanwhile is not reused
         const voucherNo =
           input.voucherNo || (await generateVoucherNo(mongo, { accountId, date: doc.paymentDate }))
@@ -186,7 +198,7 @@ export default {
 
       try {
         // reffId = jobPlanningId, reffNo = jobPlanningNo, reffCollectionName = "jobPlannings"
-        const doc = { ...input, ...(await buildReff(mongo, input)) }
+        const doc = { ...input, items: withItemIds(input.items), ...(await buildReff(mongo, input)) }
         // accountId, voucherNo and createdBy stay as created
         const updated = await mongoUpdate(
           'Voucher',
@@ -204,6 +216,42 @@ export default {
         return { success: true, message: 'Voucher has been updated successfully!', voucher }
       } catch (err) {
         return { success: false, message: err.message || 'Failed to update voucher.' }
+      }
+    }),
+    // Changes one item of a voucher by its id (e.g. inactive: true when its Add
+    // Cost Peny. tag is removed) and recomputes the totals without inactive items
+    updateVoucherItem: requiresAuth.createResolver(async (parent, { id, input }, context) => {
+      const { mongo, user } = context
+      const currentUser = await getCurrentUser(context)
+      if (!currentUser) return { success: false, message: 'User is not authorized.' }
+
+      const existing = await findById(mongo.Voucher, id)
+      if (!existing) return { success: false, message: 'Voucher not found.' }
+      const items = Array.isArray(existing.items) ? existing.items : []
+      const index = items.findIndex(i => i && i.id && String(i.id) === String(input.id))
+      if (index < 0) return { success: false, message: 'Voucher item not found.' }
+
+      const nextItems = items.map((item, i) =>
+        i === index
+          ? { ...item, ...(input.inactive !== undefined && input.inactive !== null ? { inactive: Boolean(input.inactive) } : {}) }
+          : item
+      )
+      try {
+        const updated = await mongoUpdate(
+          'Voucher',
+          {
+            id: existing._id,
+            items: nextItems,
+            ...computeTotals(normalizeItems(nextItems)),
+            updatedBy: String(user._id),
+          },
+          context
+        )
+        if (updated instanceof Error) throw updated
+        const voucher = await findById(mongo.Voucher, existing._id)
+        return { success: true, message: 'Voucher item has been updated successfully!', voucher }
+      } catch (err) {
+        return { success: false, message: err.message || 'Failed to update voucher item.' }
       }
     }),
     deleteVoucher: requiresAuth.createResolver(async (parent, { id }, context) => {
