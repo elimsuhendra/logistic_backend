@@ -1,3 +1,4 @@
+import { toApprovalStatus } from 'utils/approval'
 import requiresAuth, { checkUserAuth, checkPermissions } from 'src/utils/permissions'
 import { ObjectId } from 'mongodb'
 import buildMongoFilters from 'src/utils/buildMongoFilters.js'
@@ -12,6 +13,7 @@ import _ from 'lodash'
 export default {
   Approval: {
     id: parent => parent._id || parent.id,
+    approval: parent => toApprovalStatus(parent && parent.approval),
     accountId: parent => (parent && parent.accountId) ? String(parent.accountId) : null,
     reffId: parent => (parent && parent.reffId) ? String(parent.reffId) : null,
     userId: parent => (parent && parent.userId) ? String(parent.userId) : null,

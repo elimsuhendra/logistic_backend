@@ -1,6 +1,7 @@
 // CashRequestSettlement: same resolvers as Settlement (settlement.js) on the
 // cashRequestSettlements collection. The settlementItemObject resolvers are
 // shared and stay in settlement.js.
+import { toApprovalStatus } from 'utils/approval'
 import requiresAuth, { checkUserAuth, checkPermissions } from 'src/utils/permissions'
 import { ObjectId } from 'mongodb'
 import buildMongoOrders from 'src/utils/buildMongoOrders.js'
@@ -78,11 +79,11 @@ export default {
         {
           reffId: idMatch(id),
           deletedAt: null,
-          approval: { $in: ['Approved', 'Rejected', 'Pending', 'Cancelled'] },
+          approval: { $in: ['Approved', 'Rejected', 'Pending', 'Revision', 'Cancelled'] }, // Cancelled: not yet migrated
         },
         { sort: { updatedAt: -1, createdAt: -1 } }
       )
-      return approval ? approval.approval : null
+      return approval ? toApprovalStatus(approval.approval) : null
     },
   },
   // relations of a cash request settlement row (same as settlementItemObject)

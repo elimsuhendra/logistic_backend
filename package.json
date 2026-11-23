@@ -12,6 +12,7 @@
     "db:index:reset": "babel-node ./src/migrations/indexing/reset.js",
     "db:migrate:settlements": "babel-node ./src/migrations/modification/moveCashRequestSettlements.js",
     "db:migrate:cashRequestNo": "babel-node ./src/migrations/modification/renameCashRequestNo.js",
+    "db:migrate:approvalRevision": "babel-node ./src/migrations/modification/renameApprovalCancelledToRevision.js",
     "db:migrate:costRevenues": "babel-node ./src/migrations/modification/migrateCostRevenueCategories.js",
     "db:seed": "babel-node ./src/seeder/index.js",
     "db:seed:accounts": "babel-node ./src/seeder/index.js accounts",

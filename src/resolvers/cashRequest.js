@@ -1,3 +1,4 @@
+import { toApprovalStatus } from 'utils/approval'
 import requiresAuth, { checkUserAuth, checkPermissions } from 'src/utils/permissions'
 import { ObjectId } from 'mongodb'
 import buildMongoFilters from 'src/utils/buildMongoFilters.js'
@@ -289,7 +290,7 @@ export default {
     cashRequestNo: parent => parent.cashRequestNo || parent.cashNo || null,
     statusOperation: parent => parent.statusOperation,
     // Latest approval of this record (reffId) whose status is Approved, Rejected,
-    // Pending or Cancelled; approvals still Waiting are ignored
+    // Pending or Revision; approvals still Waiting are ignored
     lastApprovalStatus: async (parent, args, { mongo }) => {
       const id = parent && (parent._id || parent.id)
       if (!id) return null
@@ -300,11 +301,11 @@ export default {
         {
           reffId,
           deletedAt: null,
-          approval: { $in: ['Approved', 'Rejected', 'Pending', 'Cancelled'] },
+          approval: { $in: ['Approved', 'Rejected', 'Pending', 'Revision', 'Cancelled'] }, // Cancelled: not yet migrated
         },
         { sort: { updatedAt: -1, createdAt: -1 } }
       )
-      return approval ? approval.approval : null
+      return approval ? toApprovalStatus(approval.approval) : null
     },
     jobPlanning: async (parent, args, { mongo }) => {
       console.log('jobPlanning')
