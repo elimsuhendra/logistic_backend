@@ -25,6 +25,13 @@ function buildCashRequestSettlementFilters(filter) {
   if (Array.isArray(f.cashRequestId_in)) out.cashRequestId = { $in: f.cashRequestId_in.map(String) }
   if (f.cashNo) out.cashNo = f.cashNo
   if (f.cashNo_regex) out.cashNo = { $regex: sanitizeRegex(f.cashNo_regex.trim()), $options: 'i' }
+  if (f.settlementNo) out.settlementNo = f.settlementNo
+  if (f.settlementNo_regex) {
+    out.settlementNo = { $regex: sanitizeRegex(f.settlementNo_regex.trim()), $options: 'i' }
+  }
+  if (f.userId) out.userId = idMatch(f.userId)
+  // isDraft false also matches settlements saved before isDraft existed
+  if (typeof f.isDraft === 'boolean') out.isDraft = f.isDraft ? true : { $ne: true }
   if (f.settlementType) out.settlementType = f.settlementType
   if (f.createdAt_gte || f.createdAt_lte) {
     out.createdAt = {
@@ -33,7 +40,12 @@ function buildCashRequestSettlementFilters(filter) {
     }
   }
   if (Array.isArray(f.OR) && f.OR.length > 0) out.$or = f.OR.map(buildCashRequestSettlementFilters)
-  if (Array.isArray(f.AND) && f.AND.length > 0) out.$and = f.AND.map(buildCashRequestSettlementFilters)
+  const and = Array.isArray(f.AND) && f.AND.length > 0 ? f.AND.map(buildCashRequestSettlementFilters) : []
+  if (f.search && f.search.trim()) {
+    const regex = { $regex: sanitizeRegex(f.search.trim()), $options: 'i' }
+    and.push({ $or: [{ settlementNo: regex }, { cashNo: regex }] })
+  }
+  if (and.length > 0) out.$and = and
   return out
 }
 
@@ -49,7 +61,29 @@ export default {
     id: parent => parent._id || parent.id,
     items: parent => (Array.isArray(parent.items) ? parent.items : []).map(normalizeCashRequestSettlementItem),
     total: parent => num(parent.total),
+    rounding: parent => num(parent.rounding),
+    totalAfterRounding: parent => num(parent.total) + num(parent.rounding),
+    isDraft: parent => Boolean(parent.isDraft),
     cashRequest: async (parent, args, { mongo }) => findCashRequest(mongo, parent.cashRequestId),
+    user: async (parent, args, { dataloaders }) => {
+      const uid = parent.userId
+      if (!uid || !ObjectId.isValid(String(uid))) return null
+      return dataloaders.get('userByIdLoader').load(String(uid))
+    },
+    // latest decided approval of the settlement (same as CashRequest.lastApprovalStatus)
+    lastApprovalStatus: async (parent, args, { mongo }) => {
+      const id = parent && (parent._id || parent.id)
+      if (!id) return null
+      const approval = await mongo.Approval.findOne(
+        {
+          reffId: idMatch(id),
+          deletedAt: null,
+          approval: { $in: ['Approved', 'Rejected', 'Pending', 'Cancelled'] },
+        },
+        { sort: { updatedAt: -1, createdAt: -1 } }
+      )
+      return approval ? approval.approval : null
+    },
   },
   // relations of a cash request settlement row (same as settlementItemObject)
   cashRequestSettlementItemObject: {
@@ -158,7 +192,11 @@ export default {
           settlementType: s.settlementType,
           items,
           total,
+          rounding: s.rounding !== undefined && s.rounding !== null ? num(s.rounding) : num(existing && existing.rounding),
           note: s.note || '',
+          isDraft: typeof s.isDraft === 'boolean' ? s.isDraft : Boolean(existing && existing.isDraft),
+          // created by: the user who first saved the settlement
+          userId: (existing && existing.userId) || String(currentUser._id),
         }
         if (existing) {
           await mongoUpdate(
@@ -208,7 +246,11 @@ export default {
           settlementNo: existing.settlementNo || input.settlementNo || null,
           items,
           total,
+          rounding:
+            input.rounding !== undefined && input.rounding !== null ? num(input.rounding) : num(existing.rounding),
           note: input.note !== undefined && input.note !== null ? input.note : existing.note || '',
+          isDraft: typeof input.isDraft === 'boolean' ? input.isDraft : Boolean(existing.isDraft),
+          userId: existing.userId || String(currentUser._id),
           updatedAt: new Date().getTime(),
         },
         context
