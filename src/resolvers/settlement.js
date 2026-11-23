@@ -38,7 +38,7 @@ function findCashRequest(mongo, id) {
   if (!id) return null
   return ObjectId.isValid(String(id))
     ? mongo.CashRequest.findOne({ _id: ObjectId(String(id)), deletedAt: null })
-    : mongo.CashRequest.findOne({ cashNo: String(id), deletedAt: null })
+    : mongo.CashRequest.findOne({ $or: [{ cashRequestNo: String(id) }, { cashNo: String(id) }], deletedAt: null })
 }
 
 export default {
@@ -147,7 +147,7 @@ export default {
         const doc = {
           accountId: cashRequest.accountId || null,
           cashRequestId: crId,
-          cashNo: cashRequest.cashNo || null,
+          cashNo: cashRequest.cashRequestNo || cashRequest.cashNo || null,
           // a settlement keeps its number; a new one takes the number sent
           settlementNo: (existing && existing.settlementNo) || s.settlementNo || null,
           settlementType: s.settlementType,

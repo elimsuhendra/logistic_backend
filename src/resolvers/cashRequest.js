@@ -285,6 +285,8 @@ export default {
   },
   CashRequest: {
     id: parent => parent._id || parent.id,
+    // stored as cashNo before the rename (db:migrate:cashRequestNo)
+    cashRequestNo: parent => parent.cashRequestNo || parent.cashNo || null,
     statusOperation: parent => parent.statusOperation,
     // Latest approval of this record (reffId) whose status is Approved, Rejected,
     // Pending or Cancelled; approvals still Waiting are ignored
@@ -494,23 +496,31 @@ export default {
     getCashRequest: requiresAuth.createResolver(
       async (parent, { id }, { mongo }) => {
         if (!id) return null
-        const query = ObjectId.isValid(id) ? { _id: ObjectId(id), deletedAt: null } : { cashNo: id, deletedAt: null }
+        const query = ObjectId.isValid(id)
+          ? { _id: ObjectId(id), deletedAt: null }
+          : { $or: [{ cashRequestNo: id }, { cashNo: id }], deletedAt: null }
         return await mongo.CashRequest.findOne(query)
       }
     ),
     getLastCashRequest: requiresAuth.createResolver(
-      async (parent, { prefixCashNo }, { mongo }) => {
-        if (!prefixCashNo) return null
-        const prefix = sanitizeRegex(prefixCashNo.trim())
-        const [cashRequest] = await mongo.CashRequest.find({
-          cashNo: { $regex: `^${prefix}`, $options: 'i' },
-          deletedAt: null,
-        })
-          .sort({ cashNo: -1 })
-          .limit(1)
-          .toArray()
-
-        return cashRequest || null
+      async (parent, { prefixCashRequestNo }, { mongo }) => {
+        if (!prefixCashRequestNo) return null
+        const prefix = sanitizeRegex(prefixCashRequestNo.trim())
+        // highest number on cashRequestNo, or on cashNo for documents not yet
+        // migrated (db:migrate:cashRequestNo)
+        const lastBy = async field => {
+          const [doc] = await mongo.CashRequest.find({
+            [field]: { $regex: `^${prefix}`, $options: 'i' },
+            deletedAt: null,
+          })
+            .sort({ [field]: -1 })
+            .limit(1)
+            .toArray()
+          return doc || null
+        }
+        const [byNew, byOld] = await Promise.all([lastBy('cashRequestNo'), lastBy('cashNo')])
+        if (!byNew || !byOld) return byNew || byOld
+        return String(byOld.cashNo) > String(byNew.cashRequestNo) ? byOld : byNew
       }
     ),
     allCashRequests: requiresAuth.createResolver(
@@ -540,7 +550,8 @@ export default {
           filters = {
             ...filters,
             $or: [
-              { cashNo: { $regex: regexStr, $options: 'i' } },
+              { cashRequestNo: { $regex: regexStr, $options: 'i' } },
+              { cashNo: { $regex: regexStr, $options: 'i' } }, // not yet migrated (db:migrate:cashRequestNo)
               { cashType: { $regex: regexStr, $options: 'i' } },
               { destination: { $regex: regexStr, $options: 'i' } },
               { 'destinations.destination': { $regex: regexStr, $options: 'i' } },
@@ -587,7 +598,8 @@ export default {
           filters = {
             ...filters,
             $or: [
-              { cashNo: { $regex: regexStr, $options: 'i' } },
+              { cashRequestNo: { $regex: regexStr, $options: 'i' } },
+              { cashNo: { $regex: regexStr, $options: 'i' } }, // not yet migrated (db:migrate:cashRequestNo)
               { cashType: { $regex: regexStr, $options: 'i' } },
               { destination: { $regex: regexStr, $options: 'i' } },
               { 'destinations.destination': { $regex: regexStr, $options: 'i' } },
@@ -612,10 +624,10 @@ export default {
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
 
       if (!!currentUser) {
-        if (!input.cashNo) {
+        if (!input.cashRequestNo) {
           return {
             success: false,
-            message: "Bond No. (Cash No) is required.",
+            message: "Bond No. (Cash Request No) is required.",
           }
         }
 

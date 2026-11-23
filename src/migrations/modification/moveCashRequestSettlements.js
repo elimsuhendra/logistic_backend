@@ -78,7 +78,7 @@ const moveCashRequestSettlements = async context => {
       await mongo.Settlement.insertOne({
         accountId: cr.accountId || null,
         cashRequestId: crId,
-        cashNo: cr.cashNo || null,
+        cashNo: cr.cashRequestNo || cr.cashNo || null,
         settlementType: type,
         items,
         total:
