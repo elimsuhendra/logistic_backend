@@ -98,9 +98,11 @@ type Mutation {
     input: [ApprovalInput]
   ): CreateApprovalResponse
 
+  # Updates one approval: id is the approval's id (approvalId); the fields sent in
+  # input are set on it and updatedAt is set to now
   updateApproval(
-    reffId: String
-    input: [ApprovalInput]
+    id: String!
+    input: ApprovalInput!
   ): UpdateApprovalResponse
 
   deleteApproval(id: String!): DeleteApprovalResponse

@@ -154,51 +154,43 @@ export default {
     updateApproval: requiresAuth.createResolver(async (parent, args, context) => {
       await checkPermissions(checkUserAuth)({ context })
       const { mongo, user } = context
-      // Replaces the approvals of a record: (1) the current approvals with this reffId are
-      // retired (inactive: true, deletedAt: now), then (2) input: [ApprovalInput] is inserted.
-      const entries = (Array.isArray(args.input) ? args.input : [args.input]).filter(Boolean)
-      const reffId = args.reffId || (entries.find(e => e.reffId) || {}).reffId || null
+      // Updates one approval: args.id is the approval's id (approvalId). The fields sent
+      // in input are set on it (fields not sent keep their value) and updatedAt = now.
+      const { id, input } = args
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
 
       if (!!currentUser) {
-        if (!reffId) {
-          return { success: false, message: "reffId is required." }
+        if (!id || !ObjectId.isValid(String(id))) {
+          return { success: false, message: "A valid approval id is required." }
+        }
+        const existing = await mongo.Approval.findOne({ _id: ObjectId(String(id)), deletedAt: null })
+        if (!existing) {
+          return { success: false, message: "Approval not found." }
         }
 
-        const now = new Date().getTime()
-        // reffId may be stored as ObjectId or string
-        const reffIdMatch = ObjectId.isValid(String(reffId))
-          ? { $in: [ObjectId(String(reffId)), String(reffId)] }
-          : String(reffId)
+        // the approval's own id comes from args.id, never from input
+        const { id: ignoredId, ...fields } = input || {}
+        const update = Object.keys(fields).reduce((acc, key) => {
+          if (fields[key] !== undefined) acc[key] = fields[key]
+          return acc
+        }, {})
+        if (update.reffId !== undefined && update.reffId !== null) update.reffId = String(update.reffId)
 
-        // 1. retire the old approvals of this record
-        await mongo.Approval.updateMany(
-          { reffId: reffIdMatch, deletedAt: null },
-          { $set: { inactive: true, deletedAt: now, updatedAt: now } }
+        const result = await mongoUpdate(
+          'Approval',
+          { id: existing._id, ...update, updatedAt: new Date().getTime() },
+          context
         )
-
-        // 2. insert the new approvals (a passed id is ignored: these are new documents)
-        const approvals = []
-        for (const entry of entries) {
-          const { id, ...rest } = entry
-          // mongoCreate returns (not throws) an Error on failure
-          const approval = await mongoCreate('Approval', { ...rest, reffId: String(reffId) }, context)
-          if (approval instanceof Error) {
-            return {
-              success: false,
-              message: approval.message,
-              approval: approvals[0] || null,
-              approvals,
-            }
-          }
-          approvals.push(approval)
+        if (result instanceof Error) {
+          return { success: false, message: result.message }
         }
 
+        const approval = await mongo.Approval.findOne({ _id: existing._id })
         return {
           success: true,
-          message: "Approvals have been updated successfully!",
-          approval: approvals[0] || null,
-          approvals,
+          message: "Approval has been updated successfully!",
+          approval,
+          approvals: approval ? [approval] : [],
         }
       }
 
