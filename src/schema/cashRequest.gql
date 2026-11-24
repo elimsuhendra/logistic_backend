@@ -8,7 +8,7 @@ type CashRequest {
   employeeId: String
   requestDate: Date
   cashType: bondTypeEnum
-  cashNo: String
+  cashRequestNo: String
   destination: [String]
   destinations: [cashDestinationObject]
   jobs: [cashJobObject]
@@ -129,8 +129,8 @@ enum bondTypeEnum {
 }
 
 enum CashRequestOrder {
-  cashNo_DESC
-  cashNo_ASC
+  cashRequestNo_DESC
+  cashRequestNo_ASC
   requestDate_DESC
   requestDate_ASC
   createdAt_DESC
@@ -151,8 +151,8 @@ input CashRequestFilter {
   AND: [CashRequestFilter!]
   _id_in: [String]
   _id_nin: [String]
-  cashNo: String
-  cashNo_regex: String
+  cashRequestNo: String
+  cashRequestNo_regex: String
   jobPlanningId: String
   customerId: String
   consigneeId: String
@@ -195,7 +195,7 @@ type Query {
   ): [CashRequest]
   _allCashRequestsMeta(filter: CashRequestFilter): ObjectMeta
   getCashRequest(id: String): CashRequest
-  getLastCashRequest(prefixCashNo: String): CashRequest
+  getLastCashRequest(prefixCashRequestNo: String): CashRequest
 }
 
 input CashRequestInput {
@@ -203,7 +203,7 @@ input CashRequestInput {
   accountId: String
   requestDate: Date
   cashType: bondTypeEnum
-  cashNo: String
+  cashRequestNo: String
 
   cashRequestDetails: [cashRequestDetailObjectInput]
 

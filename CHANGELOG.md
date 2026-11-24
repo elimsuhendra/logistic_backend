@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.3.12] - 2026-11-24 - Cash Request Settlements, Approval Revision and Approval Order
+
+### Added
+
+- **Cash Request Settlement Details**: A cash request settlement now records its rounding, the total after rounding, who created it, whether it was saved as a draft, and its latest approval status. Settlements can be searched by settlement number or cash request number, filtered by creator or draft status, and sorted by settlement number, for the new Cash Request Settlements page.
+- **Approval Order**: Each approval now stores its position in the approval order (first approver, second approver, and so on), and approvals can be listed in that order.
+- **Data Update Commands**: Added two one-time commands to run after this update: `yarn db:migrate:cashRequestNo` moves the cash request number of existing cash requests to the new field name, and `yarn db:migrate:approvalRevision` changes approvals saved as Cancelled to Revision. Both can be run again safely. Until they are run, older records are still read correctly.
+
+### Changed
+
+- **Cash Request Number Renamed**: The cash request number is now called `cashRequestNo` instead of `cashNo` in the API, including searching, sorting and getting the latest number (`getLastCashRequest(prefixCashRequestNo)`). Settlements keep their own `cashNo` copy of the number.
+- **Cancelled Approval Status Renamed to Revision**: The approval status Cancelled is now Revision, meaning the approver sent the request back to be revised.
+- **Updating One Approval at a Time**: `updateApproval` now takes the approval's own id and updates only that approval with the fields sent, setting its last-updated time. It no longer replaces all approvals of a record. Clients must send `updateApproval(id, input)` instead of `updateApproval(reffId, input: [...])`.
+
+
 ## [1.3.11] - 2026-11-17 - Voucher Accounts and Automatic Voucher Numbers
 
 ### Added

@@ -6,6 +6,7 @@ type Approval {
   collectionName: String
   userId: String
   approval: approvalEnum
+  index: Int            # position in the approval order (0 = first approver)
   createdAt: Date
   updatedAt: Date
   note: String
@@ -18,11 +19,13 @@ enum approvalEnum {
   Approved
   Rejected
   Pending
-  Cancelled
+  Revision   # was Cancelled (db:migrate:approvalRevision)
   Waiting
 }
 
 enum ApprovalOrder {
+  index_ASC
+  index_DESC
   reffNo_DESC
   reffNo_ASC
   createdAt_DESC
@@ -42,6 +45,7 @@ input ApprovalFilter {
   collectionName: String
   userId: String
   approval: approvalEnum
+  index: Int
   search: String
   createdAt_gte: Date
   createdAt_lte: Date
@@ -55,6 +59,7 @@ input ApprovalInput {
   reffId: String
   reffNo: String
   approval: approvalEnum
+  index: Int             # position in the approval order (0 = first approver)
   note: String
 }
 
@@ -93,9 +98,11 @@ type Mutation {
     input: [ApprovalInput]
   ): CreateApprovalResponse
 
+  # Updates one approval: id is the approval's id (approvalId); the fields sent in
+  # input are set on it and updatedAt is set to now
   updateApproval(
-    reffId: String
-    input: [ApprovalInput]
+    id: String!
+    input: ApprovalInput!
   ): UpdateApprovalResponse
 
   deleteApproval(id: String!): DeleteApprovalResponse

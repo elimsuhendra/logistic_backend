@@ -15,13 +15,21 @@ type CashRequestSettlement {
   items: [cashRequestSettlementItemObject]  # per-row data (Penyelesaian Supir / Lolo tables)
   # settlementDetails: [settlementItemObject]  # per-row data (Penyelesaian Supir / Lolo tables)
   total: Float                   # settlement total of this type
+  rounding: Float                # Rounding (Cash Request Settlement page)
+  totalAfterRounding: Float      # total + rounding = Total Settlement
   note: String
+  cashRequestId: String
+  cashNo: String
+  userId: String                 # created by
+  isDraft: Boolean               # saved with Save as Draft
+  lastApprovalStatus: approvalEnum
   createdAt: Date
   updatedAt: Date
 
   # relations
   jobPlanning: JobPlanning
   cashRequest: CashRequest
+  user: User
 }
 
 # One row of a cash request settlement table: the Settlement row
@@ -116,8 +124,8 @@ input cashRequestSettlementVoucherObjectInput {
 }
 
 enum CashRequestSettlementOrder {
-  # cashNo_DESC
-  # cashNo_ASC
+  settlementNo_DESC
+  settlementNo_ASC
   createdAt_DESC
   createdAt_ASC
   updatedAt_DESC
@@ -132,8 +140,14 @@ input CashRequestSettlementFilter {
   accountId: String
   cashRequestId: String
   cashRequestId_in: [String]
-  # cashNo: String
-  # cashNo_regex: String
+  cashNo: String
+  cashNo_regex: String
+  settlementNo: String
+  settlementNo_regex: String
+  # settlementNo or cashNo contains the text
+  search: String
+  userId: String
+  isDraft: Boolean
   settlementType: settlementTypeEnum
   createdAt_gte: Date
   createdAt_lte: Date
@@ -147,7 +161,10 @@ input CashRequestSettlementInput {
   settlementNo: String
   items: [cashRequestSettlementItemObjectInput]
   total: Float
+  rounding: Float
   note: String
+  # true: Save as Draft; false / omitted: Submit
+  isDraft: Boolean
 }
 
 type CreateCashRequestSettlementResponse {
