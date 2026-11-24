@@ -75,8 +75,12 @@ export default {
 
         if (first) obj.limit(limit)
         if (skip) obj.skip(offset)
-        if (orderBy) obj.sort(buildMongoOrders(orderBy))
-        else obj.sort({ createdAt: -1 })
+        if (orderBy) {
+          // index ties (e.g. approvals saved before index existed) keep their saved order
+          obj.sort(String(orderBy).startsWith('index_')
+            ? { ...buildMongoOrders(orderBy), createdAt: 1 }
+            : buildMongoOrders(orderBy))
+        } else obj.sort({ createdAt: -1 })
 
         return await obj.toArray()
       }

@@ -6,6 +6,7 @@ type Approval {
   collectionName: String
   userId: String
   approval: approvalEnum
+  index: Int            # position in the approval order (0 = first approver)
   createdAt: Date
   updatedAt: Date
   note: String
@@ -23,6 +24,8 @@ enum approvalEnum {
 }
 
 enum ApprovalOrder {
+  index_ASC
+  index_DESC
   reffNo_DESC
   reffNo_ASC
   createdAt_DESC
@@ -42,6 +45,7 @@ input ApprovalFilter {
   collectionName: String
   userId: String
   approval: approvalEnum
+  index: Int
   search: String
   createdAt_gte: Date
   createdAt_lte: Date
@@ -55,6 +59,7 @@ input ApprovalInput {
   reffId: String
   reffNo: String
   approval: approvalEnum
+  index: Int             # position in the approval order (0 = first approver)
   note: String
 }
 
