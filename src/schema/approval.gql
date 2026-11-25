@@ -18,6 +18,7 @@ type Approval {
 }
 
 enum approvalEnum {
+  Approve
   Approved
   Rejected
   Pending
