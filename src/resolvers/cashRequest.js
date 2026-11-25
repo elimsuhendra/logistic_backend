@@ -105,6 +105,46 @@ function sumNominal(destinations) {
   return (destinations || []).reduce((sum, d) => sum + (parseFloat(d && d.nominal) || 0), 0)
 }
 
+// Latest approval of a cash request (reffId) whose status is Approved, Rejected,
+// Pending or Revision; approvals still Waiting are ignored
+async function getLastApprovalStatus(mongo, id) {
+  if (!id) return null
+  const reffId = ObjectId.isValid(String(id))
+    ? { $in: [ObjectId(String(id)), String(id)] }
+    : String(id)
+  const approval = await mongo.Approval.findOne(
+    {
+      reffId,
+      deletedAt: null,
+      approval: { $in: ['Approved', 'Rejected', 'Pending', 'Revision', 'Cancelled'] }, // Cancelled: not yet migrated
+    },
+    { sort: { updatedAt: -1, createdAt: -1 } }
+  )
+  return approval ? toApprovalStatus(approval.approval) : null
+}
+
+// Job Planning No. of the first selected job (cashRequestDetails[0], or jobs[0] on
+// legacy records), looked up from the job planning when it is not stored on the row
+async function getFirstJobPlanningNo(mongo, cashRequest) {
+  const details = Array.isArray(cashRequest.cashRequestDetails) ? cashRequest.cashRequestDetails : []
+  const jobs = Array.isArray(cashRequest.jobs) ? cashRequest.jobs : []
+  const first = details[0] || jobs[0] || null
+  const storedNo = first && (first.jobPlanningNo || first.jobPlannnigNo)
+  if (storedNo) return String(storedNo)
+  const jobPlanningId = (first && first.jobPlanningId) || cashRequest.jobPlanningId || null
+  const jp = await findJobPlanning(mongo, jobPlanningId)
+  return jp && jp.jobPlanningNo ? String(jp.jobPlanningNo) : null
+}
+
+// Due status from the last character of the Job Planning No.:
+// 1 or 8 -> Due_3_Days, 2 or 9 -> Due_5_Days, anything else -> null (unchanged)
+function dueStatusFromJobPlanningNo(jobPlanningNo) {
+  const last = jobPlanningNo ? String(jobPlanningNo).trim().slice(-1) : ''
+  if (last === '1' || last === '8') return 'Due_3_Days'
+  if (last === '2' || last === '9') return 'Due_5_Days'
+  return null
+}
+
 function findJobPlanning(mongo, jobPlanningId) {
   if (!jobPlanningId) return null
   const query = ObjectId.isValid(jobPlanningId)
@@ -291,22 +331,8 @@ export default {
     statusOperation: parent => parent.statusOperation,
     // Latest approval of this record (reffId) whose status is Approved, Rejected,
     // Pending or Revision; approvals still Waiting are ignored
-    lastApprovalStatus: async (parent, args, { mongo }) => {
-      const id = parent && (parent._id || parent.id)
-      if (!id) return null
-      const reffId = ObjectId.isValid(String(id))
-        ? { $in: [ObjectId(String(id)), String(id)] }
-        : String(id)
-      const approval = await mongo.Approval.findOne(
-        {
-          reffId,
-          deletedAt: null,
-          approval: { $in: ['Approved', 'Rejected', 'Pending', 'Revision', 'Cancelled'] }, // Cancelled: not yet migrated
-        },
-        { sort: { updatedAt: -1, createdAt: -1 } }
-      )
-      return approval ? toApprovalStatus(approval.approval) : null
-    },
+    lastApprovalStatus: async (parent, args, { mongo }) =>
+      getLastApprovalStatus(mongo, parent && (parent._id || parent.id)),
     jobPlanning: async (parent, args, { mongo }) => {
       console.log('jobPlanning')
       const firstJobId =
@@ -718,6 +744,53 @@ export default {
       return {
         success: false,
         message: "User is not authorized."
+      }
+    }),
+    // Sets statusOperation of a cash request to Due_3_Days / Due_5_Days when
+    // - its status approval (latest decided approval) is Approved,
+    // - today is later than its updatedAt (updatedAt is before today), and
+    // - the Job Planning No. of its first selected job ends with
+    //   1 or 8 (Due_3_Days) or 2 or 9 (Due_5_Days).
+    // Draft, Cancel and Finish cash requests are left as they are; updatedAt is kept.
+    updateStatusOperation: requiresAuth.createResolver(async (parent, args, context) => {
+      await checkPermissions(checkUserAuth)({ context })
+      const { mongo, user } = context
+      const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
+      if (!currentUser) {
+        return { success: false, message: "User is not authorized.", updatedCount: 0 }
+      }
+
+      const startOfToday = new Date()
+      startOfToday.setHours(0, 0, 0, 0)
+
+      const cashRequests = await mongo.CashRequest.find({
+        deletedAt: null,
+        isDraft: { $ne: true },
+        statusOperation: { $nin: ['Draft', 'Cancel', 'Finish', null] },
+        ...(args.accountId ? { accountId: idMatch(args.accountId) } : {}),
+      }).toArray()
+
+      let updatedCount = 0
+      for (const cashRequest of cashRequests) {
+        const updatedAt = cashRequest.updatedAt || cashRequest.createdAt
+        if (!updatedAt || !(new Date(updatedAt) < startOfToday)) continue
+
+        if ((await getLastApprovalStatus(mongo, cashRequest._id)) !== 'Approved') continue
+
+        const dueStatus = dueStatusFromJobPlanningNo(await getFirstJobPlanningNo(mongo, cashRequest))
+        if (!dueStatus || dueStatus === cashRequest.statusOperation) continue
+
+        await mongo.CashRequest.updateOne(
+          { _id: cashRequest._id },
+          { $set: { statusOperation: dueStatus } }
+        )
+        updatedCount += 1
+      }
+
+      return {
+        success: true,
+        message: `${updatedCount} cash request(s) status operation updated.`,
+        updatedCount,
       }
     }),
   }
