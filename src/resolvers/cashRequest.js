@@ -123,6 +123,24 @@ async function getLastApprovalStatus(mongo, id) {
   return approval ? toApprovalStatus(approval.approval) : null
 }
 
+// When a cash request was approved: the latest updatedAt (createdAt when never updated)
+// of its approvals with reffId = the cash request id, inactive null / false and
+// approval Approved. null when it has no such approval.
+async function getApprovedAt(mongo, cashRequestId) {
+  if (!cashRequestId) return null
+  const approvals = await mongo.Approval.find({
+    reffId: idMatch(cashRequestId),
+    inactive: { $ne: true },
+    approval: 'Approved',
+  }).project({ updatedAt: 1, createdAt: 1 }).toArray()
+  const times = approvals
+    .map(a => a.updatedAt || a.createdAt)
+    .filter(Boolean)
+    .map(t => new Date(t).getTime())
+    .filter(t => !Number.isNaN(t))
+  return times.length > 0 ? new Date(Math.max(...times)) : null
+}
+
 // Job Planning No. of the first selected job (cashRequestDetails[0], or jobs[0] on
 // legacy records), looked up from the job planning when it is not stored on the row
 async function getFirstJobPlanningNo(mongo, cashRequest) {
@@ -748,7 +766,8 @@ export default {
     }),
     // Sets statusOperation of each of args.cashRequestIds to Due_3_Days / Due_5_Days when
     // - its status approval (latest decided approval) is Approved,
-    // - today is later than its updatedAt (updatedAt is before today), and
+    // - today is later than the updatedAt of its Approved approval (reffId = its id,
+    //   inactive null / false; the latest one when there are several), and
     // - the Job Planning No. of its first selected job ends with
     //   1 or 8 (Due_3_Days) or 2 or 9 (Due_5_Days).
     // Draft, Cancel and Finish cash requests are left as they are; updatedAt is kept.
@@ -779,10 +798,11 @@ export default {
 
       let updatedCount = 0
       for (const cashRequest of cashRequests) {
-        const updatedAt = cashRequest.updatedAt || cashRequest.createdAt
-        if (!updatedAt || !(new Date(updatedAt) < startOfToday)) continue
-
         if ((await getLastApprovalStatus(mongo, cashRequest._id)) !== 'Approved') continue
+
+        // today is later than the approval's updatedAt (approved before today)
+        const approvedAt = await getApprovedAt(mongo, cashRequest._id)
+        if (!approvedAt || !(approvedAt < startOfToday)) continue
 
         const dueStatus = dueStatusFromJobPlanningNo(await getFirstJobPlanningNo(mongo, cashRequest))
         if (!dueStatus || dueStatus === cashRequest.statusOperation) continue
