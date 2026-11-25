@@ -237,9 +237,9 @@ type Mutation {
   deleteCashRequest(id: String!): DeleteCashRequestResponse
   deleteCashRequests(ids: [String!]!): DeleteCashRequestResponse
 
-  # Sets statusOperation to Due_3_Days / Due_5_Days on approved cash requests
-  # (see resolver); accountId limits it to one account
-  updateStatusOperation(accountId: String): UpdateStatusOperationResponse
+  # Sets statusOperation to Due_3_Days / Due_5_Days on the given cash requests
+  # that are approved (see resolver)
+  updateStatusOperation(cashRequestIds: [String!]!): UpdateStatusOperationResponse
 }
 
 type CashRequestSubscriptionPayload {

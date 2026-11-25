@@ -746,7 +746,7 @@ export default {
         message: "User is not authorized."
       }
     }),
-    // Sets statusOperation of a cash request to Due_3_Days / Due_5_Days when
+    // Sets statusOperation of each of args.cashRequestIds to Due_3_Days / Due_5_Days when
     // - its status approval (latest decided approval) is Approved,
     // - today is later than its updatedAt (updatedAt is before today), and
     // - the Job Planning No. of its first selected job ends with
@@ -760,14 +760,21 @@ export default {
         return { success: false, message: "User is not authorized.", updatedCount: 0 }
       }
 
+      const ids = Array.from(new Set((args.cashRequestIds || []).map(String)))
+        .filter(id => ObjectId.isValid(id))
+        .map(id => ObjectId(id))
+      if (ids.length === 0) {
+        return { success: true, message: "No cash request to update.", updatedCount: 0 }
+      }
+
       const startOfToday = new Date()
       startOfToday.setHours(0, 0, 0, 0)
 
       const cashRequests = await mongo.CashRequest.find({
+        _id: { $in: ids },
         deletedAt: null,
         isDraft: { $ne: true },
         statusOperation: { $nin: ['Draft', 'Cancel', 'Finish', null] },
-        ...(args.accountId ? { accountId: idMatch(args.accountId) } : {}),
       }).toArray()
 
       let updatedCount = 0
