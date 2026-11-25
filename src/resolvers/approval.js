@@ -10,6 +10,18 @@ import { mongoCreate, mongoUpdate, mongoDelete, mongoMultiDelete } from 'utils/c
 import { sanitizeRegex } from 'utils/common'
 import _ from 'lodash'
 
+// Next attempt for a record: highest attempt among all its approvals (reffId, including
+// inactive / deleted ones) + 1; 1 when it has none yet
+async function nextAttempt(mongo, reffId) {
+  const id = String(reffId)
+  const reffMatch = ObjectId.isValid(id) ? { $in: [ObjectId(id), id] } : id
+  const last = await mongo.Approval.findOne(
+    { reffId: reffMatch, attempt: { $ne: null } },
+    { sort: { attempt: -1 }, projection: { attempt: 1 } }
+  )
+  return (parseInt(last && last.attempt, 10) || 0) + 1
+}
+
 export default {
   Approval: {
     id: parent => parent._id || parent.id,
@@ -121,10 +133,22 @@ export default {
           return { success: false, message: "No approval to create." }
         }
 
+        // One attempt per reffId for this whole call: every approval created together
+        // for the same record shares it (previous attempt + 1)
+        const attemptByReffId = {}
+        for (const input of inputs) {
+          if (!input.reffId) continue
+          const key = String(input.reffId)
+          if (attemptByReffId[key] === undefined) attemptByReffId[key] = await nextAttempt(mongo, key)
+        }
+
         const approvals = []
         for (const input of inputs) {
+          // attempt is set by the server, never taken from the input
+          const { attempt: ignoredAttempt, ...fields } = input
+          const attempt = input.reffId ? attemptByReffId[String(input.reffId)] : null
           // mongoCreate returns (not throws) an Error on failure
-          const approval = await mongoCreate('Approval', { ...input }, context)
+          const approval = await mongoCreate('Approval', { ...fields, attempt }, context)
           if (approval instanceof Error) {
             return {
               success: false,
