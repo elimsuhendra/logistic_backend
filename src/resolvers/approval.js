@@ -1,4 +1,4 @@
-import { toApprovalStatus, refreshCurrentTurn } from 'utils/approval'
+import { toApprovalStatus, refreshCurrentTurn, setNextApproverPending } from 'utils/approval'
 import requiresAuth, { checkUserAuth, checkPermissions } from 'src/utils/permissions'
 import { ObjectId } from 'mongodb'
 import buildMongoFilters from 'src/utils/buildMongoFilters.js'
@@ -234,7 +234,15 @@ export default {
           return { success: false, message: result.message }
         }
 
-        // the turn moves on when a status changes (e.g. Approved → next approver Pending);
+        // "Approve" passes the approval on: the next approver of the record becomes Pending
+        if (update.approval === 'Approve' && toApprovalStatus(existing.approval) !== 'Approve') {
+          await setNextApproverPending(mongo, {
+            _id: existing._id,
+            reffId: update.reffId !== undefined ? update.reffId : existing.reffId,
+          })
+        }
+
+        // the turn moves on when a status changes (e.g. Approve → next approver Pending);
         // refresh the old record too when the approval was moved to another reffId
         await refreshCurrentTurn(mongo, update.reffId !== undefined ? update.reffId : existing.reffId)
         if (update.reffId !== undefined && String(update.reffId) !== String(existing.reffId)) {
