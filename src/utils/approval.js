@@ -64,3 +64,36 @@ export async function refreshCurrentTurn(mongo, reffId) {
   }
   return current
 }
+
+// Current status of a record's approval process, from its active approvals (reffId,
+// not deleted, inactive null / false) in approval order:
+//   no approvals / all blank (draft)                  → null
+//   any Rejected                                      → Rejected
+//   any Revision (sent back to the creator)           → Revision
+//   every approver decided, the last one Approved     → Approved
+//   otherwise (someone Pending / Waiting / passed on) → Pending
+export async function getApprovalStatus(mongo, reffId) {
+  if (reffId === undefined || reffId === null || reffId === '') return null
+  const statuses = (await orderedActiveApprovals(mongo, reffId)).map(a => toApprovalStatus(a.approval))
+  if (statuses.length === 0 || statuses.every(s => !s)) return null
+  if (statuses.includes('Rejected')) return 'Rejected'
+  if (statuses.includes('Revision')) return 'Revision'
+  const last = statuses[statuses.length - 1]
+  if (last === 'Approved' && statuses.every(s => s === 'Approve' || s === 'Approved')) return 'Approved'
+  return 'Pending'
+}
+
+// When a record's approval was last updated: the latest updatedAt among its active
+// approvals (reffId, not deleted, inactive null / false), e.g. an approver's decision
+// or the next approver set to Pending. null when none of them was ever updated.
+export async function getApprovalUpdatedAt(mongo, reffId) {
+  if (reffId === undefined || reffId === null || reffId === '') return null
+  const approvals = await mongo.Approval.find(
+    { reffId: reffMatchOf(reffId), deletedAt: null, inactive: { $ne: true }, updatedAt: { $ne: null } },
+    { projection: { updatedAt: 1 } }
+  ).toArray()
+  const times = approvals
+    .map(a => new Date(a.updatedAt).getTime())
+    .filter(t => !Number.isNaN(t))
+  return times.length > 0 ? new Date(Math.max(...times)) : null
+}

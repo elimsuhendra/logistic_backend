@@ -1,4 +1,4 @@
-import { toApprovalStatus } from 'utils/approval'
+import { getApprovalStatus, getApprovalUpdatedAt } from 'utils/approval'
 import requiresAuth, { checkUserAuth, checkPermissions } from 'src/utils/permissions'
 import { ObjectId } from 'mongodb'
 import buildMongoFilters from 'src/utils/buildMongoFilters.js'
@@ -103,24 +103,6 @@ function isSet(value) {
 
 function sumNominal(destinations) {
   return (destinations || []).reduce((sum, d) => sum + (parseFloat(d && d.nominal) || 0), 0)
-}
-
-// Latest approval of a cash request (reffId) whose status is Approved, Rejected,
-// Pending or Revision; approvals still Waiting are ignored
-async function getLastApprovalStatus(mongo, id) {
-  if (!id) return null
-  const reffId = ObjectId.isValid(String(id))
-    ? { $in: [ObjectId(String(id)), String(id)] }
-    : String(id)
-  const approval = await mongo.Approval.findOne(
-    {
-      reffId,
-      deletedAt: null,
-      approval: { $in: ['Approved', 'Rejected', 'Pending', 'Revision', 'Cancelled'] }, // Cancelled: not yet migrated
-    },
-    { sort: { updatedAt: -1, createdAt: -1 } }
-  )
-  return approval ? toApprovalStatus(approval.approval) : null
 }
 
 // When a cash request was approved: the latest updatedAt (createdAt when never updated)
@@ -347,10 +329,12 @@ export default {
     // stored as cashNo before the rename (db:migrate:cashRequestNo)
     cashRequestNo: parent => parent.cashRequestNo || parent.cashNo || null,
     statusOperation: parent => parent.statusOperation,
-    // Latest approval of this record (reffId) whose status is Approved, Rejected,
-    // Pending or Revision; approvals still Waiting are ignored
-    lastApprovalStatus: async (parent, args, { mongo }) =>
-      getLastApprovalStatus(mongo, parent && (parent._id || parent.id)),
+    // Current status of the approval process (utils/approval getApprovalStatus)
+    approvalStatus: async (parent, args, { mongo }) =>
+      getApprovalStatus(mongo, parent && (parent._id || parent.id)),
+    // When the approval was last updated (utils/approval getApprovalUpdatedAt)
+    approvalUpdatedAt: async (parent, args, { mongo }) =>
+      getApprovalUpdatedAt(mongo, parent && (parent._id || parent.id)),
     jobPlanning: async (parent, args, { mongo }) => {
       console.log('jobPlanning')
       const firstJobId =
@@ -798,7 +782,8 @@ export default {
 
       let updatedCount = 0
       for (const cashRequest of cashRequests) {
-        if ((await getLastApprovalStatus(mongo, cashRequest._id)) !== 'Approved') continue
+        // approval process finished: the final approver Approved (approvalStatus)
+        if ((await getApprovalStatus(mongo, cashRequest._id)) !== 'Approved') continue
 
         // today is later than the approval's updatedAt (approved before today)
         const approvedAt = await getApprovedAt(mongo, cashRequest._id)
