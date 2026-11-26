@@ -71,7 +71,7 @@ export default {
       if (!uid || !ObjectId.isValid(String(uid))) return null
       return dataloaders.get('userByIdLoader').load(String(uid))
     },
-    // latest decided approval of the settlement (same as CashRequest.lastApprovalStatus)
+    // latest decided approval of the settlement
     lastApprovalStatus: async (parent, args, { mongo }) => {
       const id = parent && (parent._id || parent.id)
       if (!id) return null

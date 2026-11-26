@@ -19,7 +19,6 @@ type CashRequest {
   returnTotal: Float
   isDraft: Boolean
   statusOperation: statusOperationKasbonEnum
-  lastApprovalStatus: approvalEnum
   # current status of the approval process (from the active approvals): null (no
   # approvals / draft), Pending, Revision, Rejected or Approved (final approver approved)
   approvalStatus: approvalEnum
