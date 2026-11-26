@@ -75,7 +75,8 @@ export default {
       async (parent, { filter, first, skip, orderBy }, { mongo }) => {
         const limit = first || 20
         const offset = skip || 0
-        const { search, ...restFilter } = filter || {}
+        // inactive (replaced) approvals are left out unless filter.inactive is true
+        const { search, inactive, ...restFilter } = filter || {}
         let filters = buildMongoFilters(restFilter) || {}
 
         if (search) {
@@ -90,7 +91,7 @@ export default {
           }
         }
 
-        filters = { ...filters, deletedAt: null }
+        filters = { ...filters, deletedAt: null, inactive: inactive === true ? true : { $ne: true } }
         const obj = mongo.Approval.find(filters)
 
         if (first) obj.limit(limit)
@@ -107,7 +108,8 @@ export default {
     ),
     _allApprovalsMeta: requiresAuth.createResolver(
       async (parent, { filter }, { mongo }) => {
-        const { search, ...restFilter } = filter || {}
+        // inactive (replaced) approvals are left out unless filter.inactive is true
+        const { search, inactive, ...restFilter } = filter || {}
         let filters = buildMongoFilters(restFilter) || {}
 
         if (search) {
@@ -122,7 +124,7 @@ export default {
           }
         }
 
-        filters = { ...filters, deletedAt: null }
+        filters = { ...filters, deletedAt: null, inactive: inactive === true ? true : { $ne: true } }
         const count = await mongo.Approval.countDocuments(filters)
         return { count }
       }
