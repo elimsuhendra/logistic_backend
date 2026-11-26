@@ -186,6 +186,13 @@ type DeleteCashRequestResponse {
   message: String
 }
 
+type UpdateStatusOperationResponse {
+  success: Boolean!
+  message: String
+  # number of cash requests whose statusOperation was changed
+  updatedCount: Int
+}
+
 type Query {
   allCashRequests(
     filter: CashRequestFilter
@@ -229,6 +236,10 @@ type Mutation {
 
   deleteCashRequest(id: String!): DeleteCashRequestResponse
   deleteCashRequests(ids: [String!]!): DeleteCashRequestResponse
+
+  # Sets statusOperation to Due_3_Days / Due_5_Days on the given cash requests
+  # that are approved (see resolver)
+  updateStatusOperation(cashRequestIds: [String!]!): UpdateStatusOperationResponse
 }
 
 type CashRequestSubscriptionPayload {

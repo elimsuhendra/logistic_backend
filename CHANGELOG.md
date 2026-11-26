@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.3.13] - 2026-11-25 - Status Operation Check and Approval Turns
+
+### Added
+
+- **Status Operation Check**: Added `updateStatusOperation(cashRequestIds)`. For each cash request sent, if its approval status is Approved and it was approved before today (the last-updated time of its active Approved approval), its Status Operation is set from the last digit of its first job's Job Planning No.: 1 or 8 becomes Due 3 Days, 2 or 9 becomes Due 5 Days. Draft, Cancel and Finish cash requests are not changed. The result says how many cash requests were updated.
+- **Approval Attempt**: Each approval stores an attempt number. Approvals created together for the same record share one attempt, which is one higher than that record's previous attempt (starting at 1).
+- **Current Turn**: Each approval stores whether it is the current turn (`isCurrentTurn`), meaning the approver who should act now: the first active Pending approval in approval order. It is kept up to date whenever approvals are created, updated or removed, and approvals can be filtered by it.
+- **Data Update Command**: Added `yarn db:migrate:approvalCurrentTurn`, a one-time command that sets the current turn on existing approvals. It can be run again safely.
+
+### Changed
+
+- **Approve Passes to the Next Approver**: When an approver chooses Approve, the next approver in the approval order becomes Pending and it becomes their turn, unless they have already decided. The last approver chooses Approved.
+
+
 ## [1.3.12] - 2026-11-24 - Cash Request Settlements, Approval Revision and Approval Order
 
 ### Added

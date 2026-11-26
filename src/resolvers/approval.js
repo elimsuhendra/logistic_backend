@@ -1,4 +1,4 @@
-import { toApprovalStatus } from 'utils/approval'
+import { toApprovalStatus, refreshCurrentTurn, setNextApproverPending } from 'utils/approval'
 import requiresAuth, { checkUserAuth, checkPermissions } from 'src/utils/permissions'
 import { ObjectId } from 'mongodb'
 import buildMongoFilters from 'src/utils/buildMongoFilters.js'
@@ -9,6 +9,26 @@ import { withFilter } from 'graphql-subscriptions'
 import { mongoCreate, mongoUpdate, mongoDelete, mongoMultiDelete } from 'utils/crud'
 import { sanitizeRegex } from 'utils/common'
 import _ from 'lodash'
+
+// Next attempt for a record: highest attempt among all its approvals (reffId, including
+// inactive / deleted ones) + 1; 1 when it has none yet
+async function nextAttempt(mongo, reffId) {
+  const id = String(reffId)
+  const reffMatch = ObjectId.isValid(id) ? { $in: [ObjectId(id), id] } : id
+  const last = await mongo.Approval.findOne(
+    { reffId: reffMatch, attempt: { $ne: null } },
+    { sort: { attempt: -1 }, projection: { attempt: 1 } }
+  )
+  return (parseInt(last && last.attempt, 10) || 0) + 1
+}
+
+// reffIds of the given approval ids (read before they are deleted)
+async function reffIdsOfApprovals(mongo, ids) {
+  const objectIds = (ids || []).map(String).filter(i => ObjectId.isValid(i)).map(i => ObjectId(i))
+  if (objectIds.length === 0) return []
+  const rows = await mongo.Approval.find({ _id: { $in: objectIds } }, { projection: { reffId: 1 } }).toArray()
+  return _.uniq(rows.map(r => r.reffId).filter(r => r !== undefined && r !== null).map(String))
+}
 
 export default {
   Approval: {
@@ -121,11 +141,26 @@ export default {
           return { success: false, message: "No approval to create." }
         }
 
+        // One attempt per reffId for this whole call: every approval created together
+        // for the same record shares it (previous attempt + 1)
+        const attemptByReffId = {}
+        for (const input of inputs) {
+          if (!input.reffId) continue
+          const key = String(input.reffId)
+          if (attemptByReffId[key] === undefined) attemptByReffId[key] = await nextAttempt(mongo, key)
+        }
+
         const approvals = []
         for (const input of inputs) {
+          // attempt is set by the server, never taken from the input
+          const { attempt: ignoredAttempt, ...fields } = input
+          const attempt = input.reffId ? attemptByReffId[String(input.reffId)] : null
           // mongoCreate returns (not throws) an Error on failure
-          const approval = await mongoCreate('Approval', { ...input }, context)
+          // isCurrentTurn is set by the server (refreshCurrentTurn below), never from the input
+          const { isCurrentTurn: ignoredTurn, ...createFields } = fields
+          const approval = await mongoCreate('Approval', { ...createFields, attempt, isCurrentTurn: false }, context)
           if (approval instanceof Error) {
+            for (const reffId of Object.keys(attemptByReffId)) await refreshCurrentTurn(mongo, reffId)
             return {
               success: false,
               message: approval.message,
@@ -134,6 +169,19 @@ export default {
             }
           }
           approvals.push(approval)
+        }
+
+        for (const reffId of Object.keys(attemptByReffId)) await refreshCurrentTurn(mongo, reffId)
+        // return the approvals as saved, with their isCurrentTurn
+        const createdId = a => a && (a._id || a.id)
+        const createdIds = approvals.map(createdId).filter(Boolean)
+        if (createdIds.length > 0) {
+          const saved = await mongo.Approval.find({ _id: { $in: createdIds } }).toArray()
+          const byId = _.keyBy(saved, a => String(a._id))
+          for (let i = 0; i < approvals.length; i++) {
+            const fresh = byId[String(createdId(approvals[i]))]
+            if (fresh) approvals[i] = fresh
+          }
         }
 
         return {
@@ -169,7 +217,8 @@ export default {
         }
 
         // the approval's own id comes from args.id, never from input
-        const { id: ignoredId, ...fields } = input || {}
+        // isCurrentTurn is set by the server (refreshCurrentTurn), never from the input
+        const { id: ignoredId, isCurrentTurn: ignoredTurn, ...fields } = input || {}
         const update = Object.keys(fields).reduce((acc, key) => {
           if (fields[key] !== undefined) acc[key] = fields[key]
           return acc
@@ -183,6 +232,21 @@ export default {
         )
         if (result instanceof Error) {
           return { success: false, message: result.message }
+        }
+
+        // "Approve" passes the approval on: the next approver of the record becomes Pending
+        if (update.approval === 'Approve' && toApprovalStatus(existing.approval) !== 'Approve') {
+          await setNextApproverPending(mongo, {
+            _id: existing._id,
+            reffId: update.reffId !== undefined ? update.reffId : existing.reffId,
+          })
+        }
+
+        // the turn moves on when a status changes (e.g. Approve → next approver Pending);
+        // refresh the old record too when the approval was moved to another reffId
+        await refreshCurrentTurn(mongo, update.reffId !== undefined ? update.reffId : existing.reffId)
+        if (update.reffId !== undefined && String(update.reffId) !== String(existing.reffId)) {
+          await refreshCurrentTurn(mongo, existing.reffId)
         }
 
         const approval = await mongo.Approval.findOne({ _id: existing._id })
@@ -205,7 +269,9 @@ export default {
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
 
       if (!!currentUser) {
+        const reffIds = await reffIdsOfApprovals(mongo, [args.id])
         await mongoDelete('Approval', args, context)
+        for (const reffId of reffIds) await refreshCurrentTurn(mongo, reffId)
         return {
           success: true,
           message: "Approval has been deleted successfully!",
@@ -223,7 +289,9 @@ export default {
       const currentUser = await mongo.User.findOne({ _id: ObjectId(user._id), deletedAt: null })
 
       if (!!currentUser) {
+        const reffIds = await reffIdsOfApprovals(mongo, args.ids)
         await mongoMultiDelete('Approval', args, context)
+        for (const reffId of reffIds) await refreshCurrentTurn(mongo, reffId)
         return {
           success: true,
           message: "Approvals have been deleted successfully!",

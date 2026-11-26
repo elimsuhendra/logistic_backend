@@ -1,6 +1,6 @@
 {
   "name": "logistic_backend",
-  "version": "1.3.12",
+  "version": "1.3.13",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
@@ -13,6 +13,7 @@
     "db:migrate:settlements": "babel-node ./src/migrations/modification/moveCashRequestSettlements.js",
     "db:migrate:cashRequestNo": "babel-node ./src/migrations/modification/renameCashRequestNo.js",
     "db:migrate:approvalRevision": "babel-node ./src/migrations/modification/renameApprovalCancelledToRevision.js",
+    "db:migrate:approvalCurrentTurn": "babel-node ./src/migrations/modification/setApprovalCurrentTurn.js",
     "db:migrate:costRevenues": "babel-node ./src/migrations/modification/migrateCostRevenueCategories.js",
     "db:seed": "babel-node ./src/seeder/index.js",
     "db:seed:accounts": "babel-node ./src/seeder/index.js accounts",
