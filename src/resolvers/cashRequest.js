@@ -1,4 +1,4 @@
-import { toApprovalStatus } from 'utils/approval'
+import { toApprovalStatus, getApprovalStatus } from 'utils/approval'
 import requiresAuth, { checkUserAuth, checkPermissions } from 'src/utils/permissions'
 import { ObjectId } from 'mongodb'
 import buildMongoFilters from 'src/utils/buildMongoFilters.js'
@@ -351,6 +351,9 @@ export default {
     // Pending or Revision; approvals still Waiting are ignored
     lastApprovalStatus: async (parent, args, { mongo }) =>
       getLastApprovalStatus(mongo, parent && (parent._id || parent.id)),
+    // Current status of the approval process (utils/approval getApprovalStatus)
+    approvalStatus: async (parent, args, { mongo }) =>
+      getApprovalStatus(mongo, parent && (parent._id || parent.id)),
     jobPlanning: async (parent, args, { mongo }) => {
       console.log('jobPlanning')
       const firstJobId =

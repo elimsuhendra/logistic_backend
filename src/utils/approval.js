@@ -64,3 +64,21 @@ export async function refreshCurrentTurn(mongo, reffId) {
   }
   return current
 }
+
+// Current status of a record's approval process, from its active approvals (reffId,
+// not deleted, inactive null / false) in approval order:
+//   no approvals / all blank (draft)                  → null
+//   any Rejected                                      → Rejected
+//   any Revision (sent back to the creator)           → Revision
+//   every approver decided, the last one Approved     → Approved
+//   otherwise (someone Pending / Waiting / passed on) → Pending
+export async function getApprovalStatus(mongo, reffId) {
+  if (reffId === undefined || reffId === null || reffId === '') return null
+  const statuses = (await orderedActiveApprovals(mongo, reffId)).map(a => toApprovalStatus(a.approval))
+  if (statuses.length === 0 || statuses.every(s => !s)) return null
+  if (statuses.includes('Rejected')) return 'Rejected'
+  if (statuses.includes('Revision')) return 'Revision'
+  const last = statuses[statuses.length - 1]
+  if (last === 'Approved' && statuses.every(s => s === 'Approve' || s === 'Approved')) return 'Approved'
+  return 'Pending'
+}
