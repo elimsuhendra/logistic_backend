@@ -1,7 +1,7 @@
 // CashRequestSettlement: same resolvers as Settlement (settlement.js) on the
 // cashRequestSettlements collection. The settlementItemObject resolvers are
 // shared and stay in settlement.js.
-import { toApprovalStatus } from 'utils/approval'
+import { getApprovalStatus, getApprovalUpdatedAt } from 'utils/approval'
 import requiresAuth, { checkUserAuth, checkPermissions } from 'src/utils/permissions'
 import { ObjectId } from 'mongodb'
 import buildMongoOrders from 'src/utils/buildMongoOrders.js'
@@ -71,20 +71,12 @@ export default {
       if (!uid || !ObjectId.isValid(String(uid))) return null
       return dataloaders.get('userByIdLoader').load(String(uid))
     },
-    // latest decided approval of the settlement
-    lastApprovalStatus: async (parent, args, { mongo }) => {
-      const id = parent && (parent._id || parent.id)
-      if (!id) return null
-      const approval = await mongo.Approval.findOne(
-        {
-          reffId: idMatch(id),
-          deletedAt: null,
-          approval: { $in: ['Approved', 'Rejected', 'Pending', 'Revision', 'Cancelled'] }, // Cancelled: not yet migrated
-        },
-        { sort: { updatedAt: -1, createdAt: -1 } }
-      )
-      return approval ? toApprovalStatus(approval.approval) : null
-    },
+    // current status of the approval process (utils/approval getApprovalStatus)
+    approvalStatus: async (parent, args, { mongo }) =>
+      getApprovalStatus(mongo, parent && (parent._id || parent.id)),
+    // when the approval was last updated (utils/approval getApprovalUpdatedAt)
+    approvalUpdatedAt: async (parent, args, { mongo }) =>
+      getApprovalUpdatedAt(mongo, parent && (parent._id || parent.id)),
   },
   // relations of a cash request settlement row (same as settlementItemObject)
   cashRequestSettlementItemObject: {
