@@ -22,6 +22,8 @@ type CashRequest {
   # current status of the approval process (from the active approvals): null (no
   # approvals / draft), Pending, Revision, Rejected or Approved (final approver approved)
   approvalStatus: approvalEnum
+  # when the approval was last updated: latest updatedAt of the active approvals
+  approvalUpdatedAt: Date
   createdAt: Date
   updatedAt: Date
   cashRequestDetails: [cashRequestDetailObject]
