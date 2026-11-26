@@ -7,7 +7,7 @@ type Approval {
   userId: String
   approval: approvalEnum
   index: Int            # position in the approval order (0 = first approver)
-  attempt: Int          # approval round of the record: 1 for its first createApproval, +1 for each later one
+  attempt: Int          # approval round (no longer set automatically; existing values are kept)
   isCurrentTurn: Boolean # true on the approver whose turn it is to act (first Pending in index order); set by the server
   createdAt: Date
   updatedAt: Date

@@ -10,18 +10,6 @@ import { mongoCreate, mongoUpdate, mongoDelete, mongoMultiDelete } from 'utils/c
 import { sanitizeRegex } from 'utils/common'
 import _ from 'lodash'
 
-// Next attempt for a record: highest attempt among all its approvals (reffId, including
-// inactive / deleted ones) + 1; 1 when it has none yet
-async function nextAttempt(mongo, reffId) {
-  const id = String(reffId)
-  const reffMatch = ObjectId.isValid(id) ? { $in: [ObjectId(id), id] } : id
-  const last = await mongo.Approval.findOne(
-    { reffId: reffMatch, attempt: { $ne: null } },
-    { sort: { attempt: -1 }, projection: { attempt: 1 } }
-  )
-  return (parseInt(last && last.attempt, 10) || 0) + 1
-}
-
 // reffIds of the given approval ids (read before they are deleted)
 async function reffIdsOfApprovals(mongo, ids) {
   const objectIds = (ids || []).map(String).filter(i => ObjectId.isValid(i)).map(i => ObjectId(i))
@@ -141,26 +129,17 @@ export default {
           return { success: false, message: "No approval to create." }
         }
 
-        // One attempt per reffId for this whole call: every approval created together
-        // for the same record shares it (previous attempt + 1)
-        const attemptByReffId = {}
-        for (const input of inputs) {
-          if (!input.reffId) continue
-          const key = String(input.reffId)
-          if (attemptByReffId[key] === undefined) attemptByReffId[key] = await nextAttempt(mongo, key)
-        }
+        // records (reffId) whose current turn is refreshed after the approvals are created
+        const reffIds = _.uniq(inputs.map(input => input.reffId).filter(Boolean).map(String))
 
         const approvals = []
         for (const input of inputs) {
-          // attempt is set by the server, never taken from the input
-          const { attempt: ignoredAttempt, ...fields } = input
-          const attempt = input.reffId ? attemptByReffId[String(input.reffId)] : null
           // mongoCreate returns (not throws) an Error on failure
           // isCurrentTurn is set by the server (refreshCurrentTurn below), never from the input
-          const { isCurrentTurn: ignoredTurn, ...createFields } = fields
-          const approval = await mongoCreate('Approval', { ...createFields, attempt, isCurrentTurn: false }, context)
+          const { isCurrentTurn: ignoredTurn, ...createFields } = input
+          const approval = await mongoCreate('Approval', { ...createFields, isCurrentTurn: false }, context)
           if (approval instanceof Error) {
-            for (const reffId of Object.keys(attemptByReffId)) await refreshCurrentTurn(mongo, reffId)
+            for (const reffId of reffIds) await refreshCurrentTurn(mongo, reffId)
             return {
               success: false,
               message: approval.message,
@@ -171,7 +150,7 @@ export default {
           approvals.push(approval)
         }
 
-        for (const reffId of Object.keys(attemptByReffId)) await refreshCurrentTurn(mongo, reffId)
+        for (const reffId of reffIds) await refreshCurrentTurn(mongo, reffId)
         // return the approvals as saved, with their isCurrentTurn
         const createdId = a => a && (a._id || a.id)
         const createdIds = approvals.map(createdId).filter(Boolean)
