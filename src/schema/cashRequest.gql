@@ -241,9 +241,13 @@ type Mutation {
   deleteCashRequest(id: String!): DeleteCashRequestResponse
   deleteCashRequests(ids: [String!]!): DeleteCashRequestResponse
 
-  # Sets statusOperation to Due_3_Days / Due_5_Days on the given cash requests
-  # that are approved (see resolver)
-  updateStatusOperation(cashRequestIds: [String!]!): UpdateStatusOperationResponse
+  # Without statusOperation: sets Due_3_Days / Due_5_Days on the given cash requests
+  # that are approved (see resolver). With statusOperation (e.g. Finish when the cash
+  # request's settlement is approved): sets that status on the given cash requests.
+  updateStatusOperation(
+    cashRequestIds: [String!]!
+    statusOperation: statusOperationKasbonEnum
+  ): UpdateStatusOperationResponse
 }
 
 type CashRequestSubscriptionPayload {
