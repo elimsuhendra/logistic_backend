@@ -770,6 +770,22 @@ export default {
         return { success: true, message: "No cash request to update.", updatedCount: 0 }
       }
 
+      // A given statusOperation (e.g. Finish once the settlement is approved) is set as is
+      // on the given cash requests (not deleted); updatedAt is kept, as for the Due rule
+      if (args.statusOperation) {
+        const res = await mongo.CashRequest.updateMany(
+          { _id: { $in: ids }, deletedAt: null, statusOperation: { $ne: args.statusOperation } },
+          { $set: { statusOperation: args.statusOperation } }
+        )
+        const updatedCount =
+          (res && (res.modifiedCount !== undefined ? res.modifiedCount : res.result && res.result.nModified)) || 0
+        return {
+          success: true,
+          message: `${updatedCount} cash request(s) status operation set to ${args.statusOperation}.`,
+          updatedCount,
+        }
+      }
+
       const startOfToday = new Date()
       startOfToday.setHours(0, 0, 0, 0)
 
