@@ -123,6 +123,20 @@ async function getApprovedAt(mongo, cashRequestId) {
   return times.length > 0 ? new Date(Math.max(...times)) : null
 }
 
+// True when the cash request has a (not deleted) cash request settlement whose approval
+// status is Approved (utils/approval getApprovalStatus, reffId = the settlement id)
+async function hasApprovedSettlement(mongo, cashRequestId) {
+  if (!cashRequestId) return false
+  const settlements = await mongo.CashRequestSettlement.find(
+    { cashRequestId: idMatch(cashRequestId), deletedAt: null },
+    { projection: { _id: 1 } }
+  ).toArray()
+  for (const settlement of settlements) {
+    if ((await getApprovalStatus(mongo, settlement._id)) === 'Approved') return true
+  }
+  return false
+}
+
 // Job Planning No. of the first selected job (cashRequestDetails[0], or jobs[0] on
 // legacy records), looked up from the job planning when it is not stored on the row
 async function getFirstJobPlanningNo(mongo, cashRequest) {
@@ -748,7 +762,9 @@ export default {
         message: "User is not authorized."
       }
     }),
-    // Sets statusOperation of each of args.cashRequestIds to Due_3_Days / Due_5_Days when
+    // Sets statusOperation of each of args.cashRequestIds (without args.statusOperation):
+    // to Finish when one of its cash request settlements has approvalStatus Approved;
+    // otherwise to Due_3_Days / Due_5_Days when
     // - its status approval (latest decided approval) is Approved,
     // - today is later than the updatedAt of its Approved approval (reffId = its id,
     //   inactive null / false; the latest one when there are several), and
@@ -798,6 +814,17 @@ export default {
 
       let updatedCount = 0
       for (const cashRequest of cashRequests) {
+        // settled: a (not deleted) settlement of this cash request whose approval status is
+        // Approved → Finish
+        if (await hasApprovedSettlement(mongo, cashRequest._id)) {
+          await mongo.CashRequest.updateOne(
+            { _id: cashRequest._id },
+            { $set: { statusOperation: 'Finish' } }
+          )
+          updatedCount += 1
+          continue
+        }
+
         // approval process finished: the final approver Approved (approvalStatus)
         if ((await getApprovalStatus(mongo, cashRequest._id)) !== 'Approved') continue
 
